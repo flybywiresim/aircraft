@@ -57,7 +57,11 @@ const Label: FC<LabelProps> = ({ text, className, children }) => (
 export const TakeoffWidget = () => {
   const dispatch = useAppDispatch();
 
-  const { performanceCalculators: calculators, performanceCgLimits, takeoffFmsIntegration } = useContext(AircraftContext);
+  const {
+    performanceCalculators: calculators,
+    performanceCgLimits,
+    takeoffFmsIntegration,
+  } = useContext(AircraftContext);
   const [aircraftCg] = useSimVar('L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC', 'number', 1000);
 
   const [autoFillSource, setAutoFillSource] = useState<'METAR' | 'OFP'>('OFP');
@@ -108,7 +112,10 @@ export const TakeoffWidget = () => {
         return;
       }
       const encode = (value: string) =>
-        value.toUpperCase().split('').reduce((code, character) => code * 36 + parseInt(character, 36), 0);
+        value
+          .toUpperCase()
+          .split('')
+          .reduce((code, character) => code * 36 + parseInt(character, 36), 0);
       const values = {
         AIRPORT: encode(icao),
         RUNWAY: encode(selectedRunway.ident.replace(/^RW/i, '')),
@@ -631,7 +638,14 @@ export const TakeoffWidget = () => {
     importedOfp.current = ofpKey;
     clearResult();
     syncValuesWithOfp();
-  }, [takeoffFmsIntegration, ofpDepartingAirport, ofpDepartingRunway, ofpDepartingMetar, ofpWeights.estTakeOffWeight, aircraftCg]);
+  }, [
+    takeoffFmsIntegration,
+    ofpDepartingAirport,
+    ofpDepartingRunway,
+    ofpDepartingMetar,
+    ofpWeights.estTakeOffWeight,
+    aircraftCg,
+  ]);
 
   const handleAutoFill = () => {
     clearResult();

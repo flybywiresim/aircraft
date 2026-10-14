@@ -291,7 +291,10 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
     const prefix = 'L:A380X_EFB_TO_';
     const read = (name: string): number => SimVar.GetSimVarValue(`${prefix}${name}`, 'number');
     const encode = (value: string): number =>
-      value.toUpperCase().split('').reduce((code, character) => code * 36 + parseInt(character, 36), 0);
+      value
+        .toUpperCase()
+        .split('')
+        .reduce((code, character) => code * 36 + parseInt(character, 36), 0);
     const airport = this.loadedFlightPlan?.originAirport?.ident;
     const runway = this.loadedFlightPlan?.originRunway?.ident.substring(4).replace(/^RW/i, '');
     const publishedAt = read('VALID');
@@ -359,7 +362,11 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
     if (data.trim >= 0) {
       this.props.flightPlanInterface.setPerformanceData('takeoffThsFor', data.trim, fpIndex);
     }
-    this.props.flightPlanInterface.setPerformanceData('flexTakeoffTemperature', data.flex >= 0 ? data.flex : null, fpIndex);
+    this.props.flightPlanInterface.setPerformanceData(
+      'flexTakeoffTemperature',
+      data.flex >= 0 ? data.flex : null,
+      fpIndex,
+    );
     this.toThrustSettingChanged(data.flex >= 0 ? TakeoffPowerSetting.FLEX : TakeoffPowerSetting.TOGA);
     if (fpIndex === FlightPlanIndex.Active) {
       this.props.fmcService.master.acInterface.setTakeoffFlaps(data.flaps);
