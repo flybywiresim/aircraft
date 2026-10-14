@@ -78,6 +78,21 @@ enum FlightPhaseTabIndex {
   GoAround = 5,
 }
 
+interface EfbTakeoffData {
+  airport: string;
+  runway: string;
+  v1: number;
+  vr: number;
+  v2: number;
+  flaps: number;
+  flex: number;
+  trim: number;
+  packs: number;
+  antiIce: number;
+  weight: number;
+  publishedAt: number;
+}
+
 export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
   private readonly weightUnit = NXDataStore.getSetting('CONFIG_USING_METRIC_UNIT').map((v) =>
     v ? UnitType.KILOGRAM : UnitType.POUND,
@@ -266,6 +281,94 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
 
   // TO page subjects, refs and methods
   private readonly originRunwayIdent = Subject.create<string>('---');
+
+  private readonly toRequestDialogVisible = Subject.create(false);
+  private readonly toRequestDialogTitle = Subject.create('');
+  private readonly toRequestButtonLabel = Subject.create('CPNY T.O<br />REQUEST');
+  private pendingEfbTakeoff: EfbTakeoffData | null = null;
+
+  private requestEfbTakeoff(): void {
+    const prefix = 'L:A380X_EFB_TO_';
+    const read = (name: string): number => SimVar.GetSimVarValue(`${prefix}${name}`, 'number');
+    const encode = (value: string): number =>
+      value.toUpperCase().split('').reduce((code, character) => code * 36 + parseInt(character, 36), 0);
+    const airport = this.loadedFlightPlan?.originAirport?.ident;
+    const runway = this.loadedFlightPlan?.originRunway?.ident.substring(4).replace(/^RW/i, '');
+    const publishedAt = read('VALID');
+    const data: EfbTakeoffData = {
+      airport: airport ?? '',
+      runway: runway ?? '',
+      v1: read('V1'),
+      vr: read('VR'),
+      v2: read('V2'),
+      flaps: read('FLAPS'),
+      flex: read('FLEX'),
+      trim: read('TRIM'),
+      packs: read('PACKS'),
+      antiIce: read('ANTI_ICE'),
+      weight: read('WEIGHT'),
+      publishedAt,
+    };
+    const valid =
+      airport &&
+      runway &&
+      publishedAt > 0 &&
+      Date.now() - publishedAt < 30 * 60_000 &&
+      read('VALID') === publishedAt &&
+      read('AIRPORT') === encode(airport) &&
+      read('RUNWAY') === encode(runway) &&
+      [data.v1, data.vr, data.v2, data.flaps, data.weight].every(Number.isFinite) &&
+      data.v1 >= 90 &&
+      data.v1 <= data.vr &&
+      data.vr <= data.v2 &&
+      data.flaps >= 1 &&
+      data.flaps <= 3 &&
+      data.weight > 0;
+    if (!valid) {
+      this.toRequestButtonLabel.set('NO MATCHING<br />EFB T.O DATA');
+      this.pendingEfbTakeoff = null;
+      return;
+    }
+    this.pendingEfbTakeoff = data;
+    this.toRequestButtonLabel.set('CPNY T.O<br />REQUEST');
+    this.toRequestDialogTitle.set(
+      `${runway} ${Math.round(data.weight / 1_000)}T  V1 ${data.v1} VR ${data.vr} V2 ${data.v2}  CONF ${data.flaps} ${data.flex >= 0 ? `FLEX ${data.flex}` : 'TOGA'}`,
+    );
+    this.toRequestDialogVisible.set(true);
+  }
+
+  private confirmEfbTakeoff(): void {
+    const data = this.pendingEfbTakeoff;
+    this.toRequestDialogVisible.set(false);
+    if (
+      !data ||
+      this.loadedFlightPlan?.originAirport?.ident !== data.airport ||
+      this.loadedFlightPlan?.originRunway?.ident.substring(4).replace(/^RW/i, '') !== data.runway ||
+      Date.now() - data.publishedAt >= 30 * 60_000 ||
+      SimVar.GetSimVarValue('L:A380X_EFB_TO_VALID', 'number') !== data.publishedAt
+    ) {
+      return;
+    }
+    const fpIndex = this.loadedFlightPlanIndex.get();
+    this.props.flightPlanInterface.setPerformanceData('v1', data.v1, fpIndex);
+    this.props.flightPlanInterface.setPerformanceData('vr', data.vr, fpIndex);
+    this.props.flightPlanInterface.setPerformanceData('v2', data.v2, fpIndex);
+    this.props.flightPlanInterface.setPerformanceData('takeoffFlaps', data.flaps, fpIndex);
+    this.props.flightPlanInterface.setPerformanceData('takeoffPacks', data.packs, fpIndex);
+    this.props.flightPlanInterface.setPerformanceData('takeoffAntiIce', data.antiIce, fpIndex);
+    if (data.trim >= 0) {
+      this.props.flightPlanInterface.setPerformanceData('takeoffThsFor', data.trim, fpIndex);
+    }
+    this.props.flightPlanInterface.setPerformanceData('flexTakeoffTemperature', data.flex >= 0 ? data.flex : null, fpIndex);
+    this.toThrustSettingChanged(data.flex >= 0 ? TakeoffPowerSetting.FLEX : TakeoffPowerSetting.TOGA);
+    if (fpIndex === FlightPlanIndex.Active) {
+      this.props.fmcService.master.acInterface.setTakeoffFlaps(data.flaps);
+      if (data.trim >= 0) {
+        this.props.fmcService.master.acInterface.setTakeoffTrim(data.trim);
+      }
+    }
+    this.pendingEfbTakeoff = null;
+  }
 
   private readonly toShift = Subject.create<number | null>(null);
 
@@ -2028,15 +2131,25 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
                     />
                   </div>
                   <div style={{ visibility: this.visibilityConsideringFlightPlanIndex }}>
+                    <ConfirmationDialog
+                      visible={this.toRequestDialogVisible}
+                      cancelAction={() => {
+                        this.toRequestDialogVisible.set(false);
+                        this.pendingEfbTakeoff = null;
+                      }}
+                      confirmAction={() => this.confirmEfbTakeoff()}
+                      contentContainerStyle="width: 460px; min-height: 165px;"
+                    >
+                      {this.toRequestDialogTitle}
+                    </ConfirmationDialog>
                     <ConditionalComponent
                       width={176}
                       height={62}
                       condition={this.toPageInactive}
                       componentIfFalse={
                         <Button
-                          label="CPNY T.O<br />REQUEST"
-                          disabled={true}
-                          onClick={() => console.log('CPNY T.O REQUEST')}
+                          label={this.toRequestButtonLabel}
+                          onClick={() => this.requestEfbTakeoff()}
                           buttonStyle="padding-left: 30px; padding-right: 30px"
                         />
                       }

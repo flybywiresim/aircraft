@@ -25,6 +25,7 @@ jobs:
           persist-credentials: false
       - run: ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
       - run: ./scripts/dev-env/run.sh pnpm exec eslint fbw-a380x/src/systems/shared/src/performance/a380x_*.ts
+      - run: ./scripts/dev-env/run.sh pnpm exec eslint fbw-a380x/src/systems/instruments/src/EFB/index.tsx fbw-a380x/src/systems/instruments/src/MFD/pages/FMS/MfdFmsPerf.tsx fbw-common/src/systems/instruments/src/EFB/AircraftContext.ts fbw-common/src/systems/instruments/src/EFB/Performance/Widgets/TakeoffWidget.tsx
 
   test-js:
     if: github.repository == 'dancebunny98/aircraft'
@@ -75,6 +76,9 @@ jobs:
           submodules: recursive
 
       - name: Configure build
+        env:
+          NAVIGRAPH_CLIENT_ID: ${{ secrets.NAVIGRAPH_CLIENT_ID_A380X }}
+          NAVIGRAPH_CLIENT_SECRET: ${{ secrets.NAVIGRAPH_CLIENT_SECRET_A380X }}
         run: |
           printf '%s\n' \
             'FBW_PRODUCTION_BUILD=1' \
@@ -82,11 +86,14 @@ jobs:
             'AIRCRAFT_PROJECT_PREFIX=a380x' \
             'AIRCRAFT_VARIANT=a380-842' \
             'VITE_BUILD=false' \
-            'CLIENT_ID=' \
-            'CLIENT_SECRET=' \
+            "CLIENT_ID=$NAVIGRAPH_CLIENT_ID" \
+            "CLIENT_SECRET=$NAVIGRAPH_CLIENT_SECRET" \
             'CHARTFOX_SECRET=' \
             'SENTRY_DSN=' > fbw-a380x/.env
           printf '%s\n' 'VITE_BUILD=false' > .env
+          if [ -z "$NAVIGRAPH_CLIENT_ID" ] || [ -z "$NAVIGRAPH_CLIENT_SECRET" ]; then
+            echo '::warning::Navigraph login requires NAVIGRAPH_CLIENT_ID_A380X and NAVIGRAPH_CLIENT_SECRET_A380X repository secrets.'
+          fi
 
       - name: Install dependencies
         run: ./scripts/dev-env/run.sh ./scripts/setup.sh --clean

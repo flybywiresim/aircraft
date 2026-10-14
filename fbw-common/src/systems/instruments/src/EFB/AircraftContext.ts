@@ -68,6 +68,7 @@ interface AircraftEfbContext {
   landingWeightLimits?: { minKg: number; maxKg: number };
   landingReverseThrustDefault?: boolean;
   performanceCgLimits?: { minPercentMac: number; maxPercentMac: number };
+  takeoffFmsIntegration?: boolean;
   pushbackPage: PushbackPage;
   settingsPages: SettingsPages;
   /** File containing critical file hashes to be checked for integrity. */

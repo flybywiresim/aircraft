@@ -1,10 +1,10 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len */
 
-import React, { FC, useContext, useState } from 'react';
+import React, { FC, useContext, useEffect, useRef, useState } from 'react';
 import {
   Units,
   MetarParserType,
@@ -57,7 +57,7 @@ const Label: FC<LabelProps> = ({ text, className, children }) => (
 export const TakeoffWidget = () => {
   const dispatch = useAppDispatch();
 
-  const { performanceCalculators: calculators, performanceCgLimits } = useContext(AircraftContext);
+  const { performanceCalculators: calculators, performanceCgLimits, takeoffFmsIntegration } = useContext(AircraftContext);
   const [aircraftCg] = useSimVar('L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC', 'number', 1000);
 
   const [autoFillSource, setAutoFillSource] = useState<'METAR' | 'OFP'>('OFP');
@@ -94,6 +94,41 @@ export const TakeoffWidget = () => {
 
   const selectedRunway =
     selectedRunwayIndex !== undefined && selectedRunwayIndex >= 0 ? availableRunways[selectedRunwayIndex] : undefined;
+
+  const importedOfp = useRef('');
+
+  useEffect(() => {
+    if (!takeoffFmsIntegration) {
+      return;
+    }
+    const publish = async () => {
+      const prefix = 'L:A380X_EFB_TO_';
+      await SimVar.SetSimVarValue(`${prefix}VALID`, 'number', 0);
+      if (!result || !selectedRunway || !icao || !weight || !result.v1 || !result.vR || !result.v2) {
+        return;
+      }
+      const encode = (value: string) =>
+        value.toUpperCase().split('').reduce((code, character) => code * 36 + parseInt(character, 36), 0);
+      const values = {
+        AIRPORT: encode(icao),
+        RUNWAY: encode(selectedRunway.ident.replace(/^RW/i, '')),
+        WEIGHT: weight,
+        V1: result.v1,
+        VR: result.vR,
+        V2: result.v2,
+        FLAPS: result.inputs.conf,
+        FLEX: result.flex ?? -1,
+        TRIM: result.stabTrim ?? -1,
+        PACKS: result.inputs.packs ? 1 : 0,
+        ANTI_ICE: result.inputs.antiIce,
+      };
+      for (const [name, value] of Object.entries(values)) {
+        await SimVar.SetSimVarValue(`${prefix}${name}`, 'number', value);
+      }
+      await SimVar.SetSimVarValue(`${prefix}VALID`, 'number', Date.now());
+    };
+    publish().catch(console.error);
+  }, [takeoffFmsIntegration, result, selectedRunway, icao, weight]);
 
   const {
     departingAirport: ofpDepartingAirport,
@@ -537,8 +572,6 @@ export const TakeoffWidget = () => {
       (cg !== undefined && cg >= performanceCgLimits.minPercentMac && cg <= performanceCgLimits.maxPercentMac));
 
   const syncValuesWithOfp = async () => {
-    const parsedMetar: MetarParserType = parseMetar(ofpDepartingMetar);
-
     const ofpTow = parseInt(ofpWeights.estTakeOffWeight);
     const weightKgs = ofpUnits === 'lbs' ? Math.round(Units.poundToKilogram(ofpTow)) : ofpTow;
 
@@ -547,6 +580,7 @@ export const TakeoffWidget = () => {
       return;
     }
     try {
+      const parsedMetar: MetarParserType = parseMetar(ofpDepartingMetar);
       const runways = await getRunways(ofpDepartingAirport);
       const magvar = await getAirportMagVar(ofpDepartingAirport);
 
@@ -582,6 +616,22 @@ export const TakeoffWidget = () => {
       toast.error(e);
     }
   };
+
+  useEffect(() => {
+    if (!takeoffFmsIntegration || !isValidIcao(ofpDepartingAirport) || !ofpDepartingRunway || !ofpDepartingMetar) {
+      return;
+    }
+    if (performanceCgLimits && (!Number.isFinite(aircraftCg) || aircraftCg <= 0)) {
+      return;
+    }
+    const ofpKey = [ofpDepartingAirport, ofpDepartingRunway, ofpDepartingMetar, ofpWeights.estTakeOffWeight].join('|');
+    if (importedOfp.current === ofpKey) {
+      return;
+    }
+    importedOfp.current = ofpKey;
+    clearResult();
+    syncValuesWithOfp();
+  }, [takeoffFmsIntegration, ofpDepartingAirport, ofpDepartingRunway, ofpDepartingMetar, ofpWeights.estTakeOffWeight, aircraftCg]);
 
   const handleAutoFill = () => {
     clearResult();
