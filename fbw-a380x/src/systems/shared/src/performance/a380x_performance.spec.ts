@@ -123,6 +123,32 @@ describe('A380X performance estimates', () => {
     expect(result.asd).toBeGreaterThan(3_000);
   });
 
+  it('publishes speeds when TOW exceeds the runway-limited MTOW', () => {
+    const calculator = new A380XTakeoffPerformanceCalculator();
+    const result = calculator.calculateTakeoffPerformance(
+      500_000,
+      false,
+      1,
+      4_315,
+      0,
+      0,
+      4,
+      6_138.5,
+      1_014,
+      32,
+      TakeoffAntiIceSetting.Off,
+      true,
+      false,
+      RunwayCondition.Dry,
+    );
+
+    expect(result.error).toBe(TakeoffPerfomanceError.None);
+    expect(result.mtow).toBeLessThan(result.inputs.tow);
+    expect(result.v1).toBeDefined();
+    expect(result.vR).toBeDefined();
+    expect(result.v2).toBeDefined();
+  });
+
   it('rejects a takeoff CG outside the configured envelope', () => {
     const result = new A380XTakeoffPerformanceCalculator().calculateTakeoffPerformance(
       361_546,
