@@ -326,6 +326,10 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
       data.vr <= data.v2 &&
       data.flaps >= 1 &&
       data.flaps <= 3 &&
+      (data.packs === 0 || data.packs === 1) &&
+      data.antiIce >= 0 &&
+      data.antiIce <= 2 &&
+      (data.flex === -1 || (data.flex >= 0 && data.flex <= 99)) &&
       data.weight > 0;
     if (!valid) {
       this.toRequestButtonLabel.set('NO MATCHING<br />EFB T.O DATA');
@@ -335,7 +339,11 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
     this.pendingEfbTakeoff = data;
     this.toRequestButtonLabel.set('CPNY T.O<br />REQUEST');
     this.toRequestDialogTitle.set(
-      `${runway} ${Math.round(data.weight / 1_000)}T  V1 ${data.v1} VR ${data.vr} V2 ${data.v2}  CONF ${data.flaps} ${data.flex >= 0 ? `FLEX ${data.flex}` : 'TOGA'}`,
+      `${runway}  ${Math.round(data.weight / 1_000)}T\n` +
+        `V1 ${data.v1}  VR ${data.vr}  V2 ${data.v2}\n` +
+        `CONF ${data.flaps}  ${data.flex >= 0 ? `FLEX ${data.flex}` : 'TOGA'}\n` +
+        `PACKS ${data.packs ? 'ON' : 'OFF/APU'}  A/ICE ${['OFF', 'ENG', 'ENG+WING'][data.antiIce]}` +
+        (data.trim >= 0 ? `  THS ${data.trim}` : ''),
     );
     this.toRequestDialogVisible.set(true);
   }
@@ -2145,9 +2153,9 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
                         this.pendingEfbTakeoff = null;
                       }}
                       confirmAction={() => this.confirmEfbTakeoff()}
-                      contentContainerStyle="width: 460px; min-height: 165px;"
+                      contentContainerStyle="width: 460px; min-height: 205px;"
                     >
-                      {this.toRequestDialogTitle}
+                      <span style="white-space: pre-line;">{this.toRequestDialogTitle}</span>
                     </ConfirmationDialog>
                     <ConditionalComponent
                       width={176}
