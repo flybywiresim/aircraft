@@ -329,10 +329,6 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
   private toRequestAttempts = 0;
 
   private requestEfbTakeoff(): void {
-    if (!this.loadedFlightPlan?.originRunway) {
-      this.toRequestState.set('selectRunway');
-      return;
-    }
     this.clearEfbTakeoff();
     this.toRequestState.set('pending');
     this.toRequestAttempts = 0;
@@ -371,7 +367,8 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
         .split('')
         .reduce((code, character) => code * 36 + parseInt(character, 36), 0);
     const airport = this.loadedFlightPlan?.originAirport?.ident;
-    const runway = this.loadedFlightPlan?.originRunway?.ident.substring(4).replace(/^RW/i, '');
+    const loadedRunway = this.loadedFlightPlan?.originRunway?.ident.substring(4).replace(/^RW/i, '');
+    const runway = loadedRunway ?? 'EFB';
     const publishedAt = read('VALID');
     const data: EfbTakeoffData = {
       airport: airport ?? '',
@@ -394,7 +391,7 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
       Date.now() - publishedAt < 30 * 60_000 &&
       read('VALID') === publishedAt &&
       read('AIRPORT') === encode(airport) &&
-      read('RUNWAY') === encode(runway) &&
+      (loadedRunway === undefined || read('RUNWAY') === encode(loadedRunway)) &&
       [data.v1, data.vr, data.v2, data.flaps, data.weight].every(Number.isFinite) &&
       data.v1 >= 90 &&
       data.v1 <= data.vr &&
@@ -426,7 +423,8 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
     if (
       !data ||
       this.loadedFlightPlan?.originAirport?.ident !== data.airport ||
-      this.loadedFlightPlan?.originRunway?.ident.substring(4).replace(/^RW/i, '') !== data.runway ||
+      (this.loadedFlightPlan?.originRunway &&
+        this.loadedFlightPlan.originRunway.ident.substring(4).replace(/^RW/i, '') !== data.runway) ||
       Date.now() - data.publishedAt >= 30 * 60_000 ||
       SimVar.GetSimVarValue('L:A380X_EFB_TO_VALID', 'number') !== data.publishedAt
     ) {

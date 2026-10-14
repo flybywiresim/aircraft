@@ -119,6 +119,7 @@ export class MfdFmsFuelLoad extends FmsFlightPlanPage<MfdFmsFuelLoadProps> {
   private readonly minimumFuelAtDestinationIsPilotEntered = Subject.create<boolean>(false);
 
   private readonly fuelPlanningIsDisabled = Subject.create<boolean>(true);
+  private lastEfbOfpValid = 0;
 
   private readonly destinationAlternateTimeHeader = this.activeFlightPhase.map((v) =>
     v === FmgcFlightPhase.Preflight ? 'TIME' : 'UTC',
@@ -227,6 +228,7 @@ export class MfdFmsFuelLoad extends FmsFlightPlanPage<MfdFmsFuelLoadProps> {
           }
 
           this.loadFlightPlanPerformanceData();
+          this.importEfbOfpData();
 
           const loadedfpIndex = this.loadedFlightPlanIndex.get();
           // FIXME: Move to main update loop once calculated by the predictions
@@ -403,6 +405,30 @@ export class MfdFmsFuelLoad extends FmsFlightPlanPage<MfdFmsFuelLoadProps> {
     this.costIndex.set(pd?.costIndex ? pd.costIndex.get() : null);
   }
 
+  private importEfbOfpData(): void {
+    const publishedAt = SimVar.GetSimVarValue('L:A380X_EFB_OFP_VALID', 'number');
+    if (!Number.isFinite(publishedAt) || publishedAt <= this.lastEfbOfpValid) {
+      return;
+    }
+
+    const zfw = SimVar.GetSimVarValue('L:A380X_EFB_OFP_ZFW', 'number');
+    const blockFuel = SimVar.GetSimVarValue('L:A380X_EFB_OFP_BLOCK_FUEL', 'number');
+    const taxiFuel = SimVar.GetSimVarValue('L:A380X_EFB_OFP_TAXI_FUEL', 'number');
+    const fpIndex = this.loadedFlightPlanIndex.get();
+
+    if (zfw > 0) {
+      this.props.flightPlanInterface.setPerformanceData('zeroFuelWeight', zfw / 1000, fpIndex);
+    }
+    if (blockFuel > 0) {
+      this.props.flightPlanInterface.setPerformanceData('blockFuel', blockFuel / 1000, fpIndex);
+    }
+    if (taxiFuel > 0) {
+      this.props.flightPlanInterface.setPerformanceData('pilotTaxiFuel', taxiFuel / 1000, fpIndex);
+    }
+    this.lastEfbOfpValid = publishedAt;
+    this.fuelPlanningIsDisabled.set(false);
+  }
+
   updateDestAndAltnPredictions() {
     const hasFp = this.loadedFlightPlan !== null;
     const fpIndex = hasFp ? this.loadedFlightPlanIndex.get() : null;
@@ -529,7 +555,7 @@ export class MfdFmsFuelLoad extends FmsFlightPlanPage<MfdFmsFuelLoadProps> {
                       <span style="display: flex; align-items: center; justify-content: center;">*</span>
                     </div>
                   }
-                  onClick={() => console.log('FUEL PLANNING')}
+                  onClick={() => this.importEfbOfpData()}
                   buttonStyle="padding-right: 2px;"
                 />
               </div>
