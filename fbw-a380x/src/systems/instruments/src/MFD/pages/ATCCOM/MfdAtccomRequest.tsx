@@ -1,7 +1,7 @@
 // Copyright (c) 2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { DisplayComponent, FSComponent, MappedSubject, Subject, Subscribable, Subscription, VNode } from '@microsoft/msfs-sdk';
+import { DisplayComponent, MappedSubject, Subject, Subscribable, Subscription, VNode } from '@microsoft/msfs-sdk';
 import { DclMessage } from '@datalink/common';
 import { FmsData } from '@flybywiresim/fbw-sdk';
 import { AtccomMfdPageProps } from '../../MFD';
