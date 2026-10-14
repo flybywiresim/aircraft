@@ -176,8 +176,11 @@ export class A380XTakeoffPerformanceCalculator implements TakeoffPerformanceCalc
       this.oew,
       this.structuralMtow,
     );
+    // Use the same rounded value for the limit check that is shown in the EFB.
+    // Comparing against the unrounded value could reject a TOW that exactly
+    // matches the displayed limit (for example, 414156 kg vs 414155.6 kg).
     result.mtow = Math.round(mtow);
-    if (tow > mtow) {
+    if (tow > result.mtow) {
       result.error = TakeoffPerfomanceError.TooHeavy;
       return result;
     }
