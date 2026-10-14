@@ -333,7 +333,16 @@ export const TakeoffWidget = () => {
         .then((runways) => {
           dispatch(setTakeoffValues({ availableRunways: runways }));
           if (runways.length > 0) {
-            handleRunwayChange(0);
+            const firstRunway = runways[0];
+            dispatch(
+              setTakeoffValues({
+                selectedRunwayIndex: 0,
+                runwayBearing: firstRunway.magneticBearing,
+                runwayLength: firstRunway.length,
+                runwaySlope: -Math.tan(firstRunway.gradient * Avionics.Utils.DEG2RAD) * 100,
+                elevation: firstRunway.elevation,
+              }),
+            );
           } else {
             handleRunwayChange(-1);
           }
