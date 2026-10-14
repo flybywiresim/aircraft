@@ -290,22 +290,31 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
   private readonly toRequestTopLabel = this.toRequestState.map((state) => {
     if (state === 'pending') return 'REQUEST';
     if (state === 'received') return 'RECEIVED';
-    if (state === 'missing') return 'NO MATCHING';
+    if (state === 'missing') return 'NO EFB DATA';
     if (state === 'selectRunway') return 'SELECT RWY';
     return 'CPNY T.O';
   });
   private readonly toRequestBottomLabel = this.toRequestState.map((state) => {
     if (state === 'pending') return 'PENDING...';
     if (state === 'received') return 'CPNY T.O';
-    if (state === 'missing') return 'EFB T.O DATA';
+    if (state === 'missing') return 'REQUEST';
     if (state === 'selectRunway') return 'IN F-PLN';
     return 'REQUEST';
   });
   private readonly toRequestButtonLabel: VNode = (
-    <span style="display: flex; flex-direction: column; align-items: center; text-align: center;">
-      <span>{this.toRequestTopLabel}</span>
-      <span>{this.toRequestBottomLabel}</span>
-    </span>
+    <div style="display: flex; flex-direction: row; justify-content: space-between;">
+      <span style="text-align: center; margin-right: 10px;">
+        {this.toRequestTopLabel}
+        <br />
+        {this.toRequestBottomLabel}
+      </span>
+      <span
+        class={{ hidden: this.toRequestState.map((state) => state === 'pending' || state === 'received') }}
+        style="display: flex; align-items: center; justify-content: center;"
+      >
+        *
+      </span>
+    </div>
   );
   private readonly toRequestMenuItems = this.toRequestState.map((state): ButtonMenuItem[] =>
     state === 'received'
