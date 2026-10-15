@@ -416,6 +416,10 @@ export class MfdFmsFuelLoad extends FmsFlightPlanPage<MfdFmsFuelLoadProps> {
     const ofpBlockFuel = hasOfp ? SimVar.GetSimVarValue('L:A380X_EFB_OFP_BLOCK_FUEL', 'number') : 0;
     const taxiFuel = hasOfp ? SimVar.GetSimVarValue('L:A380X_EFB_OFP_TAXI_FUEL', 'number') : 0;
     const loadedZfw = force ? SimVar.GetSimVarValue('L:A32NX_AIRFRAME_ZFW', 'number') : 0;
+    const loadedZfwCg = force ? SimVar.GetSimVarValue('L:A32NX_AIRFRAME_ZFW_CG_PERCENT_MAC', 'number') : 0;
+    const hasLoadedPax = force && SimVar.GetSimVarValue('L:A380X_EFB_LOADED_PAX_VALID', 'number') === 1;
+    const loadedPax = force ? SimVar.GetSimVarValue('L:A380X_EFB_LOADED_PAX', 'number') : 0;
+    const ofpPax = hasOfp ? SimVar.GetSimVarValue('L:A380X_EFB_OFP_PAX', 'number') : 0;
     const loadedFuel = force ? SimVar.GetSimVarValue('FUEL TOTAL QUANTITY WEIGHT', 'kilograms') : 0;
     const zfw = Number.isFinite(loadedZfw) && loadedZfw > 0 ? loadedZfw : ofpZfw;
     const blockFuel = Number.isFinite(loadedFuel) && loadedFuel > 0 ? loadedFuel : ofpBlockFuel;
@@ -423,6 +427,14 @@ export class MfdFmsFuelLoad extends FmsFlightPlanPage<MfdFmsFuelLoadProps> {
 
     if (zfw > 0) {
       this.props.flightPlanInterface.setPerformanceData('zeroFuelWeight', zfw / 1000, fpIndex);
+    }
+    if (Number.isFinite(loadedZfwCg) && loadedZfwCg >= minZfwCg && loadedZfwCg <= maxZfwCg) {
+      this.props.flightPlanInterface.setPerformanceData('zeroFuelWeightCenterOfGravity', loadedZfwCg, fpIndex);
+    }
+    const pax = hasLoadedPax ? loadedPax : ofpPax;
+    if ((hasLoadedPax || hasOfp) && Number.isInteger(pax) && pax >= 0 && pax <= 853) {
+      this.props.flightPlanInterface.setPerformanceData('paxNumber', pax, fpIndex);
+      if (fpIndex === FlightPlanIndex.Active) this.props.fmcService.master.acInterface.updatePaxNumber(pax);
     }
     if (blockFuel > 0) {
       this.props.flightPlanInterface.setPerformanceData('blockFuel', blockFuel / 1000, fpIndex);

@@ -99,6 +99,11 @@ const runwayIdentForComparison = (ident: string | undefined): string | undefined
   return normalized.match(/(?:RW)?(\d{1,2}[LCR]?)$/)?.[1].replace(/^0+(?=\d)/, '');
 };
 
+const decodeEfbIdent = (value: number): string => {
+  if (!Number.isSafeInteger(value) || value <= 0) return '';
+  return value.toString(36).toUpperCase();
+};
+
 export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
   private readonly weightUnit = NXDataStore.getSetting('CONFIG_USING_METRIC_UNIT').map((v) =>
     v ? UnitType.KILOGRAM : UnitType.POUND,
@@ -293,13 +298,18 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
   private readonly toRequestState = Subject.create<'idle' | 'pending' | 'received' | 'missing' | 'selectRunway'>(
     'idle',
   );
-  private readonly toRequestTopLabel = this.toRequestState.map((state) => {
-    if (state === 'pending') return 'REQUEST';
-    if (state === 'received') return 'RECEIVED';
-    if (state === 'missing') return 'NO EFB DATA';
-    if (state === 'selectRunway') return 'SELECT RWY';
-    return 'CPNY T.O';
-  });
+  private readonly toRequestFailure = Subject.create('NO EFB DATA');
+  private readonly toRequestTopLabel = MappedSubject.create(
+    ([state, failure]) => {
+      if (state === 'pending') return 'REQUEST';
+      if (state === 'received') return 'RECEIVED';
+      if (state === 'missing') return failure;
+      if (state === 'selectRunway') return 'SELECT RWY';
+      return 'CPNY T.O';
+    },
+    this.toRequestState,
+    this.toRequestFailure,
+  );
   private readonly toRequestBottomLabel = this.toRequestState.map((state) => {
     if (state === 'pending') return 'PENDING...';
     if (state === 'received') return 'CPNY T.O';
@@ -371,18 +381,29 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
   private readEfbTakeoff(): boolean {
     const prefix = 'L:A380X_EFB_TO_';
     const read = (name: string): number => SimVar.GetSimVarValue(`${prefix}${name}`, 'number');
-    const encode = (value: string): number =>
-      value
-        .toUpperCase()
-        .split('')
-        .reduce((code, character) => code * 36 + parseInt(character, 36), 0);
-    const airport = this.loadedFlightPlan?.originAirport?.ident;
-    const loadedRunway = runwayIdentForComparison(this.loadedFlightPlan?.originRunway?.ident);
-    const runway = loadedRunway ?? 'EFB';
     const publishedAt = read('VALID');
+    if (!Number.isFinite(publishedAt) || publishedAt <= 0) {
+      const status = read('STATUS');
+      this.toRequestFailure.set(
+        status === 1
+          ? 'SELECT EFB RWY'
+          : status === 2
+            ? 'ENTER EFB APT'
+            : status === 3
+              ? 'EFB RESULT BAD'
+              : 'NO EFB DATA',
+      );
+      return false;
+    }
+    if (Date.now() - publishedAt >= 30 * 60_000) {
+      this.toRequestFailure.set('EFB DATA OLD');
+      return false;
+    }
+    const airport = decodeEfbIdent(read('AIRPORT'));
+    const runway = runwayIdentForComparison(decodeEfbIdent(read('RUNWAY'))) ?? '';
     const data: EfbTakeoffData = {
-      airport: airport ?? '',
-      runway: runway ?? '',
+      airport,
+      runway,
       v1: read('V1'),
       vr: read('VR'),
       v2: read('V2'),
@@ -396,12 +417,9 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
     };
     const valid =
       publishedAt > 0 &&
-      Date.now() - publishedAt < 30 * 60_000 &&
       read('VALID') === publishedAt &&
-      read('AIRPORT') > 0 &&
-      read('RUNWAY') > 0 &&
-      (!airport || read('AIRPORT') === encode(airport)) &&
-      (loadedRunway === undefined || read('RUNWAY') === encode(loadedRunway)) &&
+      airport.length === 4 &&
+      runway.length > 0 &&
       [data.v1, data.vr, data.v2, data.flaps, data.weight].every(Number.isFinite) &&
       data.v1 >= 90 &&
       data.v1 <= data.vr &&
@@ -414,11 +432,18 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
       (data.flex === -1 || (data.flex >= 0 && data.flex <= 99)) &&
       data.weight > 0;
     if (!valid) {
+      this.toRequestFailure.set('INVALID EFB DATA');
       return false;
     }
     this.pendingEfbTakeoff = data;
+    const fplnAirport = this.loadedFlightPlan?.originAirport?.ident;
+    const fplnRunway = runwayIdentForComparison(this.loadedFlightPlan?.originRunway?.ident);
+    const mismatch =
+      (fplnAirport && fplnAirport !== airport) || (fplnRunway && fplnRunway !== runway)
+        ? `\nF-PLN ${fplnAirport ?? '----'}/${fplnRunway ?? '--'} DIFFERS`
+        : '';
     this.toRequestDialogTitle.set(
-      `${runway}  ${Math.round(data.weight / 1_000)}T\n` +
+      `${airport}/${runway}  ${Math.round(data.weight / 1_000)}T${mismatch}\n` +
         `V1 ${data.v1}  VR ${data.vr}  V2 ${data.v2}\n` +
         `CONF ${data.flaps}  ${data.flex >= 0 ? `FLEX ${data.flex}` : 'TOGA'}\n` +
         `PACKS ${data.packs ? 'ON' : 'OFF/APU'}  A/ICE ${['OFF', 'ENG', 'ENG+WING'][data.antiIce]}` +
@@ -432,9 +457,6 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
     this.toRequestDialogVisible.set(false);
     if (
       !data ||
-      (this.loadedFlightPlan?.originAirport?.ident && this.loadedFlightPlan.originAirport.ident !== data.airport) ||
-      (runwayIdentForComparison(this.loadedFlightPlan?.originRunway?.ident) !== undefined &&
-        runwayIdentForComparison(this.loadedFlightPlan?.originRunway?.ident) !== data.runway) ||
       Date.now() - data.publishedAt >= 30 * 60_000 ||
       SimVar.GetSimVarValue('L:A380X_EFB_TO_VALID', 'number') !== data.publishedAt
     ) {

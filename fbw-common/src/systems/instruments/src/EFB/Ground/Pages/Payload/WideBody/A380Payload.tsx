@@ -266,6 +266,14 @@ export const A380Payload: React.FC<PayloadProps> = ({
     return p;
   }, [...activeFlags]);
 
+  useEffect(() => {
+    const publish = async () => {
+      await SimVar.SetSimVarValue('L:A380X_EFB_LOADED_PAX', 'number', totalPax);
+      await SimVar.SetSimVarValue('L:A380X_EFB_LOADED_PAX_VALID', 'number', 1);
+    };
+    publish().catch(console.error);
+  }, [totalPax]);
+
   const totalPaxDesired = useMemo(() => {
     let p = 0;
     desiredFlags.forEach((flag) => {

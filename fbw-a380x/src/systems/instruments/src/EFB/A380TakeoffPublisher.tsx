@@ -16,7 +16,10 @@ export function A380TakeoffPublisher(): null {
     const publish = async () => {
       const prefix = 'L:A380X_EFB_TO_';
       await SimVar.SetSimVarValue(`${prefix}VALID`, 'number', 0);
-      if (cancelled || !result || !runway || !icao || !weight || !result.v1 || !result.vR || !result.v2) return;
+      if (cancelled) return;
+      const status = !result ? 0 : !runway ? 1 : !icao ? 2 : !weight || !result.v1 || !result.vR || !result.v2 ? 3 : 4;
+      await SimVar.SetSimVarValue(`${prefix}STATUS`, 'number', status);
+      if (status !== 4 || !result || !runway || !icao || !weight || !result.v1 || !result.vR || !result.v2) return;
 
       const encode = (value: string): number =>
         value
