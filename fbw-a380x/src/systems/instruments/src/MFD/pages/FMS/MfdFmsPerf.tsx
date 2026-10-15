@@ -87,6 +87,7 @@ interface EfbTakeoffData {
   flaps: number;
   flex: number;
   trim: number;
+  trimValid: number;
   packs: number;
   antiIce: number;
   weight: number;
@@ -410,6 +411,7 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
       flaps: read('FLAPS'),
       flex: read('FLEX'),
       trim: read('TRIM'),
+      trimValid: read('TRIM_VALID'),
       packs: read('PACKS'),
       antiIce: read('ANTI_ICE'),
       weight: read('WEIGHT'),
@@ -430,6 +432,7 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
       data.antiIce >= 0 &&
       data.antiIce <= 2 &&
       (data.flex === -1 || (data.flex >= 0 && data.flex <= 99)) &&
+      (data.trimValid === 0 || (data.trimValid === 1 && Number.isFinite(data.trim))) &&
       data.weight > 0;
     if (!valid) {
       this.toRequestFailure.set('INVALID EFB DATA');
@@ -447,7 +450,7 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
         `V1 ${data.v1}  VR ${data.vr}  V2 ${data.v2}\n` +
         `CONF ${data.flaps}  ${data.flex >= 0 ? `FLEX ${data.flex}` : 'TOGA'}\n` +
         `PACKS ${data.packs ? 'ON' : 'OFF/APU'}  A/ICE ${['OFF', 'ENG', 'ENG+WING'][data.antiIce]}` +
-        (data.trim >= 0 ? `  THS ${data.trim}` : ''),
+        (data.trimValid === 1 ? `  THS ${data.trim < 0 ? 'DN' : 'UP'}${Math.abs(data.trim)}` : ''),
     );
     return true;
   }
@@ -470,7 +473,7 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
     this.props.flightPlanInterface.setPerformanceData('takeoffFlaps', data.flaps, fpIndex);
     this.props.flightPlanInterface.setPerformanceData('takeoffPacks', data.packs, fpIndex);
     this.props.flightPlanInterface.setPerformanceData('takeoffAntiIce', data.antiIce, fpIndex);
-    if (data.trim >= 0) {
+    if (data.trimValid === 1) {
       this.props.flightPlanInterface.setPerformanceData('takeoffThsFor', data.trim, fpIndex);
     }
     this.props.flightPlanInterface.setPerformanceData(
@@ -481,7 +484,7 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
     this.toThrustSettingChanged(data.flex >= 0 ? TakeoffPowerSetting.FLEX : TakeoffPowerSetting.TOGA);
     if (fpIndex === FlightPlanIndex.Active) {
       this.props.fmcService.master.acInterface.setTakeoffFlaps(data.flaps);
-      if (data.trim >= 0) {
+      if (data.trimValid === 1) {
         this.props.fmcService.master.acInterface.setTakeoffTrim(data.trim);
       }
     }
