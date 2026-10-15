@@ -143,38 +143,8 @@ export const TakeoffWidget = () => {
     departingMetar: ofpDepartingMetar,
     departingRunway: ofpDepartingRunway,
     weights: ofpWeights,
-    fuels: ofpFuels,
     units: ofpUnits,
   } = useAppSelector((state) => state.simbrief.data);
-
-  useEffect(() => {
-    const parseOFPWeight = (value: string): number => {
-      const parsed = Number.parseFloat(value);
-      if (!Number.isFinite(parsed)) return 0;
-      return ofpUnits === 'lbs' ? Units.poundToKilogram(parsed) : parsed;
-    };
-
-    const parseOFPFuel = (value: number): number => {
-      if (!Number.isFinite(value)) return 0;
-      return ofpUnits === 'lbs' ? Units.poundToKilogram(value) : value;
-    };
-
-    const values = {
-      ZFW: parseOFPWeight(ofpWeights.estZeroFuelWeight),
-      TOW: parseOFPWeight(ofpWeights.estTakeOffWeight),
-      PAYLOAD: parseOFPWeight(ofpWeights.payload),
-      PAX: Number.parseInt(ofpWeights.passengerCount, 10) || 0,
-      BLOCK_FUEL: parseOFPFuel(ofpFuels.planRamp),
-      TAKEOFF_FUEL: parseOFPFuel(ofpFuels.planTakeOff),
-      TAXI_FUEL: parseOFPFuel(ofpFuels.taxi),
-    };
-
-    if (values.TOW <= 0) return;
-    for (const [name, value] of Object.entries(values)) {
-      SimVar.SetSimVarValue(`L:A380X_EFB_OFP_${name}`, 'number', value);
-    }
-    SimVar.SetSimVarValue('L:A380X_EFB_OFP_VALID', 'number', Date.now());
-  }, [ofpUnits, ofpWeights, ofpFuels]);
 
   /**
    * Takeoff shift in metres as the difference between the entered TORA, and the length of the selected runway according to MSFS.

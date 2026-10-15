@@ -9,6 +9,7 @@ import { A380XLandingPerformanceCalculator } from '@shared/performance/a380x_lan
 import { A380XTakeoffPerformanceCalculator } from '@shared/performance/a380x_takeoff';
 import { AutomaticCallOutsPage } from './Pages/AutomaticCallOutsPage';
 import { a380xSyncedSettings } from './settingsSync';
+import { A380OfpPublisher } from './A380OfpPublisher';
 
 import './Efb.scss';
 import { EventBus } from '@microsoft/msfs-sdk';
@@ -85,6 +86,8 @@ render(
       hashSeed: 380,
     }}
   >
-    <EfbWrapper failures={A380FailureDefinitions} aircraftSetup={aircraftEfbSetup} eventBus={new EventBus()} />
+    <EfbWrapper failures={A380FailureDefinitions} aircraftSetup={aircraftEfbSetup} eventBus={new EventBus()}>
+      <A380OfpPublisher />
+    </EfbWrapper>
   </AircraftContext.Provider>,
 );

@@ -1,6 +1,6 @@
 // Copyright (c) 2025-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
-import { ArraySubject, EventBus, Instrument } from '@microsoft/msfs-sdk';
+import { ArraySubject, EventBus, Instrument, Subject } from '@microsoft/msfs-sdk';
 import { AtcFmsMessages, FmsAtcMessages } from '@datalink/atc';
 import {
   AtisMessage,
@@ -9,10 +9,12 @@ import {
   DatalinkModeCode,
   DatalinkStatusCode,
   DclMessage,
+  CpdlcMessage,
 } from '@datalink/common';
 import { RouterFmsMessages } from '@datalink/router';
 import { MessageStorage } from './MessageStorage';
-import { FmsData } from '@flybywiresim/fbw-sdk';
+import { FmsData, NXDataStore } from '@flybywiresim/fbw-sdk';
+import { Metar } from '@flybywiresim/api-client';
 import { FmsErrorType } from '@fmgc/FmsError';
 import { AtcDatalinkMessages } from './AtcDatalinkPublisher';
 import {
@@ -31,6 +33,7 @@ export type AirportAtis = {
   autoupdate: boolean;
   lastReadAtis: string | null;
   status: string | null;
+  fallbackMetar?: string;
 };
 
 export const PredefinedMessages = {
@@ -55,6 +58,10 @@ export interface AtcErrorMessage {
 export class AtcDatalinkSystem implements Instrument {
   // TODO this should be hosted in the CPIOM-D.
   private readonly messageStorage: MessageStorage;
+
+  public readonly stationStatus = Subject.create({ current: '', next: '', logonInProgress: false });
+
+  public selectedMessage: CpdlcMessage | null = null;
 
   private readonly publisher = this.bus.getPublisher<AtcDatalinkMessages & FmsAtcMessages>();
 
@@ -102,6 +109,14 @@ export class AtcDatalinkSystem implements Instrument {
    */
   constructor(private readonly bus: EventBus) {
     this.messageStorage = new MessageStorage(this.sub);
+
+    this.sub.on('atcStationStatus').handle((status) =>
+      this.stationStatus.set({
+        current: status.current ?? '',
+        next: status.next ?? '',
+        logonInProgress: status.logonInProgress,
+      }),
+    );
 
     this.sub.on('atcResetData').handle(() => {
       this.messageStorage.resetAtcData();
@@ -265,6 +280,37 @@ export class AtcDatalinkSystem implements Instrument {
     this.publisher.pub('atcRegisterDclMessages', messages, true, false);
   }
 
+  public getMessages(monitored = false): readonly CpdlcMessage[] {
+    return monitored ? this.messageStorage.atcMonitoredMessages : this.messageStorage.atcMessagesBuffer;
+  }
+
+  public registerCpdlcMessage(message: CpdlcMessage): void {
+    this.publisher.pub('atcRegisterCpdlcMessages', [message], true, false);
+  }
+
+  public logon(station: string): Promise<AtsuStatusCodes> {
+    const requestId = this.requestId++;
+    return new Promise((resolve) => {
+      const callback = (code: AtsuStatusCodes, id: number): boolean => {
+        if (id === requestId) {
+          window.clearTimeout(timeout);
+          resolve(code);
+        }
+        return id === requestId;
+      };
+      const timeout = window.setTimeout(() => {
+        this.requestAtsuStatusCodeCallbacks = this.requestAtsuStatusCodeCallbacks.filter((entry) => entry !== callback);
+        resolve(AtsuStatusCodes.ComFailed);
+      }, 15_000);
+      this.requestAtsuStatusCodeCallbacks.push(callback);
+      this.publisher.pub('atcLogon', { station: station.toUpperCase(), requestId }, true, false);
+    });
+  }
+
+  public logoff(): void {
+    this.publisher.pub('atcLogoff', this.requestId++, true, false);
+  }
+
   // TODO: improve icao checks
   /**
    * Initialise D-ATIS data for specified block
@@ -297,13 +343,21 @@ export class AtcDatalinkSystem implements Instrument {
    * @returns {Promise<AtsuStatusCodes>} promise which returns an ATSU status code
    */
   public async receiveAtcAtis(airport: string, type: AtisType): Promise<AtsuStatusCodes> {
-    return new Promise<AtsuStatusCodes>((resolve, _reject) => {
+    return new Promise<AtsuStatusCodes>((resolve) => {
       const requestId = this.requestId++;
-      this.publisher.pub('atcRequestAtis', { icao: airport, type, requestId }, true, false);
-      this.requestAtsuStatusCodeCallbacks.push((response: AtsuStatusCodes, id: number) => {
-        if (id === requestId) resolve(response);
+      const callback = (response: AtsuStatusCodes, id: number): boolean => {
+        if (id === requestId) {
+          window.clearTimeout(timeout);
+          resolve(response);
+        }
         return id === requestId;
-      });
+      };
+      const timeout = window.setTimeout(() => {
+        this.requestAtsuStatusCodeCallbacks = this.requestAtsuStatusCodeCallbacks.filter((entry) => entry !== callback);
+        resolve(AtsuStatusCodes.ComFailed);
+      }, 15_000);
+      this.requestAtsuStatusCodeCallbacks.push(callback);
+      this.publisher.pub('atcRequestAtis', { icao: airport, type, requestId }, true, false);
     });
   }
 
@@ -345,10 +399,11 @@ export class AtcDatalinkSystem implements Instrument {
   public async requestAtis(index: number): Promise<void> {
     const airport = this.atisAirports[index];
 
-    if (airport.icao == null || airport.requested) {
+    if (!/^[A-Z]{4}$/i.test(airport.icao ?? '') || airport.requested) {
       return;
     }
     airport.requested = true;
+    airport.fallbackMetar = undefined;
 
     this.atisAirports[index].status = PredefinedMessages.sending;
     this.publisher.pub(`atcAtis_${index}`, this.atisAirports[index]);
@@ -361,13 +416,22 @@ export class AtcDatalinkSystem implements Instrument {
 
     switch (response) {
       case AtsuStatusCodes.ComFailed:
-        this.atisAirports[index].status = PredefinedMessages.sendFailed;
-        break;
       case AtsuStatusCodes.NoAtisReceived:
-        this.atisAirports[index].status = PredefinedMessages.noReply;
-        this.addMessageToQueue(ATCCOMMessages.datisNoReply);
+        try {
+          const metar = await Metar.get(airport.icao, NXDataStore.getSetting('CONFIG_METAR_SRC').get());
+          airport.fallbackMetar = metar.metar ? `METAR ${metar.metar}` : undefined;
+        } catch (_error) {
+          airport.fallbackMetar = undefined;
+        }
+        this.atisAirports[index].status = airport.fallbackMetar
+          ? 'METAR ONLY'
+          : response === AtsuStatusCodes.ComFailed
+            ? PredefinedMessages.sendFailed
+            : PredefinedMessages.noReply;
+        if (!airport.fallbackMetar) this.addMessageToQueue(ATCCOMMessages.datisNoReply);
         break;
       case AtsuStatusCodes.NewAtisReceived:
+      case AtsuStatusCodes.Ok:
         this.atisAirports[index].status = '';
       // TODO: Message should only appear on certain pages
       // this.addMessageToQueue(ATCCOMMessages.datisReceived);

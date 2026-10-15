@@ -409,18 +409,16 @@ export class MfdFmsFuelLoad extends FmsFlightPlanPage<MfdFmsFuelLoadProps> {
 
   private importEfbOfpData(force = false): void {
     const publishedAt = SimVar.GetSimVarValue('L:A380X_EFB_OFP_VALID', 'number');
-    if (!Number.isFinite(publishedAt) || publishedAt <= 0) {
-      this.fuelPlanningIsDisabled.set(false);
-      return;
-    }
-    if (!force && publishedAt <= this.lastEfbOfpValid) {
-      this.fuelPlanningIsDisabled.set(false);
-      return;
-    }
+    const hasOfp = Number.isFinite(publishedAt) && publishedAt > 0;
+    if (!force && (!hasOfp || publishedAt <= this.lastEfbOfpValid)) return;
 
-    const zfw = SimVar.GetSimVarValue('L:A380X_EFB_OFP_ZFW', 'number');
-    const blockFuel = SimVar.GetSimVarValue('L:A380X_EFB_OFP_BLOCK_FUEL', 'number');
-    const taxiFuel = SimVar.GetSimVarValue('L:A380X_EFB_OFP_TAXI_FUEL', 'number');
+    const ofpZfw = hasOfp ? SimVar.GetSimVarValue('L:A380X_EFB_OFP_ZFW', 'number') : 0;
+    const ofpBlockFuel = hasOfp ? SimVar.GetSimVarValue('L:A380X_EFB_OFP_BLOCK_FUEL', 'number') : 0;
+    const taxiFuel = hasOfp ? SimVar.GetSimVarValue('L:A380X_EFB_OFP_TAXI_FUEL', 'number') : 0;
+    const loadedZfw = force ? SimVar.GetSimVarValue('L:A32NX_AIRFRAME_ZFW', 'number') : 0;
+    const loadedFuel = force ? SimVar.GetSimVarValue('FUEL TOTAL QUANTITY WEIGHT', 'kilograms') : 0;
+    const zfw = Number.isFinite(loadedZfw) && loadedZfw > 0 ? loadedZfw : ofpZfw;
+    const blockFuel = Number.isFinite(loadedFuel) && loadedFuel > 0 ? loadedFuel : ofpBlockFuel;
     const fpIndex = this.loadedFlightPlanIndex.get();
 
     if (zfw > 0) {
@@ -432,7 +430,7 @@ export class MfdFmsFuelLoad extends FmsFlightPlanPage<MfdFmsFuelLoadProps> {
     if (taxiFuel > 0) {
       this.props.flightPlanInterface.setPerformanceData('pilotTaxiFuel', taxiFuel / 1000, fpIndex);
     }
-    this.lastEfbOfpValid = Math.max(this.lastEfbOfpValid, publishedAt);
+    if (hasOfp) this.lastEfbOfpValid = Math.max(this.lastEfbOfpValid, publishedAt);
     this.fuelPlanningIsDisabled.set(false);
   }
 

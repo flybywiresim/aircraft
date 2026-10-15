@@ -96,8 +96,7 @@ interface EfbTakeoffData {
 const runwayIdentForComparison = (ident: string | undefined): string | undefined => {
   if (!ident) return undefined;
   const normalized = ident.toUpperCase();
-  const runwayStart = normalized.indexOf('RW');
-  return (runwayStart >= 0 ? normalized.substring(runwayStart + 2) : normalized).replace(/^RW/i, '');
+  return normalized.match(/(?:RW)?(\d{1,2}[LCR]?)$/)?.[1];
 };
 
 export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
@@ -337,6 +336,10 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
 
   private requestEfbTakeoff(): void {
     this.clearEfbTakeoff();
+    if (this.readEfbTakeoff()) {
+      this.toRequestState.set('received');
+      return;
+    }
     this.toRequestState.set('pending');
     this.toRequestAttempts = 0;
     this.toRequestTimer = window.setInterval(() => {
@@ -392,12 +395,12 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
       publishedAt,
     };
     const valid =
-      airport &&
-      runway &&
       publishedAt > 0 &&
       Date.now() - publishedAt < 30 * 60_000 &&
       read('VALID') === publishedAt &&
-      read('AIRPORT') === encode(airport) &&
+      read('AIRPORT') > 0 &&
+      read('RUNWAY') > 0 &&
+      (!airport || read('AIRPORT') === encode(airport)) &&
       (loadedRunway === undefined || read('RUNWAY') === encode(loadedRunway)) &&
       [data.v1, data.vr, data.v2, data.flaps, data.weight].every(Number.isFinite) &&
       data.v1 >= 90 &&
@@ -429,7 +432,7 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
     this.toRequestDialogVisible.set(false);
     if (
       !data ||
-      this.loadedFlightPlan?.originAirport?.ident !== data.airport ||
+      (this.loadedFlightPlan?.originAirport?.ident && this.loadedFlightPlan.originAirport.ident !== data.airport) ||
       (runwayIdentForComparison(this.loadedFlightPlan?.originRunway?.ident) !== undefined &&
         runwayIdentForComparison(this.loadedFlightPlan?.originRunway?.ident) !== data.runway) ||
       Date.now() - data.publishedAt >= 30 * 60_000 ||

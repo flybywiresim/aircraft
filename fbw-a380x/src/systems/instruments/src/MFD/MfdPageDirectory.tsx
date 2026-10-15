@@ -38,11 +38,10 @@ import { MfdNotFound } from './pages/FMS/MfdNotFound';
 import { MfdFmsPerf } from './pages/FMS/MfdFmsPerf';
 import { MfdFmsPositionIrs } from './pages/FMS/POSITION/MfdFmsPositionIrs';
 import { MfdFmsPositionNavaids } from './pages/FMS/POSITION/MfdFmsPositionNavaids';
-import { MfdAtccomConnect } from './pages/ATCCOM/MfdAtccomConnect';
+import { MfdAtccomConnectLive } from './pages/ATCCOM/MfdAtccomConnectLive';
 import { MfdAtccomMsgRecord } from './pages/ATCCOM/MfdAtccomMsgRecord';
-import { MfdAtccomMsgRecordAll } from './pages/ATCCOM/MfdAtccomMsgRecordAll';
-import { MfdAtccomMsgRecordMonitored } from './pages/ATCCOM/MfdAtccomMsgRecordMonitored';
-import { MfdAtccomMsgRecordExpand } from './pages/ATCCOM/MfdAtccomMsgRecordExpand';
+import { MfdAtccomMessageList } from './pages/ATCCOM/MfdAtccomMessageList';
+import { MfdAtccomCompose } from './pages/ATCCOM/MfdAtccomCompose';
 import { MfdAtccomDAtis } from './pages/ATCCOM/MfdAtccomDAtis';
 import { MfdAtccomDAtisReceived } from './pages/ATCCOM/MfdAtccomDAtisReceived';
 import { MfdAtccomRequest } from './pages/ATCCOM/MfdAtccomRequest';
@@ -304,15 +303,7 @@ export function pageForUrl(
         />
       );
     case 'atccom/connect':
-      return (
-        <MfdAtccomConnect
-          pageTitle=""
-          bus={bus}
-          mfd={mfd}
-          fmcService={fmcService}
-          flightPlanInterface={fmcService.master.flightPlanInterface}
-        />
-      );
+      return <MfdAtccomConnectLive pageTitle="" bus={bus} mfd={mfd} atcService={atcService} />;
     case 'atccom/msg-record':
       return (
         <MfdAtccomMsgRecord
@@ -325,34 +316,34 @@ export function pageForUrl(
       );
     case 'atccom/msg-record/all-msg':
       return (
-        <MfdAtccomMsgRecordAll
-          pageTitle="MSG RECORD/ALL MSG"
-          bus={bus}
-          mfd={mfd}
-          fmcService={fmcService}
-          flightPlanInterface={fmcService.master.flightPlanInterface}
-        />
+        <MfdAtccomMessageList pageTitle="MSG RECORD/ALL MSG" bus={bus} mfd={mfd} atcService={atcService} mode="all" />
       );
     case 'atccom/msg-record/monitored-msg':
       return (
-        <MfdAtccomMsgRecordMonitored
+        <MfdAtccomMessageList
           pageTitle="MSG RECORD/MONITORED MSG"
           bus={bus}
           mfd={mfd}
-          fmcService={fmcService}
-          flightPlanInterface={fmcService.master.flightPlanInterface}
+          atcService={atcService}
+          mode="monitored"
         />
       );
     case 'atccom/msg-record/all-msg-expand':
       return (
-        <MfdAtccomMsgRecordExpand
+        <MfdAtccomMessageList
           pageTitle="MSG RECORD/ALL MSG/EXPAND"
           bus={bus}
           mfd={mfd}
-          fmcService={fmcService}
-          flightPlanInterface={fmcService.master.flightPlanInterface}
+          atcService={atcService}
+          mode="detail"
         />
       );
+    case 'atccom/report-modify/position':
+      return (
+        <MfdAtccomCompose pageTitle="REPORT & NOTIFY" bus={bus} mfd={mfd} atcService={atcService} emergency={false} />
+      );
+    case 'atccom/emer':
+      return <MfdAtccomCompose pageTitle="EMER" bus={bus} mfd={mfd} atcService={atcService} emergency={true} />;
     case 'atccom/d-atis/list':
       return <MfdAtccomDAtis pageTitle="D-ATIS/LIST" bus={bus} mfd={mfd} atcService={atcService} />;
     case 'atccom/d-atis/received':
