@@ -102,42 +102,6 @@ export const TakeoffWidget = () => {
   const importedOfp = useRef('');
   const autoCalculatePending = useRef(false);
 
-  useEffect(() => {
-    if (!takeoffFmsIntegration) {
-      return;
-    }
-    const publish = async () => {
-      const prefix = 'L:A380X_EFB_TO_';
-      await SimVar.SetSimVarValue(`${prefix}VALID`, 'number', 0);
-      if (!result || !selectedRunway || !icao || !weight || !result.v1 || !result.vR || !result.v2) {
-        return;
-      }
-      const encode = (value: string) =>
-        value
-          .toUpperCase()
-          .split('')
-          .reduce((code, character) => code * 36 + parseInt(character, 36), 0);
-      const values = {
-        AIRPORT: encode(icao),
-        RUNWAY: encode(selectedRunway.ident.replace(/^RW/i, '')),
-        WEIGHT: weight,
-        V1: result.v1,
-        VR: result.vR,
-        V2: result.v2,
-        FLAPS: result.inputs.conf,
-        FLEX: result.flex ?? -1,
-        TRIM: result.stabTrim ?? -1,
-        PACKS: result.inputs.packs ? 1 : 0,
-        ANTI_ICE: result.inputs.antiIce,
-      };
-      for (const [name, value] of Object.entries(values)) {
-        await SimVar.SetSimVarValue(`${prefix}${name}`, 'number', value);
-      }
-      await SimVar.SetSimVarValue(`${prefix}VALID`, 'number', Date.now());
-    };
-    publish().catch(console.error);
-  }, [takeoffFmsIntegration, result, selectedRunway, icao, weight]);
-
   const {
     departingAirport: ofpDepartingAirport,
     departingMetar: ofpDepartingMetar,
