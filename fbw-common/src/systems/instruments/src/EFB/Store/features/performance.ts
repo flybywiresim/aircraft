@@ -25,6 +25,8 @@ interface TPerformanceLanding {
   runwayCondition: LandingRunwayConditions;
   windDirection?: number;
   windMagnitude?: number;
+  windGust?: number;
+  windVariable?: boolean;
   windEntry?: string;
   temperature?: number;
   pressure?: number;
@@ -64,6 +66,8 @@ interface TPerformanceTakeoff {
   runwayCondition: RunwayCondition;
   windDirection?: number;
   windMagnitude?: number;
+  windGust?: number;
+  windVariable?: boolean;
   windEntry?: string;
   oat?: number;
   qnh?: number;

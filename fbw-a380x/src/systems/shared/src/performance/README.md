@@ -49,6 +49,11 @@ from the EFB runway data, so the calculator does not report an LDA margin.
 The EFB converts runway lengths (ft/m), mass (lb/kg), temperature (F/C) and
 pressure (inHg/hPa) to the model's internal units. Departure and arrival airport,
 runway, weather and mass can be entered separately or imported from an OFP.
+METAR/OFP wind direction is converted from true to magnetic before comparing it
+with runway heading. Gusts are used for adverse tailwind and crosswind components,
+while headwind credit uses sustained wind. Variable (`VRB`) wind is evaluated
+using a worst-case tailwind and crosswind at gust speed. Both takeoff and landing
+use the barometric pressure-altitude relation for QNH corrections.
 The A380X CG field uses percent MAC, can be filled from the current payload CG,
 and is required for both calculations. The 23-48% MAC input guard is an
 approximate envelope; it is not a validated weight-dependent certification chart.

@@ -129,7 +129,7 @@ export class A380XTakeoffPerformanceCalculator implements TakeoffPerformanceCalc
       forceToga,
       runwayCondition,
     };
-    const pressureAlt = elevation + (1013.25 - qnh) * 27;
+    const pressureAlt = elevation + 145442.15 * (1 - (qnh / 1013.25) ** 0.190263);
     // AC A380 section 4-7-0: conservative ASDA corrections for a 90-degree
     // runway entry and a 180-degree turn on a 60 m runway.
     const adjustedTora = tora - (lineupAngle === 180 ? 79 : lineupAngle === 90 ? 57 : 0);

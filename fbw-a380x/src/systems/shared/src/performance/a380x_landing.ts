@@ -14,6 +14,9 @@ const REFERENCE_WEIGHT = 354_380;
 const REFERENCE_HEADWIND = -4.37;
 const REFERENCE_ALTITUDE = 62;
 const REFERENCE_OAT = 32;
+const REFERENCE_PRESSURE = 1014;
+
+const pressureAltitudeOffset = (qnh: number): number => 145442.15 * (1 - (qnh / 1013.25) ** 0.190263);
 
 const surfaceFactor: Record<LandingRunwayConditions, number> = {
   [LandingRunwayConditions.Dry]: 1,
@@ -60,7 +63,8 @@ export class A380XLandingPerformanceCalculator implements LandingPerformanceCalc
     const vapp = approachSpeed > 0 ? approachSpeed : this.getEstimatedVapp(weight, flaps, headwind, cg);
     const densityFactor = 1 + Math.max(-0.08, (altitude - REFERENCE_ALTITUDE) / 40_000);
     const tempFactor = 1 + Math.max(-0.06, (temperature - REFERENCE_OAT) / (temperature > REFERENCE_OAT ? 300 : 400));
-    const pressureFactor = 1 + Math.max(-0.04, (1014 - pressure) / 850);
+    const pressureFactor =
+      1 + Math.max(-0.04, (pressureAltitudeOffset(pressure) - pressureAltitudeOffset(REFERENCE_PRESSURE)) / 23_000);
     const confFactor = flaps === LandingFlapsConfig.Full ? 1 : 1.11;
     const reverserFactor = reverseThrust ? 1 : 1.09;
     const autolandFactor = autoland ? 1.04 : 1;

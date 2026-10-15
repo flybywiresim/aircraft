@@ -29,6 +29,26 @@ describe('A380X performance estimates', () => {
     expect(getA380RunwayChartLimit(1_500, 0, 15)).toBeUndefined();
   });
 
+  it('uses the barometric pressure altitude instead of a fixed feet-per-hPa approximation', () => {
+    const result = new A380XTakeoffPerformanceCalculator().calculateTakeoffPerformance(
+      400_000,
+      false,
+      2,
+      3_000,
+      0,
+      0,
+      0,
+      0,
+      983,
+      15,
+      TakeoffAntiIceSetting.Off,
+      true,
+      false,
+      RunwayCondition.Dry,
+    );
+    expect(result.params.pressureAlt).toBeCloseTo(145442.15 * (1 - (983 / 1013.25) ** 0.190263));
+  });
+
   it('uses the supplied VAPP schedule for CONF 3 and FULL', () => {
     expect(getA380TableVapp(300_000, LandingFlapsConfig.Full)).toBe(129);
     expect(getA380TableVapp(354_380, LandingFlapsConfig.Full)).toBe(140);
