@@ -148,6 +148,13 @@ enum A380FuelPump {
     Apu,
 }
 
+/// Fuel valves of the A380 fuel system.
+///
+/// # Important
+///
+/// The declaration order defines the external simvar bit mapping.
+/// Do not reorder or insert variants without updating the corresponding
+/// ARINC 429 mapping and simvar documentation.
 #[derive(Clone, Copy, Enum, EnumIter)]
 #[cfg_attr(test, derive(Debug, PartialEq))]
 enum A380FuelValve {

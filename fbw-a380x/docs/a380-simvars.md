@@ -1515,9 +1515,112 @@ The PRIMs perform the flight guidance and flight envelope functions.
   - Arinc429<Discrete>
   - FQMS commanded fuel valve target state word. Bit set means commanded open.
   - {word}
-    - 1: fuel-system indices 1-19 map to bits 11-29
-    - 2: fuel-system indices 20-38 map to bits 11-29
-    - 3: fuel-system indices 39-57 map to bits 11-29
+    - 1
+    - 2
+    - 3
+  - | Word | Bit | Valve |
+    | --- | --- | --- |
+    | 1 | 11 | Engine 1 Low Pressure Valve |
+    | 1 | 12 | Engine 2 Low Pressure Valve |
+    | 1 | 13 | Engine 3 Low Pressure Valve |
+    | 1 | 14 | Engine 4 Low Pressure Valve |
+    | 1 | 15 | Feed Tank 1 Forward Transfer Valve |
+    | 1 | 16 | Feed Tank 2 Forward Transfer Valve |
+    | 1 | 17 | Feed Tank 3 Forward Transfer Valve |
+    | 1 | 18 | Feed Tank 4 Forward Transfer Valve |
+    | 1 | 19 | Left Inner Forward Transfer Valve |
+    | 1 | 20 | Left Mid Forward Transfer Valve |
+    | 1 | 21 | Left Outer Forward Transfer Valve |
+    | 1 | 22 | Right Inner Forward Transfer Valve |
+    | 1 | 23 | Right Mid Forward Transfer Valve |
+    | 1 | 24 | Right Outer Forward Transfer Valve |
+    | 1 | 25 | Feed Tank 1 Aft Transfer Valve |
+    | 1 | 26 | Feed Tank 2 Aft Transfer Valve |
+    | 1 | 27 | Feed Tank 3 Aft Transfer Valve |
+    | 1 | 28 | Feed Tank 4 Aft Transfer Valve |
+    | 1 | 29 | Left Inner Aft Transfer Valve |
+    | 2 | 11 | Left Mid Aft Transfer Valve |
+    | 2 | 12 | Left Outer Aft Transfer Valve |
+    | 2 | 13 | Right Inner Aft Transfer Valve |
+    | 2 | 14 | Right Mid Aft Transfer Valve |
+    | 2 | 15 | Right Outer Aft Transfer Valve |
+    | 2 | 16 | Trim Tank Inlet Valve 1 |
+    | 2 | 17 | Trim Tank Inlet Valve 2 |
+    | 2 | 18 | Trim Line Isolation Valve Forward |
+    | 2 | 19 | Trim Line Isolation Valve Aft |
+    | 2 | 20 | Crossfeed Valve 1 |
+    | 2 | 21 | Crossfeed Valve 2 |
+    | 2 | 22 | Crossfeed Valve 3 |
+    | 2 | 23 | Crossfeed Valve 4 |
+    | 2 | 24 | APU Isolation Valve |
+    | 2 | 25 | APU Low Pressure Valve |
+    | 2 | 26 | Left Outer Emergency Transfer Valve |
+    | 2 | 27 | Right Outer Emergency Transfer Valve |
+    | 2 | 28 | Gallery Auxiliary Refuel Valve Left |
+    | 2 | 29 | Gallery Auxiliary Refuel Valve Right |
+    | 3 | 11 | Transfer/Defuel Valve |
+    | 3 | 12 | Left Jettison Nozzle Valve |
+    | 3 | 13 | Right Jettison Nozzle Valve |
+    | 3 | 14-29 | Unused |
+
+
+### A32NX_FQMS_VALVE_TARGET_STATE_WORD_1
+
+| Bit | Valve |
+| --- | --- |
+| 11 | Engine 1 Low Pressure Valve |
+| 12 | Engine 2 Low Pressure Valve |
+| 13 | Engine 3 Low Pressure Valve |
+| 14 | Engine 4 Low Pressure Valve |
+| 15 | Feed Tank 1 Forward Transfer Valve |
+| 16 | Feed Tank 2 Forward Transfer Valve |
+| 17 | Feed Tank 3 Forward Transfer Valve |
+| 18 | Feed Tank 4 Forward Transfer Valve |
+| 19 | Left Inner Forward Transfer Valve |
+| 20 | Left Mid Forward Transfer Valve |
+| 21 | Left Outer Forward Transfer Valve |
+| 22 | Right Inner Forward Transfer Valve |
+| 23 | Right Mid Forward Transfer Valve |
+| 24 | Right Outer Forward Transfer Valve |
+| 25 | Feed Tank 1 Aft Transfer Valve |
+| 26 | Feed Tank 2 Aft Transfer Valve |
+| 27 | Feed Tank 3 Aft Transfer Valve |
+| 28 | Feed Tank 4 Aft Transfer Valve |
+| 29 | Left Inner Aft Transfer Valve |
+
+### A32NX_FQMS_VALVE_TARGET_STATE_WORD_2
+
+| Bit | Valve |
+| --- | --- |
+| 11 | Left Mid Aft Transfer Valve |
+| 12 | Left Outer Aft Transfer Valve |
+| 13 | Right Inner Aft Transfer Valve |
+| 14 | Right Mid Aft Transfer Valve |
+| 15 | Right Outer Aft Transfer Valve |
+| 16 | Trim Tank Inlet Valve 1 |
+| 17 | Trim Tank Inlet Valve 2 |
+| 18 | Trim Line Isolation Valve Forward |
+| 19 | Trim Line Isolation Valve Aft |
+| 20 | Crossfeed Valve 1 |
+| 21 | Crossfeed Valve 2 |
+| 22 | Crossfeed Valve 3 |
+| 23 | Crossfeed Valve 4 |
+| 24 | APU Isolation Valve |
+| 25 | APU Low Pressure Valve |
+| 26 | Left Outer Emergency Transfer Valve |
+| 27 | Right Outer Emergency Transfer Valve |
+| 28 | Gallery Auxiliary Refuel Valve Left |
+| 29 | Gallery Auxiliary Refuel Valve Right |
+
+### A32NX_FQMS_VALVE_TARGET_STATE_WORD_3
+
+| Bit | Valve |
+| --- | --- |
+| 11 | Transfer/Defuel Valve |
+| 12 | Left Jettison Nozzle Valve |
+| 13 | Right Jettison Nozzle Valve |
+| 14-29 | Unused |
+
 
 - A32NX_FQDC_{id}_{tank}_TANK_QUANTITY
   - Arinc429<Kilogram>
@@ -1525,7 +1628,7 @@ The PRIMs perform the flight guidance and flight envelope functions.
   - {id}
     - 1
     - 2
-  -{tank}
+  - {tank}
     - FEED_1
     - FEED_2
     - FEED_3
