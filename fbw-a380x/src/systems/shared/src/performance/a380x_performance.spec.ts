@@ -149,6 +149,33 @@ describe('A380X performance estimates', () => {
     expect(result.v2).toBeDefined();
   });
 
+  it('publishes the A380X limit breakdown and intermediate speed corrections', () => {
+    const result = new A380XTakeoffPerformanceCalculator().calculateTakeoffPerformance(
+      400_000,
+      false,
+      2,
+      4_000,
+      1,
+      90,
+      5,
+      1_000,
+      1_000,
+      35,
+      TakeoffAntiIceSetting.Engine,
+      true,
+      false,
+      RunwayCondition.Wet,
+      36,
+    );
+
+    expect(result.error).toBe(TakeoffPerfomanceError.None);
+    expect(result.limits?.Runway?.altLimit).toBeDefined();
+    expect(result.limits?.['Second Segment']?.oatLimit).toBeDefined();
+    expect(result.intermediateSpeeds?.v2Base).toBe(result.v2);
+    expect(result.stabTrim).toBeDefined();
+    expect(result.tvmcg).toBeDefined();
+  });
+
   it('rejects a takeoff CG outside the configured envelope', () => {
     const result = new A380XTakeoffPerformanceCalculator().calculateTakeoffPerformance(
       361_546,

@@ -10,6 +10,9 @@ import {
   TakeoffPerformanceInputs,
   TakeoffPerformanceParameters,
   TakeoffPerformanceResult,
+  LimitingFactor,
+  LimitWeight,
+  TakeoffPerformanceSpeeds,
 } from '@flybywiresim/fbw-sdk';
 import { ApproachConf, getApproachVls } from './a380x_vls';
 
@@ -71,6 +74,75 @@ const surfaceFactor: Record<RunwayCondition, number> = {
 };
 
 const clamp = (value: number, low: number, high: number): number => Math.max(low, Math.min(high, value));
+
+const emptyLimit = (baseLimit: number): LimitWeight => ({
+  baseLimit,
+  deltaSlope: 0,
+  slopeLimit: baseLimit,
+  deltaAlt: 0,
+  altLimit: baseLimit,
+  deltaBleed: 0,
+  oatDeltaTemp: 0,
+  oatDeltaWind: 0,
+  tRefDeltaTemp: 0,
+  tRefDeltaWind: 0,
+  tMaxDeltaTemp: 0,
+  tMaxDeltaWind: 0,
+  tFlexMaxDeltaTemp: 0,
+  tFlexMaxDeltaWind: 0,
+  oatLimit: baseLimit,
+  oatLimitNoBleed: baseLimit,
+  tRefLimit: baseLimit,
+  tRefLimitNoBleed: baseLimit,
+  tMaxLimit: baseLimit,
+  tMaxLimitNoBleed: baseLimit,
+  tFlexMaxLimit: baseLimit,
+  tFlexMaxLimitNoBleed: baseLimit,
+});
+
+const withLimitCorrections = (
+  baseLimit: number,
+  slope: number,
+  pressureAlt: number,
+  packs: boolean,
+  oat: number,
+  headwind: number,
+  runwayCondition: RunwayCondition,
+  runwayFactor: number,
+): LimitWeight => {
+  const deltaSlope = -Math.max(0, slope) * 6_000;
+  const deltaAlt = -Math.max(0, pressureAlt - 500) * 17;
+  const deltaBleed = packs ? 0 : 5_500;
+  const deltaTemp = -Math.max(0, oat - REFERENCE_OAT) * 500;
+  const deltaWind = (headwind - REFERENCE_HEADWIND) * 180;
+  const contaminatedPenalty = -(surfaceFactor[runwayCondition] - 1) * runwayFactor;
+  const corrected = baseLimit + deltaSlope + deltaAlt + deltaTemp + deltaWind + contaminatedPenalty;
+  const limit = clamp(corrected, 0, 520_000);
+  return {
+    ...emptyLimit(baseLimit),
+    deltaSlope,
+    slopeLimit: baseLimit + deltaSlope,
+    deltaAlt,
+    altLimit: baseLimit + deltaSlope + deltaAlt,
+    deltaBleed,
+    oatDeltaTemp: deltaTemp,
+    oatDeltaWind: deltaWind,
+    tRefDeltaTemp: deltaTemp,
+    tRefDeltaWind: deltaWind,
+    tMaxDeltaTemp: deltaTemp,
+    tMaxDeltaWind: deltaWind,
+    tFlexMaxDeltaTemp: deltaTemp,
+    tFlexMaxDeltaWind: deltaWind,
+    oatLimit: limit,
+    oatLimitNoBleed: clamp(limit + deltaBleed, 0, 520_000),
+    tRefLimit: limit,
+    tRefLimitNoBleed: clamp(limit + deltaBleed, 0, 520_000),
+    tMaxLimit: limit,
+    tMaxLimitNoBleed: clamp(limit + deltaBleed, 0, 520_000),
+    tFlexMaxLimit: limit,
+    tFlexMaxLimitNoBleed: clamp(limit + deltaBleed, 0, 520_000),
+  };
+};
 
 /** Simulator estimate calibrated against A380-842 SimBrief Dispatch reference cases. */
 export class A380XTakeoffPerformanceCalculator implements TakeoffPerformanceCalculator {
@@ -181,6 +253,57 @@ export class A380XTakeoffPerformanceCalculator implements TakeoffPerformanceCalc
     // matches the displayed limit (for example, 414156 kg vs 414155.6 kg).
     result.mtow = Math.round(mtow);
 
+    // Keep the same limit breakdown exposed by the A32NX calculator. The values are
+    // A380X-specific estimates and are intentionally informational: experimental
+    // overweight mode continues through the speed calculation below.
+    const limits: Record<LimitingFactor, LimitWeight> = {
+      [LimitingFactor.Runway]: withLimitCorrections(
+        result.mtow,
+        slope,
+        pressureAlt,
+        packs,
+        oat,
+        headwind,
+        runwayCondition,
+        100_000,
+      ),
+      [LimitingFactor.SecondSegment]: withLimitCorrections(
+        result.mtow - 9_000,
+        slope,
+        pressureAlt,
+        packs,
+        oat + 3,
+        headwind,
+        runwayCondition,
+        70_000,
+      ),
+      [LimitingFactor.BrakeEnergy]: withLimitCorrections(
+        result.mtow + 6_000,
+        slope,
+        pressureAlt,
+        packs,
+        oat,
+        headwind,
+        runwayCondition,
+        80_000,
+      ),
+      [LimitingFactor.Vmcg]: withLimitCorrections(
+        result.mtow + (forwardCg ? 3_000 : 8_000),
+        slope,
+        pressureAlt,
+        packs,
+        oat,
+        headwind,
+        runwayCondition,
+        45_000,
+      ),
+    };
+    result.limits = limits;
+    result.oatLimitingFactor = LimitingFactor.Runway;
+    result.tRefLimitingFactor = LimitingFactor.Runway;
+    result.tMaxLimitingFactor = LimitingFactor.Runway;
+    result.tFlexMaxLimitingFactor = LimitingFactor.Runway;
+
     const lookupConf = conf === 1 ? ApproachConf.CONF_1 : conf === 2 ? ApproachConf.CONF_2 : ApproachConf.CONF_3;
     const vls = getApproachVls(lookupConf, cg ?? (forwardCg ? 29 : 36), tow) - (conf === 1 ? 2 : 0);
     const altitudeCorrection = Math.max(0, pressureAlt - REFERENCE_PRESSURE_ALT) / 3_000;
@@ -193,6 +316,32 @@ export class A380XTakeoffPerformanceCalculator implements TakeoffPerformanceCalc
     result.v1 = v1;
     result.vR = vr;
     result.v2 = v2;
+    result.tvmcg = Math.round(v1 - 5);
+    result.stabTrim = clamp((cg ?? (forwardCg ? 29 : 36)) * 0.12 - 3.5, -5, 8);
+    const intermediateSpeeds: TakeoffPerformanceSpeeds = {
+      dryV2: v2,
+      v2Table1NoWind: v2,
+      v2Table2Threshold: v2,
+      v2Base: v2,
+      v2DeltaRunway: 0,
+      v2DeltaAlt: Math.round(altitudeCorrection),
+      v2DeltaSlope: Math.round(Math.max(0, slope)),
+      v2DeltaWind: Math.round((REFERENCE_HEADWIND - headwind) * 0.2),
+      dryVR: vr,
+      vRBase: vr,
+      vRDeltaRunway: Math.round(runwayV1Correction),
+      vRDeltaAlt: 0,
+      vRDeltaSlope: 0,
+      vRDeltaWind: 0,
+      dryV1: v1,
+      v1Table2: v1,
+      v1Base: v1,
+      v1DeltaRunway: Math.round(runwayV1Correction),
+      v1DeltaAlt: 0,
+      v1DeltaSlope: 0,
+      v1DeltaWind: 0,
+    };
+    result.intermediateSpeeds = intermediateSpeeds;
 
     // At OMDB 12R, 14,157 ft TORA minus 3,002 ft stop margin is a 3,401 m stop run.
     result.asd = Math.round(
