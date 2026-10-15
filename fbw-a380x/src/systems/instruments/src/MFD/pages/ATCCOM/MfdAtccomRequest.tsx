@@ -59,10 +59,10 @@ export class MfdAtccomRequest extends DisplayComponent<MfdAtccomRequestProps> {
         if (callsign && !this.callsign.get()) this.callsign.set(callsign);
       }, true),
       fms.on('fmsOrigin').handle((origin) => {
-        if (!this.origin.get()) this.origin.set(origin);
+        if (!this.origin.get() && origin) this.origin.set(origin);
       }),
       fms.on('fmsDestination').handle((destination) => {
-        if (!this.destination.get()) this.destination.set(destination);
+        if (!this.destination.get() && destination) this.destination.set(destination);
       }),
     );
     for (const field of [this.callsign, this.origin, this.destination, this.gate, this.atis, this.freeText]) {
