@@ -10,10 +10,81 @@ import {
   TakeoffPerfomanceError,
 } from '@flybywiresim/fbw-sdk';
 import { A380XLandingPerformanceCalculator } from './a380x_landing';
+import { getA380TableVapp } from './a380x_approach_speeds';
+import { getA380RunwayChartLimit } from './a380x_runway_limit';
 import { A380XTakeoffPerformanceCalculator } from './a380x_takeoff';
+import { getA380TakeoffTableSpeeds } from './a380x_takeoff_speeds';
 
 describe('A380X performance estimates', () => {
-  it('returns the OMDB dry-runway takeoff reference speeds', () => {
+  it('uses the supplied V-speed rows for all three takeoff configurations and temperature columns', () => {
+    expect(getA380TakeoffTableSpeeds(300_000, 1, 0, 32)).toEqual([130, 145, 154]);
+    expect(getA380TakeoffTableSpeeds(360_000, 2, 1_000, 40)).toEqual([135, 141, 156]);
+    expect(getA380TakeoffTableSpeeds(500_000, 3, 3_000, 43)).toEqual([139, 145, 171]);
+  });
+
+  it('interpolates the Airbus Trent 900 planning curves across runway, altitude and temperature', () => {
+    expect(getA380RunwayChartLimit(2_000, 0, 15)).toBe(482_000);
+    expect(getA380RunwayChartLimit(2_000, 0, 30)).toBe(472_000);
+    expect(getA380RunwayChartLimit(2_000, 4_000, 7.0752)).toBe(436_000);
+    expect(getA380RunwayChartLimit(1_500, 0, 15)).toBeUndefined();
+  });
+
+  it('uses the supplied VAPP schedule for CONF 3 and FULL', () => {
+    expect(getA380TableVapp(300_000, LandingFlapsConfig.Full)).toBe(129);
+    expect(getA380TableVapp(354_380, LandingFlapsConfig.Full)).toBe(140);
+    expect(getA380TableVapp(354_380, LandingFlapsConfig.Conf3)).toBe(146);
+    expect(getA380TableVapp(386_000, LandingFlapsConfig.Conf3)).toBe(153);
+  });
+
+  it('selects CONF 2 normally and limits CONF 1+F/CONF 3 to the stated runway cases', () => {
+    const calculator = new A380XTakeoffPerformanceCalculator();
+    const selected = (tow: number, tora: number) =>
+      calculator.calculateTakeoffPerformanceOptConf(
+        tow,
+        false,
+        tora,
+        0,
+        0,
+        4,
+        0,
+        1013.25,
+        15,
+        TakeoffAntiIceSetting.Off,
+        true,
+        false,
+        RunwayCondition.Dry,
+      ).inputs.conf;
+    expect(selected(360_000, 4_300)).toBe(1);
+    expect(selected(400_000, 4_300)).toBe(2);
+    expect(selected(400_000, 2_000)).toBe(3);
+  });
+
+  it('reduces the runway limit for hot, wet and anti-ice takeoffs', () => {
+    const calculator = new A380XTakeoffPerformanceCalculator();
+    const limit = (oat: number, condition: RunwayCondition, antiIce: TakeoffAntiIceSetting) =>
+      calculator.calculateTakeoffPerformance(
+        400_000,
+        false,
+        2,
+        2_000,
+        0,
+        0,
+        4,
+        0,
+        1013.25,
+        oat,
+        antiIce,
+        true,
+        false,
+        condition,
+      ).mtow!;
+    const dry = limit(15, RunwayCondition.Dry, TakeoffAntiIceSetting.Off);
+    expect(limit(30, RunwayCondition.Dry, TakeoffAntiIceSetting.Off)).toBeLessThan(dry);
+    expect(limit(15, RunwayCondition.Wet, TakeoffAntiIceSetting.Off)).toBeLessThan(dry);
+    expect(limit(15, RunwayCondition.Dry, TakeoffAntiIceSetting.EngineWing)).toBeLessThan(dry);
+  });
+
+  it('blends the user speed table with the OMDB Dispatch reference only at its measured conditions', () => {
     const result = new A380XTakeoffPerformanceCalculator().calculateTakeoffPerformance(
       361_546,
       false,
@@ -31,9 +102,9 @@ describe('A380X performance estimates', () => {
       RunwayCondition.Dry,
     );
     expect(result.error).toBe(TakeoffPerfomanceError.None);
-    expect(result.v1).toBe(143);
-    expect(result.vR).toBe(153);
-    expect(result.v2).toBe(154);
+    expect(result.v1).toBe(138);
+    expect(result.vR).toBe(152);
+    expect(result.v2).toBe(157);
     expect(result.flex).toBe(75);
     expect(result.asd).toBeCloseTo(3_401, -1);
   });
@@ -105,7 +176,7 @@ describe('A380X performance estimates', () => {
       500_000,
       false,
       1,
-      3_000,
+      2_000,
       0,
       0,
       0,
@@ -120,7 +191,7 @@ describe('A380X performance estimates', () => {
     expect(result.error).toBe(TakeoffPerfomanceError.None);
     expect(result.mtow).toBeLessThan(500_000);
     expect(result.v1).toBeDefined();
-    expect(result.asd).toBeGreaterThan(3_000);
+    expect(result.asd).toBeGreaterThan(2_000);
   });
 
   it('publishes speeds when TOW exceeds the runway-limited MTOW', () => {
@@ -129,11 +200,11 @@ describe('A380X performance estimates', () => {
       500_000,
       false,
       1,
-      4_315,
+      2_000,
       0,
       0,
       4,
-      6_138.5,
+      0,
       1_014,
       32,
       TakeoffAntiIceSetting.Off,
@@ -188,9 +259,9 @@ describe('A380X performance estimates', () => {
       RunwayCondition.Dry,
     );
     expect(result.error).toBe(TakeoffPerfomanceError.None);
-    expect(result.v1).toBe(142);
-    expect(result.vR).toBe(142);
-    expect(result.v2).toBe(144);
+    expect(result.v1).toBe(136);
+    expect(result.vR).toBe(140);
+    expect(result.v2).toBe(150);
     expect(result.flex).toBe(74);
     expect(result.asd).toBeCloseTo(3_610, -1);
   });
@@ -268,8 +339,10 @@ describe('A380X performance estimates', () => {
     expect(landing(119).lowAutobrakeDist).toBeLessThan(landing(299).lowAutobrakeDist);
   });
 
-  it('estimates a plausible A380X VAPP from its own speed table', () => {
-    expect(new A380XLandingPerformanceCalculator().getEstimatedVapp(354_380, LandingFlapsConfig.Full)).toBe(135);
+  it('blends the supplied VAPP with the nearby Dispatch reference and adds headwind', () => {
+    const calculator = new A380XLandingPerformanceCalculator();
+    expect(calculator.getEstimatedVapp(354_380, LandingFlapsConfig.Full)).toBe(138);
+    expect(calculator.getEstimatedVapp(354_380, LandingFlapsConfig.Full, 12)).toBe(142);
   });
 
   it('tracks the measured landing weight trend at fixed runway and weather', () => {

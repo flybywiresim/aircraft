@@ -11,12 +11,18 @@ import {
   TakeoffPerformanceParameters,
   TakeoffPerformanceResult,
 } from '@flybywiresim/fbw-sdk';
-import { ApproachConf, getApproachVls } from './a380x_vls';
+import { getA380RunwayChartLimit } from './a380x_runway_limit';
+import { getA380TakeoffTableSpeeds } from './a380x_takeoff_speeds';
 
 const REFERENCE_TORA = 4_315;
 const REFERENCE_PRESSURE_ALT = 62;
 const REFERENCE_HEADWIND = 4;
 const REFERENCE_OAT = 32;
+
+const dispatchSpeedReferences = [
+  { conf: 1, tora: 4_315, wind: 4, speeds: [143, 153, 154] as const },
+  { conf: 2, tora: 4_447, wind: -4, speeds: [142, 142, 144] as const },
+];
 
 // SimBrief A380-842 OMDB 12R dry-runway samples, 14,157 ft TORA, normalized to 4 kt headwind.
 // The mass sweep used 090/06 wind; its stop runs include a 22 m correction to the 090/05 reference wind.
@@ -124,7 +130,9 @@ export class A380XTakeoffPerformanceCalculator implements TakeoffPerformanceCalc
       runwayCondition,
     };
     const pressureAlt = elevation + (1013.25 - qnh) * 27;
-    const adjustedTora = tora - (lineupAngle === 180 ? 120 : lineupAngle === 90 ? 60 : 0);
+    // AC A380 section 4-7-0: conservative ASDA corrections for a 90-degree
+    // runway entry and a 180-degree turn on a 60 m runway.
+    const adjustedTora = tora - (lineupAngle === 180 ? 79 : lineupAngle === 90 ? 57 : 0);
     const headwind = Math.min(wind, this.maxHeadwind);
     const isaTemp = 15 - pressureAlt * 0.00198;
     const params: TakeoffPerformanceParameters = {
@@ -163,12 +171,15 @@ export class A380XTakeoffPerformanceCalculator implements TakeoffPerformanceCalc
 
     const antiIcePenalty =
       antiIce === TakeoffAntiIceSetting.EngineWing ? 13_000 : antiIce === TakeoffAntiIceSetting.Engine ? 6_000 : 0;
+    const chartLimit = getA380RunwayChartLimit(adjustedTora, pressureAlt, oat);
     const shortRunwayPenalty = Math.max(0, 4_300 - adjustedTora) * (conf === 1 ? 155 : conf === 2 ? 125 : 118);
     const mtow = clamp(
-      this.structuralMtow -
-        shortRunwayPenalty -
-        Math.max(0, pressureAlt - 500) * 17 -
-        Math.max(0, oat - REFERENCE_OAT) * 500 +
+      (chartLimit ??
+        this.structuralMtow -
+          shortRunwayPenalty -
+          Math.max(0, pressureAlt - 500) * 17 -
+          Math.max(0, oat - REFERENCE_OAT) * 500) -
+        (chartLimit === undefined ? 0 : Math.max(0, oat - (isaTemp + 15)) * 500) +
         (headwind - REFERENCE_HEADWIND) * 180 -
         antiIcePenalty -
         Math.max(0, slope) * 6_000 -
@@ -181,24 +192,42 @@ export class A380XTakeoffPerformanceCalculator implements TakeoffPerformanceCalc
     // matches the displayed limit (for example, 414156 kg vs 414155.6 kg).
     result.mtow = Math.round(mtow);
 
-    const lookupConf = conf === 1 ? ApproachConf.CONF_1 : conf === 2 ? ApproachConf.CONF_2 : ApproachConf.CONF_3;
-    const vls = getApproachVls(lookupConf, cg ?? (forwardCg ? 29 : 36), tow) - (conf === 1 ? 2 : 0);
-    const altitudeCorrection = Math.max(0, pressureAlt - REFERENCE_PRESSURE_ALT) / 3_000;
-    const v2 = Math.ceil(vls + (conf === 1 ? 4 : conf === 2 ? 5 : 6) + altitudeCorrection);
-    const vr = v2 - (conf === 1 ? 1 : 2);
+    const [tableV1, tableVr, tableV2] = getA380TakeoffTableSpeeds(tow, conf, pressureAlt, oat);
     const runwayV1Correction =
       (adjustedTora < REFERENCE_TORA ? (adjustedTora - REFERENCE_TORA) / 105 : (adjustedTora - REFERENCE_TORA) / 600) +
       (Math.min(headwind, REFERENCE_HEADWIND) - REFERENCE_HEADWIND) / 8;
-    const v1 = clamp(Math.round(143 + runwayV1Correction), 110, vr);
+    const dispatch =
+      runwayCondition === RunwayCondition.Dry &&
+      antiIce === TakeoffAntiIceSetting.Off &&
+      packs &&
+      Math.abs(tow - 361_546) < 10_000 &&
+      Math.abs(pressureAlt - REFERENCE_PRESSURE_ALT) < 1_000 &&
+      Math.abs(oat - REFERENCE_OAT) < 3
+        ? dispatchSpeedReferences.find(
+            (reference) =>
+              reference.conf === conf && Math.abs(tora - reference.tora) < 300 && Math.abs(wind - reference.wind) < 3,
+          )
+        : undefined;
+    const blend = dispatch
+      ? 0.5 *
+        Math.max(0, 1 - Math.abs(tow - 361_546) / 10_000) *
+        Math.max(0, 1 - Math.abs(tora - dispatch.tora) / 300) *
+        Math.max(0, 1 - Math.abs(wind - dispatch.wind) / 3)
+      : 0;
+    const blendSpeed = (table: number, reference: number): number =>
+      Math.round(table * (1 - blend) + reference * blend);
+    const v2 = blendSpeed(tableV2, dispatch?.speeds[2] ?? tableV2);
+    const vr = Math.min(v2, blendSpeed(tableVr, dispatch?.speeds[1] ?? tableVr));
+    const v1 = clamp(blendSpeed(tableV1, dispatch?.speeds[0] ?? tableV1) + Math.round(runwayV1Correction), 110, vr);
     result.v1 = v1;
     result.vR = vr;
     result.v2 = v2;
 
     // At OMDB 12R, 14,157 ft TORA minus 3,002 ft stop margin is a 3,401 m stop run.
     result.asd = Math.round(
-      interpolate(referenceStopRuns, tow) * Math.pow(v1 / 143, 2) * surfaceFactor[runwayCondition] +
+      interpolate(referenceStopRuns, tow) * surfaceFactor[runwayCondition] +
         (REFERENCE_HEADWIND - headwind) * 22 +
-        (conf - 1) * 80 +
+        (conf - 1) * 33 +
         Math.max(0, slope) * 110,
     );
     if (!forceToga && runwayCondition !== RunwayCondition.Dry && runwayCondition !== RunwayCondition.Wet) return result;
@@ -234,7 +263,10 @@ export class A380XTakeoffPerformanceCalculator implements TakeoffPerformanceCalc
     cg?: number,
     out?: Partial<TakeoffPerformanceResult>,
   ): TakeoffPerformanceResult {
-    const candidates = [1, 2, 3].map((conf) =>
+    // The supplied schedule describes CONF 2 as standard, CONF 1+F for a
+    // light load on a long runway, and CONF 3 for a short runway.
+    const preferredConf = tora < 2_500 ? 3 : tora >= 4_000 && tow < 380_000 ? 1 : 2;
+    const candidates = [preferredConf, ...[1, 2, 3].filter((conf) => conf !== preferredConf)].map((conf) =>
       this.calculateTakeoffPerformance(
         tow,
         forwardCg,

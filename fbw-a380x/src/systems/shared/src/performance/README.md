@@ -4,13 +4,21 @@ The EFB calculators in this directory are simulator estimates for the A380-842
 with Trent 972B-84 engines. They are not Airbus performance data and must not
 be used for real flight planning.
 
-The speed estimates use a standalone copy of the A380X `OperatingSpeeds` VLS
-schedule in `a380x_vls.ts`, keeping FMGC and MFD modules out of the EFB startup
-path. Keep this schedule synchronized when the aircraft speed tables change. The modeled
-empty weight comes from the A380X `flight_model.cfg`. The reference calculations
-below came from the FlyByWire A380-842 airframe in SimBrief Dispatch on
-2026-10-13. SimBrief's OFP API supplies flight and weather inputs; it does not
-supply the Dispatch calculator outputs to the EFB.
+The primary takeoff V1/VR/V2 schedule is the user-supplied table for CONF 1+F,
+2 and 3 at 300-560 t, with temperature columns selected by pressure altitude.
+The primary landing VAPP schedule is the user-supplied CONF 3/FULL table at
+300-386 t. Outside that landing range, the estimate also uses a standalone
+copy of the A380X `OperatingSpeeds` VLS schedule in `a380x_vls.ts`; keep it
+synchronized when the aircraft speed tables change. The modeled empty weight
+comes from the A380X `flight_model.cfg`.
+
+The reference calculations below came from the FlyByWire A380-842 airframe in
+SimBrief Dispatch on 2026-10-13. Near matching mass, configuration, runway and
+weather, takeoff speeds are averaged equally with the corresponding Dispatch
+sample. Landing VAPP is averaged with the FULL-config Dispatch sample only near
+its measured mass. Elsewhere, the supplied tables take precedence. SimBrief's
+OFP API supplies flight and weather inputs; it does not supply the Dispatch
+calculator outputs to the EFB.
 
 | Case | Inputs | SimBrief result |
 | --- | --- | --- |
@@ -26,8 +34,14 @@ stop margins are 3,395, 1,434 and 1,420 ft. At OMDB 30R, FULL/dry/reverse,
 at 395 t. The models interpolate these samples; they do not reproduce the
 underlying SimBrief performance engine.
 
-The takeoff model estimates runway limits, speeds, FLEX and accelerate-stop
-distance for dry, wet and contaminated surfaces. The landing model estimates
+The takeoff runway-limit baseline uses rounded points digitized from the
+informational Trent 900 airport-planning charts in Airbus AC A380 (Dec 2025),
+figures 3-3-1-991-001-A01 and 3-3-2-991-001-A01. It interpolates runway
+length, pressure altitude and temperature within the available chart range.
+Outside that range, the prior estimate remains in use. Wind, runway condition,
+slope and anti-ice corrections to the chart baseline are heuristic. The model
+also estimates speeds, FLEX and accelerate-stop distance for dry, wet and
+contaminated surfaces. The landing model estimates
 distances for three brake modes and a factored distance. Its correction factors
 outside the listed reference cases are heuristic. Published LDA is not available
 from the EFB runway data, so the calculator does not report an LDA margin.
@@ -38,8 +52,11 @@ runway, weather and mass can be entered separately or imported from an OFP.
 The A380X CG field uses percent MAC, can be filled from the current payload CG,
 and is required for both calculations. The 23-48% MAC input guard is an
 approximate envelope; it is not a validated weight-dependent certification chart.
-Takeoff is capped at 510 t and landing input at 395 t. These limits and the
-estimated runway limit do not replace an aircraft-specific performance chart.
+Takeoff input is capped at the 510 t structural limit and landing input at
+395 t. The experimental takeoff calculation still returns speeds and distance
+above the estimated runway-limited MTOW; the displayed limit remains a warning,
+and the result does not establish that the runway can be used. These limits and
+estimates do not replace an aircraft-specific performance chart.
 
 Recalibrate these estimates against additional A380X reference cases before
 treating results away from the reference conditions as reliable. In particular,

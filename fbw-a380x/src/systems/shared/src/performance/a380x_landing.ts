@@ -8,6 +8,7 @@ import {
   LandingRunwayConditions,
 } from '@flybywiresim/fbw-sdk';
 import { ApproachConf, getApproachVls } from './a380x_vls';
+import { getA380TableVapp } from './a380x_approach_speeds';
 
 const REFERENCE_WEIGHT = 354_380;
 const REFERENCE_HEADWIND = -4.37;
@@ -26,9 +27,16 @@ const surfaceFactor: Record<LandingRunwayConditions, number> = {
 /** Simulator estimate calibrated to the A380X SimBrief Dispatch dry-runway reference cases. */
 export class A380XLandingPerformanceCalculator implements LandingPerformanceCalculator {
   public getEstimatedVapp(weight: number, flaps: LandingFlapsConfig, windComponent = 0, cg = 36): number {
-    const conf = flaps === LandingFlapsConfig.Full ? ApproachConf.CONF_FULL : ApproachConf.CONF_3;
-    const vls = getApproachVls(conf, cg, weight);
-    return Math.ceil(vls + Math.max(5, Math.min(15, windComponent / 3)));
+    const tableVapp = getA380TableVapp(weight, flaps);
+    const windAdditive = Math.max(0, Math.min(10, windComponent / 3));
+    const dispatchWeight =
+      flaps === LandingFlapsConfig.Full ? 0.5 * Math.max(0, 1 - Math.abs(weight - REFERENCE_WEIGHT) / 10_000) : 0;
+    const estimated = tableVapp * (1 - dispatchWeight) + 135 * dispatchWeight + windAdditive;
+    if (weight > 386_999) {
+      const conf = flaps === LandingFlapsConfig.Full ? ApproachConf.CONF_FULL : ApproachConf.CONF_3;
+      return Math.max(Math.ceil(estimated), Math.ceil(getApproachVls(conf, cg, weight) + 5));
+    }
+    return Math.ceil(estimated);
   }
 
   public calculateLandingDistances(
