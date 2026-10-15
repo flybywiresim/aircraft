@@ -14,7 +14,10 @@ export function A380OfpPublisher(): null {
     const asKilograms = (value: number): number => (units === 'lbs' ? Units.poundToKilogram(value) : value);
     const zfw = asKilograms(Number.parseFloat(weights.estZeroFuelWeight));
     const tow = asKilograms(Number.parseFloat(weights.estTakeOffWeight));
-    if (!Number.isFinite(tow) || tow <= 0) return;
+    if (!Number.isFinite(tow) || tow <= 0) {
+      SimVar.SetSimVarValue('L:A380X_EFB_OFP_VALID', 'number', 0).catch(console.error);
+      return;
+    }
 
     const values = {
       ZFW: Number.isFinite(zfw) ? zfw : 0,
