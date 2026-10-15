@@ -96,7 +96,8 @@ interface EfbTakeoffData {
 const runwayIdentForComparison = (ident: string | undefined): string | undefined => {
   if (!ident) return undefined;
   const normalized = ident.toUpperCase();
-  return normalized.length > 4 ? normalized.substring(4).replace(/^RW/i, '') : normalized.replace(/^RW/i, '');
+  const runwayStart = normalized.indexOf('RW');
+  return (runwayStart >= 0 ? normalized.substring(runwayStart + 2) : normalized).replace(/^RW/i, '');
 };
 
 export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {

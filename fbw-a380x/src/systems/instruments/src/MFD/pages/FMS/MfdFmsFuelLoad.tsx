@@ -407,9 +407,13 @@ export class MfdFmsFuelLoad extends FmsFlightPlanPage<MfdFmsFuelLoadProps> {
     this.costIndex.set(pd?.costIndex ? pd.costIndex.get() : null);
   }
 
-  private importEfbOfpData(): void {
+  private importEfbOfpData(force = false): void {
     const publishedAt = SimVar.GetSimVarValue('L:A380X_EFB_OFP_VALID', 'number');
-    if (!Number.isFinite(publishedAt) || publishedAt <= this.lastEfbOfpValid) {
+    if (!Number.isFinite(publishedAt) || publishedAt <= 0) {
+      this.fuelPlanningIsDisabled.set(false);
+      return;
+    }
+    if (!force && publishedAt <= this.lastEfbOfpValid) {
       this.fuelPlanningIsDisabled.set(false);
       return;
     }
@@ -428,7 +432,7 @@ export class MfdFmsFuelLoad extends FmsFlightPlanPage<MfdFmsFuelLoadProps> {
     if (taxiFuel > 0) {
       this.props.flightPlanInterface.setPerformanceData('pilotTaxiFuel', taxiFuel / 1000, fpIndex);
     }
-    this.lastEfbOfpValid = publishedAt;
+    this.lastEfbOfpValid = Math.max(this.lastEfbOfpValid, publishedAt);
     this.fuelPlanningIsDisabled.set(false);
   }
 
@@ -558,7 +562,7 @@ export class MfdFmsFuelLoad extends FmsFlightPlanPage<MfdFmsFuelLoadProps> {
                       <span style="display: flex; align-items: center; justify-content: center;">*</span>
                     </div>
                   }
-                  onClick={() => this.importEfbOfpData()}
+                  onClick={() => this.importEfbOfpData(true)}
                   buttonStyle="padding-right: 2px;"
                 />
               </div>
