@@ -398,10 +398,10 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
             : status === 3
               ? 'EFB RESULT BAD'
               : status === 4
-                ? 'EFB TRANSFER FAILED'
+                ? 'EFB SEND FAIL'
                 : this.toRequestId !== null && read('RESPONSE') === this.toRequestId
                   ? 'NO EFB RESULT'
-                  : 'NO EFB RESPONSE',
+                  : 'EFB NO REPLY',
       );
       return false;
     }
