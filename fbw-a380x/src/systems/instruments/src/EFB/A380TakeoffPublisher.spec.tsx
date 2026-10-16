@@ -1,8 +1,16 @@
 // Copyright (c) 2026 dancebunny98
 // SPDX-License-Identifier: GPL-3.0
 
-import { describe, expect, it, vi } from 'vitest';
-import { publishA380Takeoff } from './A380TakeoffPublisher';
+import React from 'react';
+import ReactDOM from 'react-dom';
+import { act } from 'react-dom/test-utils';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { A380TakeoffRequestResponder, publishA380Takeoff } from './A380TakeoffPublisher';
+
+const mockStore = vi.hoisted(() => ({ takeoff: {} as Record<string, unknown> }));
+vi.mock('@flybywiresim/flypad', () => ({
+  store: { getState: () => ({ performance: { takeoff: mockStore.takeoff } }) },
+}));
 
 const result = {
   v1: 145,
@@ -14,6 +22,15 @@ const result = {
 } as Parameters<typeof publishA380Takeoff>[0];
 
 describe('A380 EFB takeoff bridge', () => {
+  const host = document.createElement('div');
+
+  afterEach(() => {
+    act(() => {
+      ReactDOM.unmountComponentAtNode(host);
+    });
+    mockStore.takeoff = {};
+  });
+
   it('publishes all FMS request fields and marks the result valid last', async () => {
     await publishA380Takeoff(result, 'KJFK', '04L');
 
@@ -39,5 +56,24 @@ describe('A380 EFB takeoff bridge', () => {
     await publishA380Takeoff(result, 'KJFK');
     expect(SimVar.GetSimVarValue('L:A380X_EFB_TO_STATUS', 'number')).toBe(1);
     expect(SimVar.GetSimVarValue('L:A380X_EFB_TO_VALID', 'number')).toBe(0);
+  });
+
+  it('replays the saved calculation after an FMS request', async () => {
+    mockStore.takeoff = {
+      result,
+      icao: 'KJFK',
+      availableRunways: [{ ident: '04L' }],
+      selectedRunwayIndex: 0,
+    };
+    act(() => {
+      ReactDOM.render(<A380TakeoffRequestResponder />, host);
+    });
+    await SimVar.SetSimVarValue('L:A380X_EFB_TO_VALID', 'number', 0);
+    const request = SimVar.GetSimVarValue('L:A380X_EFB_TO_REQUEST', 'number');
+    await SimVar.SetSimVarValue('L:A380X_EFB_TO_REQUEST', 'number', request + 1);
+
+    await vi.waitFor(() => expect(SimVar.GetSimVarValue('L:A380X_EFB_TO_VALID', 'number')).toBeGreaterThan(0));
+    expect(SimVar.GetSimVarValue('L:A380X_EFB_TO_V1', 'number')).toBe(145);
+    expect(SimVar.GetSimVarValue('L:A380X_EFB_TO_RESPONSE', 'number')).toBe(request + 1);
   });
 });

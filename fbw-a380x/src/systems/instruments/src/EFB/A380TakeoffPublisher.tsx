@@ -1,6 +1,8 @@
 // Copyright (c) 2026 dancebunny98
 // SPDX-License-Identifier: GPL-3.0
 
+import { useEffect } from 'react';
+import { store } from '@flybywiresim/flypad';
 import { TakeoffPerformanceResult } from '@flybywiresim/fbw-sdk-react';
 
 const prefix = 'L:A380X_EFB_TO_';
@@ -47,4 +49,23 @@ export function publishA380Takeoff(result: TakeoffPerformanceResult, airport?: s
       console.error('A380X EFB takeoff publish failed', error);
     });
   return publishQueue;
+}
+
+/** Replays the current EFB calculation when the FMS requests it. */
+export function A380TakeoffRequestResponder(): null {
+  useEffect(() => {
+    let lastRequest = SimVar.GetSimVarValue(`${prefix}REQUEST`, 'number');
+    const timer = window.setInterval(() => {
+      const request = SimVar.GetSimVarValue(`${prefix}REQUEST`, 'number');
+      if (!Number.isFinite(request) || request <= lastRequest) return;
+      lastRequest = request;
+      SimVar.SetSimVarValue(`${prefix}RESPONSE`, 'number', request).catch(console.error);
+      const { result, icao, availableRunways, selectedRunwayIndex } = store.getState().performance.takeoff;
+      if (result) {
+        publishA380Takeoff(result, icao, availableRunways[selectedRunwayIndex]?.ident);
+      }
+    }, 250);
+    return () => window.clearInterval(timer);
+  }, []);
+  return null;
 }

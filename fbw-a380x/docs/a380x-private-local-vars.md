@@ -231,6 +231,14 @@ Please keep all vars under the correct ATA chapter where they relate to aircraft
     - Number
     - Takeoff bridge status: 0 no calculation, 1 no selected runway, 2 no airport, 3 incomplete result, 4 publishing/ready.
 
+- `L:A380X_EFB_TO_REQUEST`
+    - Number
+    - Incremented by FMS PERF T.O when it requests a fresh EFB takeoff publication.
+
+- `L:A380X_EFB_TO_RESPONSE`
+    - Number
+    - Echoes the last request seen by the EFB, including when no calculation is available.
+
 - `L:A380X_PILOT_IN_FO_SEAT`
     - Boolean
     - Whether the pilot is sitting on the first officer's half of the cockpit.

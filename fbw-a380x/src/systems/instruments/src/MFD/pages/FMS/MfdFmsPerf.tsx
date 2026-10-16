@@ -344,6 +344,7 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
   private pendingEfbTakeoff: EfbTakeoffData | null = null;
   private toRequestTimer: number | null = null;
   private toRequestAttempts = 0;
+  private toRequestId: number | null = null;
 
   private requestEfbTakeoff(): void {
     this.clearEfbTakeoff();
@@ -351,6 +352,9 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
       this.toRequestState.set('received');
       return;
     }
+    const request = SimVar.GetSimVarValue('L:A380X_EFB_TO_REQUEST', 'number');
+    this.toRequestId = (Number.isFinite(request) ? request : 0) + 1;
+    SimVar.SetSimVarValue('L:A380X_EFB_TO_REQUEST', 'number', this.toRequestId).catch(console.error);
     this.toRequestState.set('pending');
     this.toRequestAttempts = 0;
     this.toRequestTimer = window.setInterval(() => {
@@ -358,7 +362,7 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
       if (this.readEfbTakeoff()) {
         this.stopEfbTakeoffRequest();
         this.toRequestState.set('received');
-      } else if (this.toRequestAttempts >= 8) {
+      } else if (this.toRequestAttempts >= 24) {
         this.stopEfbTakeoffRequest();
         this.toRequestState.set('missing');
       }
@@ -375,6 +379,7 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
   private clearEfbTakeoff(): void {
     this.stopEfbTakeoffRequest();
     this.pendingEfbTakeoff = null;
+    this.toRequestId = null;
     this.toRequestDialogVisible.set(false);
     this.toRequestState.set('idle');
   }
@@ -392,7 +397,11 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
             ? 'ENTER EFB APT'
             : status === 3
               ? 'EFB RESULT BAD'
-              : 'NO EFB DATA',
+              : status === 4
+                ? 'EFB TRANSFER FAILED'
+                : this.toRequestId !== null && read('RESPONSE') === this.toRequestId
+                  ? 'NO EFB RESULT'
+                  : 'NO EFB RESPONSE',
       );
       return false;
     }
