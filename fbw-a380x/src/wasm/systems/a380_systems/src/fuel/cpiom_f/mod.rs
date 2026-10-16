@@ -29,7 +29,7 @@ use systems::{
     shared::{
         arinc429::{Arinc429Word, SignStatus},
         ConsumePower, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
-        LgciuWeightOnWheels, Resolution,
+        LgciuWeightOnWheels, MemorizedValue, Resolution,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
@@ -864,10 +864,13 @@ pub(super) struct A380FuelQuantityManagementSystem {
     // fms_remaining_time_ids: [AvionicsDataCommunicationNetworkMessageIdentifier; 2],
     fms_zero_fuel_weight_ids: [VariableIdentifier; 2],
     fms_zero_fuel_weights: [Option<Mass>; 2],
+    fms_zero_fuel_weight: MemorizedValue<Mass>,
     fms_zero_fuel_weight_cg_ids: [VariableIdentifier; 2],
     fms_zero_fuel_weight_cgs: [Option<Ratio>; 2],
+    fms_zero_fuel_weight_cg: MemorizedValue<Ratio>,
     fms_remaining_time_ids: [VariableIdentifier; 2],
     fms_remaining_times: [Option<Duration>; 2],
+    fms_remaining_time: MemorizedValue<Duration>,
 
     // Output ARINC 429 backup signals (only outputed by CPIOM-F3 and CPIOM-F4)
     // TODO: currently we output the values from all FQMS' as it would be one
@@ -882,6 +885,9 @@ pub(super) struct A380FuelQuantityManagementSystem {
 impl A380FuelQuantityManagementSystem {
     // Self test time (reference: FFS)
     const SELF_TEST_DURATION: Duration = Duration::from_secs(30);
+
+    // Duration for which the input values are memorized
+    const INPUT_MEMORIZATION_DURATION: Duration = Duration::from_secs(3);
 
     pub(super) fn new(context: &mut InitContext) -> Self {
         // TODO: This needs to be refactored when CPIOM implementation is done
@@ -923,12 +929,15 @@ impl A380FuelQuantityManagementSystem {
             fms_zero_fuel_weight_ids: [1, 2]
                 .map(|id| context.get_identifier(format!("FM{id}_ZERO_FUEL_WEIGHT"))),
             fms_zero_fuel_weights: Default::default(),
+            fms_zero_fuel_weight: MemorizedValue::new(Self::INPUT_MEMORIZATION_DURATION),
             fms_zero_fuel_weight_cg_ids: [1, 2]
                 .map(|id| context.get_identifier(format!("FM{id}_ZERO_FUEL_WEIGHT_CG"))),
             fms_zero_fuel_weight_cgs: Default::default(),
+            fms_zero_fuel_weight_cg: MemorizedValue::new(Self::INPUT_MEMORIZATION_DURATION),
             fms_remaining_time_ids: [1, 2]
                 .map(|id| context.get_identifier(format!("FM{id}_REMAINING_FLIGHT_TIME"))),
             fms_remaining_times: Default::default(),
+            fms_remaining_time: MemorizedValue::new(Self::INPUT_MEMORIZATION_DURATION),
 
             fuel_tank_quantities_id: A380FuelTankType::iterator()
                 .map(|tank| context.get_identifier(format!("FQMS_{tank}_QUANTITY")))
@@ -984,14 +993,14 @@ impl A380FuelQuantityManagementSystem {
         self.fuel_valve_open_words = selected_fqdc.get_fuel_valve_open_words();
         self.fuel_valve_closed_words = selected_fqdc.get_fuel_valve_closed_words();
 
-        let (fms_zfw, flags1) = Self::get_fms_data_and_status(self.fms_zero_fuel_weights);
-        let (fms_zfwcg, flags2) = Self::get_fms_data_and_status(self.fms_zero_fuel_weight_cgs);
-        // TODO: figure out real logic, should F1, F2 get it from FM1 and F3, F4 from FM2?
-        let fms_remaining_flight_time = Self::get_fms_data(self.fms_remaining_times);
-        self.fqms_status_word = flags1 | flags2;
+        self.update_fms_inputs(context);
 
-        self.fuel_measuring_application
-            .update(loadsheet, selected_fqdc, fms_zfw, fms_zfwcg);
+        self.fuel_measuring_application.update(
+            loadsheet,
+            selected_fqdc,
+            self.fms_zero_fuel_weight.copied(),
+            self.fms_zero_fuel_weight_cg.copied(),
+        );
 
         // TODO: should come from the LGERS via AFDX
         // TODO: are the transfers enabled if the LGERS are inop?
@@ -1015,7 +1024,7 @@ impl A380FuelQuantityManagementSystem {
                 self.fuel_measuring_application.total_fuel_onboard(),
                 self.fuel_measuring_application.total_aircraft_weight(),
                 self.fuel_measuring_application.center_of_gravity(),
-                fms_remaining_flight_time,
+                self.fms_remaining_time.copied(),
             );
         } else {
             self.fuel_transfer_application.reset();
@@ -1034,6 +1043,17 @@ impl A380FuelQuantityManagementSystem {
                 fuel_valve_commands[valve]
             });
         self.apply_fuel_control(fuel_system, fuel_pump_commands, fuel_valve_commands);
+    }
+
+    fn update_fms_inputs(&mut self, context: &UpdateContext) {
+        // TODO: figure out real logic, should F1, F2 get it from FM1 and F3, F4 from FM2?
+        let (fms_zfw, flags1) = Self::get_fms_data_and_status(self.fms_zero_fuel_weights);
+        let (fms_zfwcg, flags2) = Self::get_fms_data_and_status(self.fms_zero_fuel_weight_cgs);
+        self.fms_zero_fuel_weight.update(context, fms_zfw);
+        self.fms_zero_fuel_weight_cg.update(context, fms_zfwcg);
+        self.fms_remaining_time
+            .update(context, Self::get_fms_data(self.fms_remaining_times));
+        self.fqms_status_word = flags1 | flags2;
     }
 
     fn reset(&mut self) {
