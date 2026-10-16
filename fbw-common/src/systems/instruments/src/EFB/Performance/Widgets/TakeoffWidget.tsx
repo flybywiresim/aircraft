@@ -56,6 +56,7 @@ export const TakeoffWidget = () => {
     performanceCalculators: calculators,
     performanceCgLimits,
     takeoffFmsIntegration,
+    onTakeoffCalculated,
   } = useContext(AircraftContext);
   const [aircraftCg] = useSimVar('L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC', 'number', 1000);
 
@@ -179,6 +180,7 @@ export const TakeoffWidget = () => {
 
     if (perf.error === TakeoffPerfomanceError.None) {
       dispatch(setTakeoffValues({ result: perf }));
+      onTakeoffCalculated?.(perf, icao, selectedRunway?.ident);
       if (!forceToga && perf.flex === undefined) {
         toast.info(t('Performance.Takeoff.Messages.FlexNotPossible'));
       } else if (perf.params.headwind < perf.inputs.wind) {

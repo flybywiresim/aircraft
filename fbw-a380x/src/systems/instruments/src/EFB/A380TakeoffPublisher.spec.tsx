@@ -1,93 +1,43 @@
 // Copyright (c) 2026 dancebunny98
 // SPDX-License-Identifier: GPL-3.0
 
-import React from 'react';
-import ReactDOM from 'react-dom';
-import { act } from 'react-dom/test-utils';
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { A380TakeoffPublisher } from './A380TakeoffPublisher';
+import { describe, expect, it, vi } from 'vitest';
+import { publishA380Takeoff } from './A380TakeoffPublisher';
 
-const mockStore = vi.hoisted(() => {
-  let takeoff: Record<string, unknown> = {};
-  const listeners = new Set<() => void>();
-  return {
-    getState: () => ({ performance: { takeoff } }),
-    subscribe: (listener: () => void) => {
-      listeners.add(listener);
-      return () => listeners.delete(listener);
-    },
-    dispatchTakeoff: (update: Record<string, unknown>) => {
-      takeoff = { ...takeoff, ...update };
-      listeners.forEach((listener) => listener());
-    },
-    reset: () => {
-      takeoff = {};
-      listeners.clear();
-    },
-  };
-});
-vi.mock('@flybywiresim/flypad', () => ({ store: mockStore }));
+const result = {
+  v1: 145,
+  vR: 155,
+  v2: 165,
+  flex: 52,
+  stabTrim: -1,
+  inputs: { tow: 500_000, conf: 2, packs: true, antiIce: 0 },
+} as Parameters<typeof publishA380Takeoff>[0];
 
-describe('A380TakeoffPublisher', () => {
-  const host = document.createElement('div');
+describe('A380 EFB takeoff bridge', () => {
+  it('publishes all FMS request fields and marks the result valid last', async () => {
+    await publishA380Takeoff(result, 'KJFK', '04L');
 
-  afterEach(() => {
-    act(() => {
-      ReactDOM.unmountComponentAtNode(host);
-    });
-    mockStore.reset();
-    vi.clearAllMocks();
+    const read = (name: string) => SimVar.GetSimVarValue(`L:A380X_EFB_TO_${name}`, 'number');
+    expect(read('STATUS')).toBe(4);
+    expect(read('VALID')).toBeGreaterThan(0);
+    expect(read('AIRPORT').toString(36).toUpperCase()).toBe('KJFK');
+    expect(read('RUNWAY').toString(36).toUpperCase()).toBe('4L');
+    expect(read('V1')).toBe(145);
+    expect(read('VR')).toBe(155);
+    expect(read('V2')).toBe(165);
+    expect(read('FLAPS')).toBe(2);
+    expect(read('WEIGHT')).toBe(500_000);
+    expect(read('FLEX')).toBe(52);
+    expect(read('TRIM')).toBe(-1);
+    expect(read('TRIM_VALID')).toBe(1);
+    expect(read('PACKS')).toBe(1);
+    expect(read('ANTI_ICE')).toBe(0);
+    expect(vi.mocked(SimVar.SetSimVarValue).mock.lastCall?.[0]).toBe('L:A380X_EFB_TO_VALID');
   });
 
-  it('keeps a completed calculation available after a temporary result reset', async () => {
-    mockStore.dispatchTakeoff({
-      icao: 'KJFK',
-      availableRunways: [{ ident: '04L' }],
-      selectedRunwayIndex: 0,
-      weight: 500_000,
-      result: {
-        v1: 145,
-        vR: 155,
-        v2: 165,
-        stabTrim: -1,
-        inputs: { conf: 2, packs: true, antiIce: 0 },
-      },
-    });
-    act(() => {
-      ReactDOM.render(<A380TakeoffPublisher />, host);
-    });
-
-    await vi.waitFor(() => expect(SimVar.GetSimVarValue('L:A380X_EFB_TO_VALID', 'number')).toBeGreaterThan(0));
-    const valid = SimVar.GetSimVarValue('L:A380X_EFB_TO_VALID', 'number');
-    expect(SimVar.GetSimVarValue('L:A380X_EFB_TO_TRIM', 'number')).toBe(-1);
-    expect(SimVar.GetSimVarValue('L:A380X_EFB_TO_TRIM_VALID', 'number')).toBe(1);
-
-    act(() => mockStore.dispatchTakeoff({ result: undefined }));
-    expect(SimVar.GetSimVarValue('L:A380X_EFB_TO_VALID', 'number')).toBe(valid);
-  });
-
-  it('publishes a completed calculation cleared before React renders again', async () => {
-    act(() => {
-      ReactDOM.render(<A380TakeoffPublisher />, host);
-    });
-    act(() => {
-      mockStore.dispatchTakeoff({
-        icao: 'KJFK',
-        availableRunways: [{ ident: '04L' }],
-        selectedRunwayIndex: 0,
-        weight: 500_000,
-        result: {
-          v1: 145,
-          vR: 155,
-          v2: 165,
-          inputs: { conf: 2, packs: true, antiIce: 0 },
-        },
-      });
-      mockStore.dispatchTakeoff({ result: undefined });
-    });
-
-    await vi.waitFor(() => expect(SimVar.GetSimVarValue('L:A380X_EFB_TO_VALID', 'number')).toBeGreaterThan(0));
-    expect(SimVar.GetSimVarValue('L:A380X_EFB_TO_V1', 'number')).toBe(145);
-    expect(SimVar.GetSimVarValue('L:A380X_EFB_TO_STATUS', 'number')).toBe(4);
+  it('reports a missing runway instead of publishing an unusable request', async () => {
+    await publishA380Takeoff(result, 'KJFK');
+    expect(SimVar.GetSimVarValue('L:A380X_EFB_TO_STATUS', 'number')).toBe(1);
+    expect(SimVar.GetSimVarValue('L:A380X_EFB_TO_VALID', 'number')).toBe(0);
   });
 });

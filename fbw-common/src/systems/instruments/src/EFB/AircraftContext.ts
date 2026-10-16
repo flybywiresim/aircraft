@@ -4,7 +4,7 @@
 
 import { createContext } from 'react';
 import { LandingPerformanceCalculator } from '../../../shared/src/performance/landing';
-import { TakeoffPerformanceCalculator } from '../../../shared/src/performance/takeoff';
+import { TakeoffPerformanceCalculator, TakeoffPerformanceResult } from '../../../shared/src/performance/takeoff';
 
 interface PerformanceCalculators {
   takeoff: TakeoffPerformanceCalculator | null;
@@ -69,6 +69,7 @@ interface AircraftEfbContext {
   landingReverseThrustDefault?: boolean;
   performanceCgLimits?: { minPercentMac: number; maxPercentMac: number };
   takeoffFmsIntegration?: boolean;
+  onTakeoffCalculated?: (result: TakeoffPerformanceResult, airport?: string, runway?: string) => void;
   pushbackPage: PushbackPage;
   settingsPages: SettingsPages;
   /** File containing critical file hashes to be checked for integrity. */
