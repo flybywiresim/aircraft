@@ -52,6 +52,10 @@ export class MfdFmsFplnEquiTimePoint extends FmsPage {
           <span class="mfd-label bigger etp-ppos-time-header">{this.timeToEtpHeader}</span>
           <span class="mfd-value bigger etp-ppos-time-value">{this.timeToEtp}</span>
         </div>
+        <div class="mfd-fpln-etp-ppos-airport-horizontal-line first"></div>
+        <div class="mfd-fpln-etp-ppos-airport-vertical-line first"></div>
+        <div class="mfd-fpln-etp-ppos-airport-horizontal-line second"></div>
+        <div class="mfd-fpln-etp-ppos-airport-vertical-line second"></div>
       </>
     );
   }

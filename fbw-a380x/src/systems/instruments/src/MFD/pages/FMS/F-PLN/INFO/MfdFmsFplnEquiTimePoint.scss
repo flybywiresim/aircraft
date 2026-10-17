@@ -2,6 +2,7 @@
 
 
 $etp-rect-dist-time-left-pos: 11px;
+$etp-airport-lines-vertical-position: 181px;
 
 .mfd-fpln-etp-ppos-rect {
     position: relative;
@@ -16,6 +17,42 @@ $etp-rect-dist-time-left-pos: 11px;
   position: relative;
   left: 83px;
   top: 19px;
+}
+
+.mfd-fpln-etp-ppos-airport-horizontal-line {
+    border: 1px solid $display-grey;
+    width: 141px;
+    height: 1px;
+}
+
+.mfd-fpln-etp-ppos-airport-horizontal-line.first {
+     position: absolute;
+     top: $etp-airport-lines-vertical-position;
+     left: 147px
+}
+
+.mfd-fpln-etp-ppos-airport-horizontal-line.second {
+     position: absolute;
+     top: $etp-airport-lines-vertical-position;
+     left: 535px;
+}
+
+.mfd-fpln-etp-ppos-airport-vertical-line {
+    border: 1px solid $display-grey;
+    width: 1px;
+    height: 69px;
+}
+
+.mfd-fpln-etp-ppos-airport-vertical-line.first {
+    position: absolute;
+    top: $etp-airport-lines-vertical-position;
+    left: 145px;
+}
+
+.mfd-fpln-etp-ppos-airport-vertical-line.second {
+     position: absolute;
+     top: $etp-airport-lines-vertical-position;
+     left: 677px;
 }
 
 .mfd-fpln-etp-ppos-dist-line {
