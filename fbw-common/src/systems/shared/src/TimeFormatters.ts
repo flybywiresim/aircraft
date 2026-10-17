@@ -3,15 +3,23 @@
 
 import { DateTimeFormatter } from '@microsoft/msfs-sdk';
 
-export class FmsFormatters {
+export class TimeFormatters {
   private static hhmmssFormatter = DateTimeFormatter.create('{HH}:{mm}:{ss}');
 
   private static hhmmFormatter = DateTimeFormatter.create('{HH}{mm}');
 
-  public static secondsTohhmm(seconds: number) {
+  private static hhmmFormatterWithDot = DateTimeFormatter.create('{HH}:{mm}');
+
+  /**
+   * Formats a number in seconds to HHMM
+   * @param seconds  the number in seconds to format
+   * @param withDoubleDot whether to apply ":" to the formatted time.
+   * @returns the formatted number in seconds.
+   */
+  public static secondsTohhmm(seconds: number, withDoubleDot = false) {
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds - h * 3600) / 60);
-    return h.toFixed(0).padStart(2, '0') + m.toFixed(0).padStart(2, '0');
+    return h.toFixed(0).padStart(2, '0') + (withDoubleDot ? ':' : '') + m.toFixed(0).padStart(2, '0');
   }
 
   public static minutesToSeconds(minutes: number) {
@@ -22,6 +30,11 @@ export class FmsFormatters {
     return hours * 3600;
   }
 
+  /**
+   * Converts a number in seconds to a formatted UTC time (HH)
+   * @param seconds the number in seconds to format.
+   * @returns the formatted UTC time.
+   */
   public static secondsToUTC(seconds: number) {
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds - h * 3600) / 60);
@@ -65,9 +78,10 @@ export class FmsFormatters {
   /**
    * Formats a time expressed as a unix timestamp in miliseconds to hhmm
    * @param miliSeconds the time in miliseconds
+   * @param withDoubleDot whether to apply ":" to the fomartted time.
    * @returns the formatted time in hh:mm
    */
-  public static milisecondsTohhmm(miliSeconds: number): string {
-    return this.hhmmFormatter(miliSeconds);
+  public static milisecondsTohhmm(miliSeconds: number, withDoubleDot = false): string {
+    return withDoubleDot ? this.hhmmFormatterWithDot(miliSeconds) : this.hhmmFormatter(miliSeconds);
   }
 }

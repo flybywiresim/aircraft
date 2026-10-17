@@ -21,6 +21,7 @@ import {
   activeFlightPlanHoldUri,
   fixInfoUri,
   dirToUri,
+  etpUri,
 } from './shared/utils';
 
 // Page imports
@@ -56,13 +57,14 @@ import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayIn
 import { MfdDisplayInterface } from './MFD';
 import { MfdUiService } from './pages/common/MfdUiService';
 import { MfdSurvControls } from './pages/SURV/MfdSurvControls';
-import { MfdFmsFplnFixInfo } from './pages/FMS/F-PLN/MfdFmsFplnFixInfo';
+import { MfdFmsFplnFixInfo } from './pages/FMS/F-PLN/INFO/MfdFmsFplnFixInfo';
 import { MfdFmsPositionMonitor } from './pages/FMS/POSITION/MfdFmsPositionMonitor';
 import { MfdSurvStatusSwitching } from './pages/SURV/MfdSurvStatusSwitching';
 import { MfdFmsDataAirport } from './pages/FMS/DATA/MfdFmsDataAirport';
 import { AtcDatalinkSystem } from './ATCCOM/AtcDatalinkSystem';
 import { MfdFmsSecIndex } from './pages/FMS/SEC/MfdFmsSecIndex';
 import { MfdFmsWindPage } from './pages/FMS/MfdFmsWindPage';
+import { MfdFmsFplnEquiTimePoint } from './pages/FMS/F-PLN/INFO/MfdFmsFplnEquiTimePoint';
 
 export function pageForUrl(
   url: string,
@@ -221,6 +223,16 @@ export function pageForUrl(
           fmcService={fmcService}
           flightPlanInterface={fmcService.master.flightPlanInterface}
         />
+      );
+    case etpUri:
+      return (
+        <MfdFmsFplnEquiTimePoint
+          pageTitle="F-PLN/EQUI-TIME POINT"
+          bus={bus}
+          mfd={mfd}
+          fmcService={fmcService}
+          flightPlanInterface={fmcService.master.flightPlanInterface}
+        ></MfdFmsFplnEquiTimePoint>
       );
     case secIndexPageUri:
       return (
