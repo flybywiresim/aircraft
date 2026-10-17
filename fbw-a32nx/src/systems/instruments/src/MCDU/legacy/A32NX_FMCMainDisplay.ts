@@ -73,7 +73,6 @@ import {
 } from '@microsoft/msfs-sdk';
 import { AdfRadioTuningStatus, MmrRadioTuningStatus, VorRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
-import { FmsFormatters } from './FmsFormatters';
 import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
 import { FlightPhaseManager } from '@fmgc/flightphase';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
@@ -106,6 +105,7 @@ import { formatWindRequest } from '@fmgc/flightplanning/uplink/WindUplinkUtilts'
 import { MAXIMUM_CERTIFIED_FLIGHT_LEVEL } from '@shared/A32NXPerformanceConstants';
 import { EquitimePoint } from '@fmgc/EquitimePoint';
 import { GuidanceToFmsEvents as GuidanceToFmsEvents } from '@fmgc/events/GuidanceToFmsEvents';
+import { TimeFormatters } from '@flybywiresim/fbw-sdk';
 export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
 
@@ -3230,7 +3230,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         }
 
         if (this.isFinalTimeInRange(rteFinalTime)) {
-          const routeFinalTimeMinutes = FmsFormatters.hhmmToMinutes(rteFinalTime.padStart(4, '0'));
+          const routeFinalTimeMinutes = TimeFormatters.hhmmToMinutes(rteFinalTime.padStart(4, '0'));
 
           this.flightPlanService.setPerformanceData('pilotFinalHoldingTime', routeFinalTimeMinutes, forPlan);
           this.flightPlanService.setPerformanceData('pilotFinalHoldingFuel', null, forPlan);
@@ -4473,7 +4473,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   //TODO: Can this be util?
   private isFinalTimeInRange(time: string) {
-    const convertedTime = FmsFormatters.hhmmToMinutes(time.padStart(4, '0'));
+    const convertedTime = TimeFormatters.hhmmToMinutes(time.padStart(4, '0'));
     return 0 <= convertedTime && convertedTime <= 90;
   }
 
@@ -5600,7 +5600,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
             const currentTimeStamp = this.simTime.get();
             const zuluTimeMilliseconds = currentTimeStamp % FMCMainDisplay.MILISECONDS_IN_DAY;
             const ettInMilliseconds =
-              (FmsFormatters.hoursToSeconds(hours) + FmsFormatters.minutesToSeconds(minutes) + seconds) * 1000;
+              (TimeFormatters.hoursToSeconds(hours) + TimeFormatters.minutesToSeconds(minutes) + seconds) * 1000;
             let ettMillisecondsFromNow = ettInMilliseconds;
 
             // If ETT is less than current time, assume it is for the next day
@@ -5639,6 +5639,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
    * @returns formatted time prediction string in hhmm
    */
   getTimePrediction(secondsFromPresent: number, forPlan: FlightPlanIndex): string {
+    //TODO Move to an util once fms code in FBW-common.
     const phase = this.getFlightPhase();
     const plan = this.flightPlanService.get(forPlan);
     let time: number | null = null;
@@ -5652,9 +5653,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       }
     }
     if (time !== null) {
-      return FmsFormatters.milisecondsTohhmm(time + secondsFromPresent * 1000);
+      return TimeFormatters.milisecondsTohhmm(time + secondsFromPresent * 1000);
     } else {
-      return FmsFormatters.secondsTohhmm(secondsFromPresent);
+      return TimeFormatters.secondsTohhmm(secondsFromPresent);
     }
   }
 
@@ -5663,6 +5664,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
    * @returns TIME if in flight or if ETT exists during preflight, otherwise UTC
    */
   getTimePredictionHeader(forPlan: FlightPlanIndex): 'UTC' | 'TIME' {
+    //TODO Move to an util once fms code in FBW-common.
     const phase = this.getFlightPhase();
     const plan = this.flightPlanService.get(forPlan);
     const ett = plan.performanceData.estimatedTakeoffTime.get();

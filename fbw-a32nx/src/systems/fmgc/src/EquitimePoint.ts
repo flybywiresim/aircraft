@@ -28,6 +28,11 @@ export interface EquitimePointInterface {
 }
 
 export class EquitimePoint {
+  /**
+   * In miliseconds.
+   */
+  private static readonly MINIMUM_RECOMPUTE_INTERVAL = 2000;
+
   private static readonly DefaultWind: WindVector = { magnitude: 0, direction: 0 };
 
   private static readonly AbsoluteToleranceSeconds = 10;
@@ -60,7 +65,10 @@ export class EquitimePoint {
     null,
   );
 
-  private lastUpdateTime: number | null = null;
+  /**
+   * The last time which the ETP was recomputed in miliseconds since epoch.
+   */
+  private lastEtpRecomputeTime: number | null = null;
 
   constructor(
     private readonly bus: EventBus,
@@ -75,27 +83,24 @@ export class EquitimePoint {
   }
 
   private updateEtp() {
+    const ref1 = this.referenceFix1;
+    const ref2 = this.referenceFix2;
+    const ppos = this.navigation.getPpos();
+    const plan = this.flightPlanService.get(FlightPlanIndex.Active);
+    const cruiseLevel = plan.performanceData.cruiseFlightLevel.get();
+    const predictions = this.guidanceController.vnavDriver.mcduProfile;
+    const { managedCruiseSpeed, managedCruiseSpeedMach } =
+      this.guidanceController.verticalProfileComputationParametersObserver.get();
     const time = this.clock.get();
-    // Only update ETP every 2 seconds.
-    if (this.lastUpdateTime !== null && time - this.lastUpdateTime >= 2000) {
-      this.reset();
+    if (!ref1 || !ref2 || !ppos || !plan || !this.geometry || !cruiseLevel || !predictions?.isReadyToDisplay) {
+      this.reset(time);
+      return;
+    }
 
-      const ref1 = this.referenceFix1;
-      const ref2 = this.referenceFix2;
-
-      const ppos = this.navigation.getPpos();
-      const plan = this.flightPlanService.get(FlightPlanIndex.Active);
-
-      const cruiseLevel = plan.performanceData.cruiseFlightLevel.get();
-
-      const predictions = this.guidanceController.vnavDriver.mcduProfile;
-      const { managedCruiseSpeed, managedCruiseSpeedMach } =
-        this.guidanceController.verticalProfileComputationParametersObserver.get();
-
-      if (!ref1 || !ref2 || !ppos || !plan || !this.geometry || !cruiseLevel || !predictions?.isReadyToDisplay) {
-        return undefined;
-      }
-
+    if (
+      this.lastEtpRecomputeTime !== null &&
+      time - this.lastEtpRecomputeTime >= EquitimePoint.MINIMUM_RECOMPUTE_INTERVAL
+    ) {
       const cruiseAltitude = cruiseLevel * 100;
       const managedCruiseCas = Math.min(
         AeroMath.casToTasIsa(
@@ -143,7 +148,7 @@ export class EquitimePoint {
         );
 
         if (!this.result.etp) {
-          this.reset();
+          this.reset(time);
           return undefined;
         }
 
@@ -179,7 +184,7 @@ export class EquitimePoint {
       );
 
       if (numIterations >= 10) {
-        this.reset();
+        this.reset(time);
         return undefined;
       }
 
@@ -187,17 +192,17 @@ export class EquitimePoint {
       const legPredictions = predictions.waypointPredictions.get(legIndex);
 
       if (!legPredictions) {
-        this.reset();
+        this.reset(time);
         return;
       }
 
       this.result.pposDistanceToEtp = legPredictions.distanceFromAircraft - distanceFromLegTermination;
       this.result.pposTimeToEtp = predictions.interpolateTimeAtDistance(this.result.pposDistanceToEtp) / 3600;
     }
-    this.lastUpdateTime = time;
+    this.lastEtpRecomputeTime = time;
   }
 
-  private reset(): void {
+  private reset(at = this.clock.get()): void {
     this.result.etp = undefined;
     this.result.pposTimeToRef1 = undefined;
     this.result.pposTimeToRef2 = undefined;
@@ -205,11 +210,7 @@ export class EquitimePoint {
     this.result.etpTimeToRef2 = undefined;
     this.result.pposDistanceToEtp = undefined;
     this.result.pposTimeToEtp = undefined;
-  }
-
-  private resetAndRecompute() {
-    this.reset();
-    this.lastUpdateTime = null;
+    this.lastEtpRecomputeTime = at;
   }
 
   isComputed(): boolean {
@@ -221,29 +222,33 @@ export class EquitimePoint {
   }
 
   async setPilotEnteredReferenceFix1(fix: Fix | undefined): Promise<void> {
-    if (fix && fix.databaseId === this.pilotEnteredReferenceFix2?.databaseId) {
+    if (fix && fix.databaseId === this.referenceFix2?.databaseId) {
       throw new FmsError(FmsErrorType.NotAllowed);
     }
-    this.pilotEnteredReferenceFix1 = fix;
-    this.resetAndRecompute();
+    if (fix !== this.pilotEnteredReferenceFix1) {
+      this.pilotEnteredReferenceFix1 = fix;
+      this.reset();
+    }
   }
 
   async setPilotEnteredReferenceFix2(fix: Fix | undefined): Promise<void> {
-    if (fix && fix.databaseId === this.pilotEnteredReferenceFix1?.databaseId) {
+    if (fix && fix.databaseId === this.referenceFix1?.databaseId) {
       throw new FmsError(FmsErrorType.NotAllowed);
     }
-    this.pilotEnteredReferenceFix2 = fix;
-    this.resetAndRecompute();
+    if (fix !== this.pilotEnteredReferenceFix2) {
+      this.pilotEnteredReferenceFix2 = fix;
+      this.reset();
+    }
   }
 
   async setPilotEnteredWindToReferenceFix1(windVector: WindVector | undefined): Promise<void> {
     this.pilotEnteredWindToReferenceFix1 = windVector;
-    this.resetAndRecompute();
+    this.reset();
   }
 
   async setPilotEnteredWindToReferenceFix2(windVector: WindVector | undefined): Promise<void> {
     this.pilotEnteredWindToReferenceFix2 = windVector;
-    this.resetAndRecompute();
+    this.reset();
   }
 
   get referenceFix1(): Fix | undefined {

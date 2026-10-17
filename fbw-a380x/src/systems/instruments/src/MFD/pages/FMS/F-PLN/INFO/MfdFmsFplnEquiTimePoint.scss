@@ -1,19 +1,66 @@
 @import "../../../../../MsfsAvionicsCommon/definitions";
 
+
+$etp-rect-dist-time-left-pos: 11px;
+
 .mfd-fpln-etp-ppos-rect {
     position: relative;
     left: 288px;
     top: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     height: 65px;
     width: 247px;
     border: 1px solid $display-grey;
 }
 
-.mfd-fpln-etp-ppos-etp-text {
+.mfd-fpln-etp-ppos-text {
   position: relative;
   left: 83px;
   top: 19px;
+}
+
+.mfd-fpln-etp-ppos-dist-line {
+    position: relative;
+    left: 411px;
+    top: 15px;
+    border: 1px solid $display-grey;
+    width: 1px;
+    height: 58px;
+}
+
+.mfd-fpln-etp-ppos-time-dist-rect {
+    position: relative;
+    left: 298px;
+    top: 15px;
+    height: 88px;
+    width: 228px;
+    border: 1px solid $display-grey;
+}
+
+.etp-ppos-dist-header {
+  position: relative;
+  left: 11px;
+  top: 6px;
+}
+
+.etp-ppos-dist-value {
+  position: relative;
+  left: 33px;
+  top: 7px;
+}
+
+.etp-ppos-dist-unit {
+  position: relative;
+  left: 32px;
+  top: 5px;
+}
+
+.etp-ppos-time-header {
+   position: absolute;
+   left: 10px;
+   top: 53px;
+}
+.etp-ppos-time-value {
+  position: absolute;
+  left: 79px;
+  top: 50px;
 }

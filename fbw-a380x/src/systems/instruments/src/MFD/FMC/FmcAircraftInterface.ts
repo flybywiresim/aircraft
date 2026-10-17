@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {
+  ClockEvents,
   ConsumerSubject,
   EventBus,
   GameStateProvider,
@@ -287,6 +288,8 @@ export class FmcAircraftInterface {
     (_, v) => (this.autoStepClimbEnabled = v === 'ENABLED'),
     'DISABLED',
   );
+
+  private readonly zuluTime = ConsumerSubject.create(this.bus.getSubscriber<ClockEvents>().on('simTime'), null);
 
   constructor(
     private bus: EventBus,
@@ -1837,5 +1840,9 @@ export class FmcAircraftInterface {
 
   isAirspeedManaged(): boolean | null {
     return this.masterPrimFgWord5.get().bitValueOr(17, null);
+  }
+
+  getTime(): number | null {
+    return this.zuluTime.get();
   }
 }

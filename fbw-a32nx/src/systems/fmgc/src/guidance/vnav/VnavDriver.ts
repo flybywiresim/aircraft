@@ -143,6 +143,7 @@ export class VnavDriver implements GuidanceComponent {
     this.constraintReader.updateFlightPlan();
 
     if (geometry.legs.size <= 0 || !this.computationParametersObserver.canComputeProfile()) {
+      //TODO: Performance data changes (approach page, zfw etc.) should also trigger a reset before recomputation of the predictions. Speed auto control changes too (selected vs managed).
       this.reset();
       return;
     }
