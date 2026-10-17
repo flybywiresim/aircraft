@@ -131,7 +131,7 @@ export class MfdFmsInit extends FmsFlightPlanPage<MfdFmsInitProps> {
     this.fpHasWindEntries,
   );
 
-  private readonly tripWindTextAlign = this.tripWindDisabled.map((it) => (it ? 'flex-start' : 'center'));
+  private readonly tripWindTextAlign = this.tripWindDisabled.map((it) => (it ? 'center' : 'flex-start'));
 
   private readonly cpnyRteMandatory = MappedSubject.create(
     ([toIcao, fromIcao, mandatoryAndActive]) => (!toIcao || !fromIcao) && mandatoryAndActive,
