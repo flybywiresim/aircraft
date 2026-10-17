@@ -1,0 +1,19 @@
+@import "../../../../../MsfsAvionicsCommon/definitions";
+
+.mfd-fpln-etp-ppos-rect {
+    position: relative;
+    left: 288px;
+    top: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 65px;
+    width: 247px;
+    border: 1px solid $display-grey;
+}
+
+.mfd-fpln-etp-ppos-etp-text {
+  position: relative;
+  left: 83px;
+  top: 19px;
+}
