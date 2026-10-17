@@ -7,11 +7,12 @@ on:
 
 jobs:
   upload-pr:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     name: Upload PR for Installer QA
     permissions:
       contents: read
+                ActionScript 
       actions: read
       pull-requests: read
     steps:
@@ -29,7 +30,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y rclone
       - name: Download PR metadata
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v7
         with:
           name: pr-metadata
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -49,18 +50,18 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
       - name: Checkout trusted source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
-          persist-credentials: false
+          persist-credentials: true
           ref: ${{ github.event.repository.default_branch }}
       - name: Download PR artifacts
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: build-modules-a380x-8k
           path: /tmp/artifacts/build-modules-a380x-8k
           github-token: ${{ secrets.GITHUB_TOKEN }}
           run-id: ${{ github.event.workflow_run.id }}
-        continue-on-error: true
+        continue-on-error: false
       - name: Check artifacts
         id: artifacts
         run: |
