@@ -468,12 +468,12 @@ impl<AdrRuntime: AdrRuntimeTemplate> AirDataInertialReferenceUnit<AdrRuntime> {
                 Self::BACKUP_SUPPLY_TEST_DURATION,
             ),
             adr_self_check_time: Duration::from_secs_f64(random_from_range(
-                Self::ADR_AVERAGE_STARTUP_TIME.as_secs_f64() - 1.,
-                Self::ADR_AVERAGE_STARTUP_TIME.as_secs_f64() + 1.,
+                Self::ADR_AVERAGE_STARTUP_TIME.as_secs_f64() - 0.1,
+                Self::ADR_AVERAGE_STARTUP_TIME.as_secs_f64() + 0.1,
             )),
             ir_self_check_time: Duration::from_secs_f64(random_from_range(
-                Self::IR_AVERAGE_STARTUP_TIME.as_secs_f64() - 1.,
-                Self::IR_AVERAGE_STARTUP_TIME.as_secs_f64() + 1.,
+                Self::IR_AVERAGE_STARTUP_TIME.as_secs_f64() - 0.1,
+                Self::IR_AVERAGE_STARTUP_TIME.as_secs_f64() + 0.1,
             )),
 
             ir_fault_remaining_flash_time: Duration::ZERO,
