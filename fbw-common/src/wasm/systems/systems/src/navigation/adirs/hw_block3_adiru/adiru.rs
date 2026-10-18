@@ -412,7 +412,8 @@ impl<AdrRuntime: AdrRuntimeTemplate> AirDataInertialReferenceUnit<AdrRuntime> {
     const MAINT_WORD: &'static str = "MAINT_WORD";
 
     pub(super) const ADR_AVERAGE_STARTUP_TIME: Duration = Duration::from_secs(3);
-    pub(super) const IR_AVERAGE_STARTUP_TIME: Duration = Duration::from_secs(3);
+    // IR startup needs to be > ADR startup, otherwise the ADR will not be ready for alignment checks (in air align). TODO find better solution or confirm if correct (maybe also model internal checks?)
+    pub(super) const IR_AVERAGE_STARTUP_TIME: Duration = Duration::from_secs(5);
     pub(super) const MINIMUM_POWER_HOLDOVER: Duration = Duration::from_millis(200);
     pub(super) const MAXIMUM_POWER_HOLDOVER: Duration = Duration::from_millis(300);
 
