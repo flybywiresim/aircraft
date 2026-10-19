@@ -641,6 +641,10 @@ export class VnavDriver implements GuidanceComponent {
   public computeTacticalToGuidanceProfileOffset(): NauticalMiles {
     return this.profileManager.computeTacticalToGuidanceProfileOffset();
   }
+
+  public hasStepDescent(): boolean {
+    return this.mcduProfile?.findVerticalCheckpoint(VerticalCheckpointReason.StepDescent) !== undefined;
+  }
 }
 
 /// To check whether the value changed from old to new, but not if both values are NaN. (NaN !== NaN in JS)
