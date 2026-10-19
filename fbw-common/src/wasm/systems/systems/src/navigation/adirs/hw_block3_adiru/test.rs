@@ -1090,10 +1090,14 @@ where
     TestAircraft<T>: Aircraft,
     T: AdrRuntimeTemplate,
 {
+    let on_ground_tas = Velocity::new::<knot>(0.);
+
     AdirsTestBed::new(num.try_into().unwrap())
         .primary_power_set_to(true)
         .and()
         .backup_power_set_to(true)
+        .and()
+        .true_airspeed_of(on_ground_tas)
 }
 
 // Single helper macro to declare ADIRU tests with common rstest cases and `where` bounds.
