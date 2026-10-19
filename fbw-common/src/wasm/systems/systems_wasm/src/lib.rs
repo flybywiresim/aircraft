@@ -6,6 +6,7 @@ mod failures;
 mod fuel;
 mod msfs;
 
+use crate::fuel::fuel_valves;
 #[cfg(not(target_arch = "wasm32"))]
 use crate::msfs::legacy::{AircraftVariable, NamedVariable};
 #[cfg(target_arch = "wasm32")]
@@ -129,8 +130,22 @@ impl<'a, 'b> MsfsSimulationBuilder<'a, 'b> {
     pub fn with_fuel_pumps(
         self,
         pump_indexes: impl IntoIterator<Item = u32>,
+        enable_commands: bool,
     ) -> Result<Self, Box<dyn Error>> {
-        self.with_aspect(fuel_pumps(pump_indexes))
+        self.with_aspect(fuel_pumps(pump_indexes, enable_commands))
+    }
+
+    pub fn with_fuel_valves(
+        self,
+        valve_indexes: impl IntoIterator<Item = u32>,
+        pump_circuit_ids: impl IntoIterator<Item = u32>,
+        enable_commands: bool,
+    ) -> Result<Self, Box<dyn Error>> {
+        self.with_aspect(fuel_valves(
+            valve_indexes,
+            pump_circuit_ids,
+            enable_commands,
+        ))
     }
 
     pub fn with_failures(mut self, failures: impl IntoIterator<Item = (u64, FailureType)>) -> Self {

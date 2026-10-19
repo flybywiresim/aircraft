@@ -82,7 +82,8 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .with_auxiliary_power_unit(Variable::named("OVHD_APU_START_PB_IS_AVAILABLE"), 8, 21)?
     .with_engine_anti_ice(4)?
     .with_wing_anti_ice()?
-    .with_fuel_pumps(1..=21)?
+    .with_fuel_pumps(1..=21, true)?
+    .with_fuel_valves(1..=41, 87..=127, true)?
     .with_failures([
         (21_000, FailureType::RapidDecompression),
         (21_001, FailureType::CabinFan(1)),

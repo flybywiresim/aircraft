@@ -682,6 +682,45 @@ impl LatchedTrueLogicGate {
     }
 }
 
+/// Retains the most recently received value for a configurable duration.
+///
+/// When a new value is received, it immediately replaces the previously stored
+/// value and resets the expiration timer.
+///
+/// When no value is received (None), the last known value remains available
+/// for the configured duration. If no new value arrives before the delay
+/// expires, the stored value is discarded.
+pub struct MemorizedValue<T> {
+    delay: DelayedFalseLogicGate,
+    value: Option<T>,
+}
+impl<T> MemorizedValue<T> {
+    pub fn new(delay: Duration) -> Self {
+        Self {
+            delay: DelayedFalseLogicGate::new(delay),
+            value: None,
+        }
+    }
+
+    pub fn update(&mut self, context: &UpdateContext, value: Option<T>) {
+        self.delay.update(context, value.is_some());
+        if value.is_some() {
+            self.value = value;
+        } else if !self.delay.output() {
+            self.value = None;
+        }
+    }
+
+    pub fn value(&self) -> Option<&T> {
+        self.value.as_ref()
+    }
+}
+impl<T: Copy> MemorizedValue<T> {
+    pub fn copied(&self) -> Option<T> {
+        self.value
+    }
+}
+
 /// Given a current and target temperature, takes a coefficient and delta to
 /// determine the new temperature after a certain duration has passed.
 pub(crate) fn calculate_towards_target_temperature(
