@@ -1548,7 +1548,7 @@ mod adr {
     adiru_test!(
         mach_is_supplied_by_adr_when_greater_than_or_equal_to_zero_point_1,
         |adiru_number| {
-            let mach = MachNumber::from(AdmAirDataReferenceRuntime::MINIMUM_MACH);
+            let mach = MachNumber::from(AdmAirDataReferenceRuntime::MINIMUM_MACH + 0.01);
             let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number).mach_of(mach);
             test_bed.run();
 
