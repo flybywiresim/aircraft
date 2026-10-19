@@ -436,9 +436,9 @@ public sensedItems: FwsNormalChecklistsDict = {
         null,
         null,
         !!this.fws.seatBelt.get(),
-        this.fws.ir1MaintWord.bitValueOr(3, false) &&
-          this.fws.ir2MaintWord.bitValueOr(3, false) &&
-          this.fws.ir3MaintWord.bitValueOr(3, false),
+        this.fws.ir1MaintWord.bitValueOr(13, false) &&
+          this.fws.ir2MaintWord.bitValueOr(13, false) &&
+          this.fws.ir3MaintWord.bitValueOr(13, false),
         false,
         null,
         null,

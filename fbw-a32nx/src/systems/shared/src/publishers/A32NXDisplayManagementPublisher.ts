@@ -74,6 +74,10 @@ interface A32NXDisplayManagementBaseEvents {
    * The right DMC discrete word. Raw ARINC word.
    * | Bit |            Description            |
    * |:---:|:---------------------------------:|
+   * |     | ADIRU used for IR                 |
+   * |     | IR1  IR2  IR3                     |
+   * | 11  | 1    0    1                       |
+   * | 12  | 0    1    1                       |
    * |     | ADIRU used for ADR                |
    * |     | ADR1 ADR2 ADR3                    |
    * | 13  | 1    0    1                       |
@@ -84,6 +88,10 @@ interface A32NXDisplayManagementBaseEvents {
    * The right DMC discrete word. Raw ARINC word.
    * | Bit |            Description            |
    * |:---:|:---------------------------------:|
+   * |     | ADIRU used for IR                 |
+   * |     | IR1  IR2  IR3                     |
+   * | 11  | 1    0    1                       |
+   * | 12  | 0    1    1                       |
    * |     | ADIRU used for ADR                |
    * |     | ADR1 ADR2 ADR3                    |
    * | 13  | 1    0    1                       |
