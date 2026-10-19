@@ -2098,6 +2098,27 @@ mod ir {
     );
 
     adiru_test!(
+        alignment_with_tas_greater_than_100_kts_causes_in_air_align_fault,
+        |adiru_number| {
+            let in_air_tas = Velocity::new::<knot>(101.);
+
+            let mut test_bed = adiru_unaligned_test_bed_with::<T>(adiru_number)
+                .true_airspeed_of(in_air_tas)
+                .and()
+                .ir_mode_selector_set_to(ModeSelectorPosition::Navigation);
+            test_bed.run_without_delta();
+
+            test_bed.run_with_delta(
+                InertialReferenceRuntime::COARSE_ALIGN_DURATION + Duration::from_millis(1),
+            );
+            test_bed.assert_ir_attitude_data_available(false);
+            test_bed.assert_ir_heading_data_available(false);
+
+            test_bed.ir_fault_light_illuminated();
+        }
+    );
+
+    adiru_test!(
         in_att_mode_attitude_and_heading_are_available_28_seconds_after_alignment_began,
         |adiru_number| {
             // Note that in reality the HDG part needs HDG entry through the MCDU. As we haven't implemented
