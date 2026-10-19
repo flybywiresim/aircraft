@@ -360,7 +360,7 @@ where
 {
     const TOTAL_AIR_TEMPERATURE: &'static str = "TOTAL AIR TEMPERATURE";
     const ANGLE_OF_ATTACK: &'static str = "INCIDENCE ALPHA";
-    const DYNAMIC_PRESSURE: &'static str = "DYNAMIC PRESSURE";
+    const AIRSPEED_INDICATED: &'static str = "AIRSPEED INDICATED";
 
     const ISENTROPIC_EXPONENT_KAPPA: f64 = 1.4;
     const STANDARD_AIR_PRESSURE_HPA: f64 = 1013.25;
@@ -405,10 +405,7 @@ where
 
         let dynamic_pressure = total_pressure - static_pressure;
 
-        self.write_by_name(
-            Self::DYNAMIC_PRESSURE,
-            dynamic_pressure.get::<inch_of_mercury>(),
-        );
+        self.set_cas_from_dynamic_pressure(dynamic_pressure);
         self.recompute_total_air_temperature();
         self
     }
@@ -443,10 +440,7 @@ where
             - 1.)
             * static_pressure;
 
-        self.write_by_name(
-            Self::DYNAMIC_PRESSURE,
-            dynamic_pressure.get::<inch_of_mercury>(),
-        );
+        self.set_cas_from_dynamic_pressure(dynamic_pressure);
         self.recompute_total_air_temperature();
         self
     }
@@ -461,12 +455,36 @@ where
                 - 1.)
                 * Pressure::new::<hectopascal>(Self::STANDARD_AIR_PRESSURE_HPA);
 
-        self.write_by_name(
-            Self::DYNAMIC_PRESSURE,
-            dynamic_pressure.get::<inch_of_mercury>(),
-        );
+        self.set_cas_from_dynamic_pressure(dynamic_pressure);
         self.recompute_total_air_temperature();
         self
+    }
+
+    fn set_cas_from_dynamic_pressure(&mut self, dynamic_pressure: Pressure) {
+        let dynamic_pressure_hpa = dynamic_pressure.get::<hectopascal>();
+
+        self.write_by_name(
+            Self::AIRSPEED_INDICATED,
+            Velocity::new::<meter_per_second>(
+                Self::STANDARD_SPEED_OF_SOUND_MS
+                    * (5.
+                        * ((dynamic_pressure_hpa / Self::STANDARD_AIR_PRESSURE_HPA + 1.)
+                            .powf(2. / 7.)
+                            - 1.))
+                        .sqrt(),
+            )
+            .get::<knot>(),
+        );
+    }
+
+    fn get_dynamic_pressure_from_cas(cas: Velocity) -> Pressure {
+        Pressure::new::<hectopascal>(
+            (((cas.get::<meter_per_second>() / Self::STANDARD_SPEED_OF_SOUND_MS).powi(2) / 5.
+                + 1.)
+                .powf(3.5)
+                - 1.)
+                * Self::STANDARD_AIR_PRESSURE_HPA,
+        )
     }
 
     fn recompute_total_air_temperature(&mut self) {
@@ -474,7 +492,7 @@ where
             self.read_by_name(UpdateContext::AMBIENT_PRESSURE_KEY),
         );
         let dynamic_pressure =
-            Pressure::new::<inch_of_mercury>(self.read_by_name(Self::DYNAMIC_PRESSURE));
+            Self::get_dynamic_pressure_from_cas(self.read_by_name(Self::AIRSPEED_INDICATED));
         let static_air_temperature = ThermodynamicTemperature::new::<degree_celsius>(
             self.read_by_name(UpdateContext::AMBIENT_TEMPERATURE_KEY),
         );
@@ -1614,9 +1632,14 @@ mod adr {
         let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number).static_air_temperature_of(sat);
         test_bed.run();
 
-        assert_eq!(
-            test_bed.static_air_temperature().normal_value().unwrap(),
-            sat
+        assert_about_eq!(
+            test_bed
+                .static_air_temperature()
+                .normal_value()
+                .unwrap()
+                .get::<degree_celsius>(),
+            sat.get::<degree_celsius>(),
+            1e-5
         );
     });
 
@@ -1625,9 +1648,14 @@ mod adr {
         let mut test_bed = adiru_aligned_test_bed::<T>(adiru_number).total_air_temperature_of(tat);
         test_bed.run();
 
-        assert_eq!(
-            test_bed.total_air_temperature().normal_value().unwrap(),
-            tat
+        assert_about_eq!(
+            test_bed
+                .total_air_temperature()
+                .normal_value()
+                .unwrap()
+                .get::<degree_celsius>(),
+            tat.get::<degree_celsius>(),
+            1e-5
         );
     });
 
