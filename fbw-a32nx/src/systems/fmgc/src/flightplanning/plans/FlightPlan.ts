@@ -1258,7 +1258,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     const hasDraftCruise = draftCruiseWind !== null;
     const hasDraftDescent = draftDescentWind !== null;
     const hasDraftAlternate = draftAlternateWind !== null;
-    if (hasDraftClimb && hasDraftCruise && hasDraftDescent && hasDraftAlternate) {
+    if (!hasDraftClimb && !hasDraftCruise && !hasDraftDescent && !hasDraftAlternate) {
       return;
     }
 
