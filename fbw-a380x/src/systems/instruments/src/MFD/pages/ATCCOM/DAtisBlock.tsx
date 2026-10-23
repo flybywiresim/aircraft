@@ -192,6 +192,7 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
         this.atisIcao.set(atisData.icao);
         this.isAutoUpdate.set(atisData.autoupdate);
         this.updateAtisData(atisData.icao);
+        if (atisData.fallbackMetar) this.atisMessage.set(this.truncateAtis(atisData.fallbackMetar).toUpperCase());
         this.messageStatusLabel.set(atisData.status);
       }),
     );

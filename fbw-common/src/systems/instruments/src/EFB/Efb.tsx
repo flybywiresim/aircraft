@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2023-2025 FlyByWire Simulations
+// Copyright (c) 2023-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useContext, useEffect, useState } from 'react';
@@ -76,7 +76,7 @@ export interface EfbWrapperProps {
   eventBus: EventBus;
 }
 
-export const EfbWrapper: React.FC<EfbWrapperProps> = ({ failures, aircraftSetup, eventBus }) => {
+export const EfbWrapper: React.FC<EfbWrapperProps> = ({ failures, aircraftSetup, eventBus, children }) => {
   const setSessionId = () => {
     const ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     const SESSION_ID_LENGTH = 14;
@@ -136,6 +136,7 @@ export const EfbWrapper: React.FC<EfbWrapperProps> = ({ failures, aircraftSetup,
 
   return (
     <Provider store={store}>
+      {children}
       <EfbInstrument failures={failures} aircraftChecklists={aircraftChecklists} eventBus={eventBus} />
     </Provider>
   );
