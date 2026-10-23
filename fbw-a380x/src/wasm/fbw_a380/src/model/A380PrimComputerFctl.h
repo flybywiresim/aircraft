@@ -2,10 +2,9 @@
 #define A380PrimComputerFctl_h_
 #include "rtwtypes.h"
 #include "A380PrimComputerFctl_types.h"
-#include "A380LateralNormalLaw.h"
+#include "A380LateralYStarLaw.h"
 #include "A380LateralDirectLaw.h"
-#include "A380PitchNormalLaw.h"
-#include "A380PitchAlternateLaw.h"
+#include "A380PitchNzLaw.h"
 #include "A380PitchDirectLaw.h"
 
 extern const real_T A380PrimComputerFctl_RGND;
@@ -53,6 +52,12 @@ class A380PrimComputerFctl final
   struct rtDW_MATLABFunction_A380PrimComputerFctl_a_T {
     real_T timeSinceCondition;
     boolean_T output;
+  };
+
+  struct rtDW_PulseRejectNode_A380PrimComputerFctl_T {
+    boolean_T Memory_PreviousInput;
+    rtDW_MATLABFunction_A380PrimComputerFctl_a_T sf_MATLABFunction_n;
+    rtDW_MATLABFunction_A380PrimComputerFctl_a_T sf_MATLABFunction;
   };
 
   struct BlockIO_A380PrimComputerFctl_T {
@@ -107,6 +112,8 @@ class A380PrimComputerFctl final
     rtDW_RateLimiter_A380PrimComputerFctl_c_T sf_RateLimiter_b4;
     rtDW_RateLimiter_A380PrimComputerFctl_c_T sf_RateLimiter_mr;
     rtDW_RateLimiter_A380PrimComputerFctl_c_T sf_RateLimiter_ne;
+    rtDW_PulseRejectNode_A380PrimComputerFctl_T PulseRejectNode1;
+    rtDW_PulseRejectNode_A380PrimComputerFctl_T PulseRejectNode;
     rtDW_MATLABFunction_A380PrimComputerFctl_a_T sf_MATLABFunction_nb;
     rtDW_RateLimiter_A380PrimComputerFctl_T sf_RateLimiter_ip;
     rtDW_RateLimiter_A380PrimComputerFctl_T sf_RateLimiter_gu;
@@ -162,6 +169,13 @@ class A380PrimComputerFctl final
 
   struct ExternalOutputs_A380PrimComputerFctl_T {
     prim_outputs out;
+  };
+
+  struct rtP_PulseRejectNode_A380PrimComputerFctl_T {
+    boolean_T SRFlipFlop_initial_condition;
+    boolean_T ConfirmNode_isRisingEdge;
+    boolean_T ConfirmNode1_isRisingEdge;
+    boolean_T Logic_table[16];
   };
 
   struct Parameters_A380PrimComputerFctl_T {
@@ -260,14 +274,8 @@ class A380PrimComputerFctl final
     real_T BitfromLabel6_bit_p;
     real_T BitfromLabel7_bit_g;
     real_T BitfromLabel8_bit_i;
-    real_T BitfromLabel_bit_c;
-    real_T BitfromLabel1_bit_o;
-    real_T BitfromLabel2_bit_hn;
     real_T BitfromLabel6_bit_h;
-    real_T BitfromLabel3_bit_b;
-    real_T BitfromLabel4_bit_g;
-    real_T BitfromLabel5_bit_j;
-    real_T BitfromLabel7_bit_o;
+    real_T BitfromLabel1_bit_f;
     real_T BitfromLabel_bit_l;
     real_T BitfromLabel1_bit_cm;
     real_T BitfromLabel_bit_e;
@@ -278,19 +286,13 @@ class A380PrimComputerFctl final
     real_T BitfromLabel_bit_h;
     real_T BitfromLabel6_bit_m;
     real_T BitfromLabel5_bit_o;
-    real_T BitfromLabel_bit_ci;
+    real_T BitfromLabel_bit_c;
     real_T BitfromLabel_bit_j;
     real_T BitfromLabel1_bit_h;
     real_T BitfromLabel2_bit_he;
     real_T BitfromLabel3_bit_l;
     real_T BitfromLabel4_bit_nn;
     real_T BitfromLabel5_bit_f;
-    real_T BitfromLabel_bit_d;
-    real_T BitfromLabel1_bit_lh;
-    real_T BitfromLabel2_bit_c;
-    real_T BitfromLabel3_bit_i;
-    real_T BitfromLabel4_bit_o;
-    real_T BitfromLabel5_bit_ft;
     real_T BitfromLabel_bit_hy;
     real_T CompareToConstant_const;
     real_T CompareToConstant3_const;
@@ -329,15 +331,13 @@ class A380PrimComputerFctl final
     real_T CompareToConstant1_const_c;
     real_T CompareToConstant_const_e;
     real_T CompareToConstant_const_b;
-    real_T CompareToConstant2_const_h;
-    real_T CompareToConstant3_const_m;
-    real_T CompareToConstant4_const_e;
-    real_T CompareToConstant5_const_p;
     real_T CompareToConstant1_const_b;
     real_T CompareToConstant2_const_d;
     real_T CompareToConstant_const_d5;
     real_T CompareToConstant1_const_c2;
     real_T CompareToConstant1_const_p;
+    real_T PulseRejectNode_fallingDelay;
+    real_T PulseRejectNode1_fallingDelay;
     real_T RateLimiterGenericVariableTs_lo;
     real_T RateLimiterGenericVariableTs1_lo;
     real_T RateLimiterGenericVariableTs2_lo;
@@ -381,6 +381,8 @@ class A380PrimComputerFctl final
     real_T RateLimiterGenericVariableTs1_lo_a;
     real_T RateLimiterGenericVariableTs2_lo_m;
     real_T RateLimiterGenericVariableTs3_lo_p;
+    real_T PulseRejectNode_risingDelay;
+    real_T PulseRejectNode1_risingDelay;
     real_T ConfirmNode_timeDelay;
     real_T ConfirmNode1_timeDelay;
     real_T ConfirmNode_timeDelay_a;
@@ -437,11 +439,12 @@ class A380PrimComputerFctl final
     SignStatusMatrix EnumeratedConstant_Value_e;
     SignStatusMatrix EnumeratedConstant_Value_i;
     SignStatusMatrix EnumeratedConstant1_Value_g;
-    a380_lateral_efcs_law EnumeratedConstant_Value_g;
-    a380_pitch_efcs_law EnumeratedConstant_Value_l;
-    a380_pitch_efcs_law EnumeratedConstant_Value_j;
-    a380_pitch_efcs_law EnumeratedConstant4_Value;
-    a380_pitch_efcs_law EnumeratedConstant3_Value;
+    a380_efcs_law EnumeratedConstant4_Value;
+    a380_efcs_law EnumeratedConstant_Value_j;
+    a380_efcs_law EnumeratedConstant1_Value_a;
+    a380_efcs_law EnumeratedConstant4_Value_k;
+    a380_efcs_law EnumeratedConstant3_Value;
+    a380_lateral_law EnumeratedConstant_Value_g;
     real32_T DetectChange_vinit;
     boolean_T SRFlipFlop_initial_condition;
     boolean_T SRFlipFlop1_initial_condition;
@@ -517,9 +520,13 @@ class A380PrimComputerFctl final
     real_T alphamax_tableData[24];
     real_T alphamax_bp01Data[4];
     real_T alphamax_bp02Data[6];
+    real_T Saturation2_UpperSat;
+    real_T Saturation2_LowerSat;
     real_T alphaprotection_tableData[24];
     real_T alphaprotection_bp01Data[4];
     real_T alphaprotection_bp02Data[6];
+    real_T Saturation1_UpperSat_i;
+    real_T Saturation1_LowerSat_k;
     real_T alpha0_tableData[6];
     real_T alpha0_bp01Data[6];
     real_T alphastallwarnmax_tableData[24];
@@ -542,8 +549,8 @@ class A380PrimComputerFctl final
     real_T Saturation3_LowerSat;
     real_T Saturation_UpperSat_f;
     real_T Saturation_LowerSat_hn;
-    real_T Saturation2_UpperSat;
-    real_T Saturation2_LowerSat;
+    real_T Saturation2_UpperSat_k;
+    real_T Saturation2_LowerSat_o;
     real_T Gain4_Gain;
     real_T Gain_Gain_h;
     real_T Saturation2_UpperSat_j;
@@ -567,8 +574,6 @@ class A380PrimComputerFctl final
     real_T Saturation5_UpperSat;
     real_T Saturation5_LowerSat;
     real_T Gain_Gain_p;
-    real_T Constant_Value_g;
-    real_T Gain_Gain_a;
     real_T Constant_Value_j;
     real_T Saturation3_UpperSat_o;
     real_T Saturation3_LowerSat_f;
@@ -658,6 +663,8 @@ class A380PrimComputerFctl final
     boolean_T Constant8_Value_h3;
     boolean_T Constant9_Value_f;
     boolean_T Constant2_Value_d;
+    rtP_PulseRejectNode_A380PrimComputerFctl_T PulseRejectNode1;
+    rtP_PulseRejectNode_A380PrimComputerFctl_T PulseRejectNode;
   };
 
   A380PrimComputerFctl(A380PrimComputerFctl const&) = delete;
@@ -698,32 +705,32 @@ class A380PrimComputerFctl final
   static void A380PrimComputerFctl_LagFilter_Reset(rtDW_LagFilter_A380PrimComputerFctl_T *localDW);
   static void A380PrimComputerFctl_LagFilter(real_T rtu_U, real_T rtu_C1, real_T rtu_dt, real_T *rty_Y,
     rtDW_LagFilter_A380PrimComputerFctl_T *localDW);
-  static void A380PrimComputerFctl_MATLABFunction_m(boolean_T rtu_bit1, boolean_T rtu_bit2, boolean_T rtu_bit3,
-    boolean_T rtu_bit4, boolean_T rtu_bit5, boolean_T rtu_bit6, real_T *rty_handleIndex);
   static void A380PrimComputerFctl_MoreThan(boolean_T rtu_In1, boolean_T rtu_In2, boolean_T rtu_In3, boolean_T rtu_In4,
     boolean_T *rty_Out1, uint8_T rtp_moreThan);
   static void A380PrimComputerFctl_MATLABFunction_b_Reset(rtDW_MATLABFunction_A380PrimComputerFctl_o_T *localDW);
   static void A380PrimComputerFctl_MATLABFunction_f(boolean_T rtu_u, boolean_T rtu_isRisingEdge, boolean_T *rty_y,
     rtDW_MATLABFunction_A380PrimComputerFctl_o_T *localDW);
-  static void A380PrimComputerFctl_MATLABFunction_g(boolean_T rtu_bit1, boolean_T rtu_bit2, boolean_T rtu_bit3,
-    boolean_T rtu_valid, a380_pitch_efcs_law *rty_law);
   static void A380PrimComputerFctl_MATLABFunction_k_Reset(rtDW_MATLABFunction_A380PrimComputerFctl_a_T *localDW);
   static void A380PrimComputerFctl_MATLABFunction_n(boolean_T rtu_u, real_T rtu_Ts, boolean_T rtu_isRisingEdge, real_T
     rtu_timeDelay, boolean_T *rty_y, rtDW_MATLABFunction_A380PrimComputerFctl_a_T *localDW);
-  static void A380PrimComputerFctl_CalculateV_alpha_max(real_T rtu_v_ias, real_T rtu_alpha, real_T rtu_alpha_0, real_T
-    rtu_alpha_target, real_T *rty_V_alpha_target);
+  static void A380PrimComputerFctl_PulseRejectNode_Init(rtDW_PulseRejectNode_A380PrimComputerFctl_T *localDW,
+    rtP_PulseRejectNode_A380PrimComputerFctl_T *localP);
+  static void A380PrimComputerFctl_PulseRejectNode_Reset(rtDW_PulseRejectNode_A380PrimComputerFctl_T *localDW,
+    rtP_PulseRejectNode_A380PrimComputerFctl_T *localP);
+  static void A380PrimComputerFctl_PulseRejectNode(boolean_T rtu_u, real_T rtu_Ts, boolean_T rty_y[2], real_T
+    rtp_risingDelay, real_T rtp_fallingDelay, rtDW_PulseRejectNode_A380PrimComputerFctl_T *localDW,
+    rtP_PulseRejectNode_A380PrimComputerFctl_T *localP);
+  static void A380PrimComputerFctl_CalculateV_alpha_protection(real_T rtu_v_ias, real_T rtu_alpha, real_T rtu_alpha_0,
+    real_T rtu_alpha_target, real_T *rty_V_alpha_target);
   static void A380PrimComputerFctl_GetIASforMach4(real_T rtu_m, real_T rtu_m_t, real_T rtu_v, real_T *rty_v_t);
   static void A380PrimComputerFctl_MATLABFunction_c(const base_arinc_429 *rtu_u, boolean_T *rty_y);
-  static void A380PrimComputerFctl_MATLABFunction_gr(const boolean_T rtu_u[19], real32_T *rty_y);
-  static void A380PrimComputerFctl_MATLABFunction_h(a380_pitch_efcs_law rtu_law, boolean_T *rty_bit1, boolean_T
-    *rty_bit2, boolean_T *rty_bit3);
-  static void A380PrimComputerFctl_MATLABFunction2(a380_lateral_efcs_law rtu_law, boolean_T *rty_bit1, boolean_T
-    *rty_bit2);
+  static void A380PrimComputerFctl_MATLABFunction_g(const boolean_T rtu_u[19], real32_T *rty_y);
+  static void A380PrimComputerFctl_MATLABFunction1(a380_efcs_law rtu_law, boolean_T *rty_bit1, boolean_T *rty_bit2,
+    boolean_T *rty_bit3);
   A380LateralDirectLaw LawMDLOBJ1;
-  A380LateralNormalLaw LawMDLOBJ2;
-  A380PitchAlternateLaw LawMDLOBJ3;
-  A380PitchDirectLaw LawMDLOBJ4;
-  A380PitchNormalLaw LawMDLOBJ5;
+  A380LateralYStarLaw LawMDLOBJ2;
+  A380PitchDirectLaw LawMDLOBJ3;
+  A380PitchNzLaw LawMDLOBJ4;
 };
 
 #endif
