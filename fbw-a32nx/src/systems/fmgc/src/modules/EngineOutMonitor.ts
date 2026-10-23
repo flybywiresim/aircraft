@@ -33,20 +33,8 @@ export class EngineOutMonitor extends FmsModule {
   private isAutoExitInhibited = false;
 
   private readonly areBothEnginesOn = MappedSubject.create(
-    ([fadec1Healthy, fadec2Healthy, engine1State, engine2State, tla1, tla2, master1, master2], wasEngineOut) => {
-      if (wasEngineOut) {
-        return (
-          !this.isAutoExitInhibited &&
-          fadec1Healthy &&
-          fadec2Healthy &&
-          master1 &&
-          master2 &&
-          engine1State === EngineState.On &&
-          engine2State === EngineState.On &&
-          tla1 >= 5 &&
-          tla2 >= 5
-        );
-      } else {
+    ([fadec1Healthy, fadec2Healthy, engine1State, engine2State, tla1, tla2, master1, master2], wereBothEnginesOn) => {
+      if (wereBothEnginesOn) {
         if (!master1 || !master2) {
           return false;
         }
@@ -58,6 +46,17 @@ export class EngineOutMonitor extends FmsModule {
         }
         return fadec1Healthy && fadec2Healthy && engine1State === EngineState.On && engine2State === EngineState.On;
       }
+      return (
+        !this.isAutoExitInhibited &&
+        fadec1Healthy &&
+        fadec2Healthy &&
+        master1 &&
+        master2 &&
+        engine1State === EngineState.On &&
+        engine2State === EngineState.On &&
+        tla1 >= 5 &&
+        tla2 >= 5
+      );
     },
     this.engine1FadecHealthy,
     this.engine2FadecHealthy,
