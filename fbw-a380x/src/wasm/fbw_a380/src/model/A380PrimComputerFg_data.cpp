@@ -319,386 +319,1148 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
   0.0,
   0.0,
   fmgc_approach_type::ILS,
+
+  { 'a', 'a', 'a', 'a' },
   fmgc_approach_type::RNAV,
+
+  { 'a', 'a', 'a', 'a' },
   fmgc_des_submode::SPEED_THRUST,
+
+  { 'a', 'a', 'a', 'a' },
   fmgc_des_submode::VPATH_SPEED,
+
+  { 'a', 'a', 'a', 'a' },
   fms_flight_phase::Approach,
+
+  { 'a', 'a', 'a', 'a' },
   fms_flight_phase::Takeoff,
+
+  { 'a', 'a', 'a', 'a' },
   fms_flight_phase::Goaround,
+
+  { 'a', 'a', 'a', 'a' },
   fms_flight_phase::Takeoff,
+
+  { 'a', 'a', 'a', 'a' },
   fms_flight_phase::Climb,
+
+  { 'a', 'a', 'a', 'a' },
   fms_flight_phase::Goaround,
+
+  { 'a', 'a', 'a', 'a' },
   fms_flight_phase::Descent,
+
+  { 'a', 'a', 'a', 'a' },
   fms_flight_phase::Approach,
+
+  { 'a', 'a', 'a', 'a' },
   fms_flight_phase::Descent,
+
+  { 'a', 'a', 'a', 'a' },
   fms_flight_phase::Approach,
+
+  { 'a', 'a', 'a', 'a' },
   fms_flight_phase::Descent,
+
+  { 'a', 'a', 'a', 'a' },
   fms_flight_phase::Approach,
+
+  { 'a', 'a', 'a', 'a' },
   fms_flight_phase::Takeoff,
+
+  { 'a', 'a', 'a', 'a' },
   fms_flight_phase::Goaround,
+
+  { 'a', 'a', 'a', 'a' },
   fms_flight_phase::Takeoff,
+
+  { 'a', 'a', 'a', 'a' },
   fms_flight_phase::Climb,
+
+  { 'a', 'a', 'a', 'a' },
   fms_flight_phase::Goaround,
+
+  { 'a', 'a', 'a', 'a' },
   fms_flight_phase::Takeoff,
+
+  { 'a', 'a', 'a', 'a' },
   fms_flight_phase::Climb,
+
+  { 'a', 'a', 'a', 'a' },
   fms_flight_phase::Goaround,
+
+  { 'a', 'a', 'a', 'a' },
   fms_flight_phase::Descent,
+
+  { 'a', 'a', 'a', 'a' },
   fms_flight_phase::Approach,
+
+  { 'a', 'a', 'a', 'a' },
   fms_flight_phase::Approach,
+
+  { 'a', 'a', 'a', 'a' },
   fms_flight_phase::Approach,
+
+  { 'a', 'a', 'a', 'a' },
   fms_flight_phase::Cruise,
+
+  { 'a', 'a', 'a', 'a' },
   fms_flight_phase::Cruise,
+
+  { 'a', 'a', 'a', 'a' },
   fms_flight_phase::Goaround,
+
+  { 'a', 'a', 'a', 'a' },
   fms_flight_phase::Goaround,
+
+  { 'a', 'a', 'a', 'a' },
   36.7F,
+
+  { 'a', 'a', 'a', 'a' },
   36.7F,
+
+  { 'a', 'a', 'a', 'a' },
   36.7F,
+
+  { 'a', 'a', 'a', 'a' },
   36.7F,
+
+  { 'a', 'a', 'a', 'a' },
   36.7F,
+
+  { 'a', 'a', 'a', 'a' },
   36.7F,
+
+  { 'a', 'a', 'a', 'a' },
   36.7F,
+
+  { 'a', 'a', 'a', 'a' },
   36.7F,
+
+  { 'a', 'a', 'a', 'a' },
   -1.0F,
+
+  { 'a', 'a', 'a', 'a' },
   -1.0F,
+
+  { 'a', 'a', 'a', 'a' },
   -1.0F,
+
+  { 'a', 'a', 'a', 'a' },
   1.0F,
+
+  { 'a', 'a', 'a', 'a' },
   1.0F,
+
+  { 'a', 'a', 'a', 'a' },
   1.0F,
+
+  { 'a', 'a', 'a', 'a' },
   1.0F,
+
+  { 'a', 'a', 'a', 'a' },
   250.0F,
+
+  { 'a', 'a', 'a', 'a' },
   40.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   50.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   4.0F,
+
+  { 'a', 'a', 'a', 'a' },
   24.0F,
+
+  { 'a', 'a', 'a', 'a' },
   24.0F,
+
+  { 'a', 'a', 'a', 'a' },
   24.0F,
+
+  { 'a', 'a', 'a', 'a' },
   24.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   25.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   25.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   25.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   25.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   35.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   35.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   35.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   35.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   tcas_submode::ALT_ACQ,
+
+  { 'a', 'a', 'a', 'a' },
   tcas_submode::ALT_HOLD,
+
+  { 'a', 'a', 'a', 'a' },
   tcas_submode::VS,
+
+  { 'a', 'a', 'a', 'a' },
   tcas_submode::ALT_ACQ,
+
+  { 'a', 'a', 'a', 'a' },
   tcas_submode::ALT_ACQ,
+
+  { 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   0,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   0,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   0,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   0,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   1,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   2,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   3,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   2U,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
 
   {
     {
@@ -1917,6 +2679,11 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
             {
               0U,
               0.0F
+            },
+
+            {
+              0U,
+              0.0F
             }
           },
 
@@ -2152,6 +2919,11 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
 
         {
           {
+            {
+              0U,
+              0.0F
+            },
+
             {
               0U,
               0.0F
@@ -3436,6 +4208,8 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
         0.0,
         0.0,
         0.0,
+        0.0,
+        0.0,
         0.0
       },
       0.0,
@@ -3487,6 +4261,7 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
       0.0,
       0.0,
       0.0,
+      false,
       false,
       false
     },
@@ -3587,12 +4362,14 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
         0.0,
         0.0
       },
-      a380_lateral_efcs_law::NormalLaw,
-      a380_lateral_efcs_law::NormalLaw,
-      a380_pitch_efcs_law::NormalLaw,
-      a380_pitch_efcs_law::NormalLaw,
+      a380_efcs_law::None,
+      a380_efcs_law::None,
+      a380_pitch_law::None,
+      a380_lateral_law::None,
       false,
       false,
+      false,
+      0U,
       false,
       false,
       false,
@@ -4229,6 +5006,11 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
         {
           0U,
           0.0F
+        },
+
+        {
+          0U,
+          0.0F
         }
       },
 
@@ -4463,8 +5245,15 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
     }
   },
 
+  { 'a' },
+
   {
     {
+      {
+        0U,
+        0.0F
+      },
+
       {
         0U,
         0.0F
@@ -5038,6 +5827,8 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
     0.0
   },
 
+  { 'a', 'a', 'a', 'a', 'a', 'a' },
+
   {
     {
       0.0,
@@ -5153,6 +5944,8 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
     false
   },
 
+  { 'a', 'a', 'a', 'a', 'a' },
+
   {
     0U,
     0.0F
@@ -5252,116 +6045,151 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
   -1.0,
   0.0,
   3.0F,
+
+  { 'a', 'a', 'a', 'a' },
   10.0F,
+
+  { 'a', 'a', 'a', 'a' },
 
   { 10.0F, 10.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F },
 
+  { 'a', 'a', 'a', 'a' },
+
   { 0.0F, 20.0F, 30.0F, 45.0F, 60.0F, 80.0F, 100.0F },
+
+  { 'a', 'a', 'a', 'a' },
   -1.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0174532924F,
+
+  { 'a', 'a', 'a', 'a' },
   0.0174532924F,
+
+  { 'a', 'a', 'a', 'a' },
   10.0F,
-  false,
-  false,
-  false,
-  false,
-  false,
+
+  { 'a', 'a', 'a', 'a' },
   false,
 
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-  false,
-  false,
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-  false,
-  false,
-  false,
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
 
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-  true,
-  true,
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
+  false,
 
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
+  false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
+  false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
+  false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
 
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
   false,
 
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
+  false,
 
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
 
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
   false,
 
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
+  false,
 
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
+  false,
 
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
+  false,
 
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
 
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
   true,
 
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
+  true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+  false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+  false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
 
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
@@ -5384,8 +6212,39 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
 
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
   true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+  true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
 
   {
     11.0
