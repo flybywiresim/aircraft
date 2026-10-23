@@ -40,7 +40,6 @@
       "@fmgc/*": ["./fmgc/src/*"],
       "@instruments/common/*": ["./instruments/src/Common/*"],
       "@localization/*": ["../localization/*"],
-      "@sentry/*": ["./sentry-client/src/*"],
       "@shared/*": ["./shared/src/*"],
       "@simbridge/*": ["./simbridge-client/src/*"],
       "@tcas/*": ["./tcas/src/*"],
