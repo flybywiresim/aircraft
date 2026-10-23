@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// Copyright (c) 2023-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { AircraftGithubVersionChecker, NXDataStore, UniversalConfigProvider } from '@flybywiresim/fbw-sdk';
@@ -114,7 +114,7 @@ export const simbriefDataParser = (simbriefJson: any): ISimbriefData => {
       estTakeOffWeight: weights.est_tow,
       estZeroFuelWeight: weights.est_zfw,
       maxLandingWeight: weights.max_ldw,
-      maxTakeOffWeight: weights.max_tow,
+      maxTakeOffWeight: weights.max_tow_struct,
       maxZeroFuelWeight: weights.max_zfw,
       passengerCount: weights.pax_count_actual,
       bagCount: weights.bag_count_actual,
