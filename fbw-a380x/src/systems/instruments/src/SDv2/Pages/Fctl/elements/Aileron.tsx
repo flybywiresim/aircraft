@@ -1,22 +1,15 @@
-import {
-  ConsumerSubject,
-  DisplayComponent,
-  EventBus,
-  FSComponent,
-  MappedSubject,
-  Subject,
-  Subscribable,
-  SubscribableMapFunctions,
-} from '@microsoft/msfs-sdk';
+import { DisplayComponent, EventBus, FSComponent, Subject, Subscribable } from '@microsoft/msfs-sdk';
 import {
   ActuatorIndication,
   ActuatorType,
   ElecPowerSource,
+  getFcdcBitForPowerSource,
+  getFcdcBitForPowerSourceInfoAvail,
   HydraulicPowerSource,
-  powerSourceIsHydraulic,
 } from './ActuatorIndication';
-import { MIN_VERTICAL_DEFLECTION, VerticalDeflectionIndication } from './VerticalDeflectionIndication';
-import { SDSimvars } from '../../../SDSimvarPublisher';
+import { VerticalDeflectionIndication } from './VerticalDeflectionIndication';
+import { FcdcBusBaseEvents } from '@shared/publishers/FcdcPublisher';
+import { Arinc429LocalVarConsumerSubject } from '@flybywiresim/fbw-sdk';
 
 export enum AileronSide {
   Left = 'left',
@@ -24,9 +17,9 @@ export enum AileronSide {
 }
 
 export enum AileronPosition {
-  Inboard = 'Inner',
-  Mid = 'Middle',
-  Outboard = 'Outer',
+  Inboard = 'inner',
+  Mid = 'middle',
+  Outboard = 'outer',
 }
 
 interface AileronProps {
@@ -39,27 +32,53 @@ interface AileronProps {
 }
 
 export class Aileron extends DisplayComponent<AileronProps> {
+  private readonly sub = this.props.bus.getSubscriber<FcdcBusBaseEvents>();
+
+  private readonly fcdcDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_2'));
+
+  private readonly fcdcDiscreteWord3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_3'));
+
+  private readonly fcdcDiscreteWord12 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_12'));
+
+  private readonly fcdcAileronPosition = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on(`fcdc_${this.props.side}_${this.props.position}_aileron_position_deg`),
+  );
+
   private readonly showAileronDroopSymbol = Subject.create(true);
 
-  private readonly deflectionInfoValid = Subject.create(true);
-
-  private readonly aileronDeflection = ConsumerSubject.create(
-    this.props.bus
-      .getSubscriber<SDSimvars>()
-      .on(`${this.props.side}${this.props.position}AileronDeflection`)
-      .atFrequency(10),
-    0,
-  );
+  private readonly deflectionInfoValid = this.fcdcAileronPosition.map((word) => !word.isInvalid());
 
   private readonly actuator1PowerSource: HydraulicPowerSource;
 
   private readonly actuator2PowerSource: HydraulicPowerSource | ElecPowerSource;
 
-  private readonly powerSource1Avail: ConsumerSubject<boolean>;
+  private readonly powerSource1Avail = this.fcdcDiscreteWord12.map((word) =>
+    word.bitValue(getFcdcBitForPowerSource(this.actuator1PowerSource)),
+  );
 
-  private readonly powerSource2Avail: ConsumerSubject<boolean>;
+  private readonly powerSource1InfoAvail = this.fcdcDiscreteWord12.map((word) =>
+    word.bitValueOr(getFcdcBitForPowerSourceInfoAvail(this.actuator1PowerSource), false),
+  );
 
-  private readonly powerAvail: Subscribable<boolean>;
+  private readonly powerSource2Avail = this.fcdcDiscreteWord12.map((word) =>
+    word.bitValue(getFcdcBitForPowerSource(this.actuator2PowerSource)),
+  );
+
+  private readonly powerSource2InfoAvail = this.fcdcDiscreteWord12.map((word) =>
+    word.bitValueOr(getFcdcBitForPowerSourceInfoAvail(this.actuator2PowerSource), false),
+  );
+
+  private readonly failAvailBit1: number;
+
+  private readonly failAvailBit2: number;
+
+  private readonly powerAvail = this.fcdcDiscreteWord3.map(
+    (word) => word.bitValue(this.failAvailBit1) || word.bitValue(this.failAvailBit2),
+  );
+
+  private readonly actuator1Failed = this.fcdcDiscreteWord2.map((word) => word.bitValueOr(this.failAvailBit1, false));
+
+  private readonly actuator2Failed = this.fcdcDiscreteWord2.map((word) => word.bitValueOr(this.failAvailBit2, false));
 
   constructor(props: AileronProps) {
     super(props);
@@ -75,27 +94,15 @@ export class Aileron extends DisplayComponent<AileronProps> {
       this.actuator2PowerSource = ElecPowerSource.AcEha;
     }
 
-    this.powerSource1Avail = ConsumerSubject.create(
-      this.props.bus.getSubscriber<SDSimvars>().on(`${this.actuator1PowerSource}PressureSwitch`),
-      false,
-    );
+    let failAvailBit = this.props.side === AileronSide.Left ? 11 : 19;
+    if (this.props.position == AileronPosition.Mid) {
+      failAvailBit += 2;
+    } else if (this.props.position == AileronPosition.Outboard) {
+      failAvailBit += 4;
+    }
 
-    this.powerSource2Avail = ConsumerSubject.create(
-      this.props.bus
-        .getSubscriber<SDSimvars>()
-        .on(
-          powerSourceIsHydraulic(this.actuator2PowerSource)
-            ? `${this.actuator2PowerSource}PressureSwitch`
-            : `${this.actuator2PowerSource}Powered`,
-        ),
-      false,
-    );
-
-    this.powerAvail = MappedSubject.create(
-      SubscribableMapFunctions.or(),
-      this.powerSource1Avail,
-      this.powerSource2Avail,
-    );
+    this.failAvailBit1 = failAvailBit + 1;
+    this.failAvailBit2 = failAvailBit;
   }
 
   render() {
@@ -119,10 +126,7 @@ export class Aileron extends DisplayComponent<AileronProps> {
         <VerticalDeflectionIndication
           powerAvail={this.powerAvail}
           deflectionInfoValid={this.deflectionInfoValid}
-          deflection={this.aileronDeflection.map(
-            (aileronDeflection) =>
-              (this.props.side === AileronSide.Left ? -aileronDeflection : aileronDeflection) * MIN_VERTICAL_DEFLECTION,
-          )}
+          deflection={this.fcdcAileronPosition.map((aileronDeflection) => aileronDeflection.value)}
           showAileronDroopSymbol={this.showAileronDroopSymbol}
           onGround={this.props.onGround}
         />
@@ -133,6 +137,8 @@ export class Aileron extends DisplayComponent<AileronProps> {
           type={ActuatorType.Conventional}
           powerSource={this.actuator1PowerSource}
           powerSourceAvailable={this.powerSource1Avail}
+          powerSourceInfoAvailable={this.powerSource1InfoAvail}
+          actuatorFailed={this.actuator1Failed}
         />
         <ActuatorIndication
           x={actuatorIndicationX}
@@ -140,6 +146,8 @@ export class Aileron extends DisplayComponent<AileronProps> {
           type={this.props.position === AileronPosition.Outboard ? ActuatorType.Conventional : ActuatorType.EHA}
           powerSource={this.actuator2PowerSource}
           powerSourceAvailable={this.powerSource2Avail}
+          powerSourceInfoAvailable={this.powerSource2InfoAvail}
+          actuatorFailed={this.actuator2Failed}
         />
       </g>
     );

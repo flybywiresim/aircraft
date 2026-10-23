@@ -12,6 +12,8 @@ import { SDSimvarPublisher } from './SDSimvarPublisher';
 import { AdirsValueProvider } from '../MsfsAvionicsCommon/AdirsValueProvider';
 import { FcuEfisCpBusPublisher } from '@shared/publishers/EfisCpBusPublisher';
 import { FqmsBusPublisher } from '@shared/publishers/FqmsBusPublisher';
+import { FcdcBusPublisher } from '@shared/publishers/FcdcPublisher';
+import { FcdcChoiceProvider } from './shared/FcdcChoiceProvider';
 
 class SdInstrument implements FsInstrument {
   private readonly bus = new ArincEventBus();
@@ -32,6 +34,10 @@ class SdInstrument implements FsInstrument {
 
   private readonly fqmsPublisher = new FqmsBusPublisher(this.bus);
 
+  private readonly fcdcPublisher = new FcdcBusPublisher(this.bus);
+
+  private readonly fcdcChoiceProvider = new FcdcChoiceProvider(this.bus);
+
   private readonly failuresConsumer = new FailuresConsumer();
 
   constructor(public readonly instrument: BaseInstrument) {
@@ -43,6 +49,8 @@ class SdInstrument implements FsInstrument {
     this.backplane.addPublisher('fmsData', this.fmsDataPublisher);
     this.backplane.addPublisher('fcuBus', this.fcuBusPublisher);
     this.backplane.addPublisher('fqms', this.fqmsPublisher);
+    this.backplane.addPublisher('fcdc', this.fcdcPublisher);
+    this.backplane.addInstrument('fcdcChoiceProvider', this.fcdcChoiceProvider);
 
     this.doInit();
   }

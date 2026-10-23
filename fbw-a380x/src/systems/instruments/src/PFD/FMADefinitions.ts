@@ -284,6 +284,7 @@ export function computeBC3Message(
   exitMissed: boolean,
   primFgDiscreteWord2: Arinc429WordData,
   primFgDiscreteWord6: Arinc429WordData,
+  thrustLocked: boolean,
 ): BC3Messages {
   const flightPhaseForWarning =
     fwcFlightPhase >= 2 && fwcFlightPhase <= 11 && !(fwcFlightPhase >= 4 && fwcFlightPhase <= 7);
@@ -306,7 +307,7 @@ export function computeBC3Message(
     return BC3Messages.TCAS_RA_INHIBITED;
   } else if (trkFpaDeselected && !isAttExcessive) {
     return BC3Messages.TRK_FPA_DESELECTED;
-  } else if (false) {
+  } else if (thrustLocked) {
     return BC3Messages.MOVE_THR_LEVERS;
   } else if (tdReached) {
     return BC3Messages.TD_REACHED;
