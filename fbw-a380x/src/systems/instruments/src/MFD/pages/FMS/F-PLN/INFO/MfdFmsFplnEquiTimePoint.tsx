@@ -15,10 +15,10 @@ import './MfdFmsFplnEquiTimePoint.scss';
 
 export class MfdFmsFplnEquiTimePoint extends FmsPage {
   private readonly timeToEtp = Subject.create('--:--');
-  private readonly timeHeader = Subject.create<'UTC' | 'TIME'>('UTC');
+  private readonly timeHeader = Subject.create('');
   private readonly distanceToEtp = Subject.create<number | null>(null);
   private readonly distanceToEtpDisplay = this.distanceToEtp.map((v) =>
-    v != null ? Math.min(9999, v).toFixed(0).padStart(4, '\xa0') : '----',
+    v != null ? v.toFixed(0).padStart(4, '\xa0') : '----',
   );
   private readonly distancetoEtpUnitVisibility = this.distanceToEtp.map((v) => (v !== null ? 'visible' : 'hidden'));
   private readonly etpRefDisabled = Subject.create(false);
@@ -57,7 +57,7 @@ export class MfdFmsFplnEquiTimePoint extends FmsPage {
 
   private update() {
     const etp = this.props.fmcService.master.getEquitimePoint();
-    this.timeHeader.set(this.props.fmcService.master.getTimePredictionHeader());
+    this.timeHeader.set(this.props.fmcService.master.getTimePredictionHeader().padEnd(4, '\xa0'));
     const etpEtaSeconds = etp.pposTimeToEtp !== undefined ? etp.pposTimeToEtp * 3600 : null;
     this.timeToEtp.set(this.props.fmcService.master.formatEta(etpEtaSeconds));
     this.distanceToEtp.set(etp.pposDistanceToEtp !== undefined ? Math.round(etp.pposDistanceToEtp) : null);
@@ -70,8 +70,8 @@ export class MfdFmsFplnEquiTimePoint extends FmsPage {
       ),
     );
     this.ref1Ident.set(etp.referenceFix1?.ident ?? null);
-    this.ref1WindDirection.set(etp.windToReferenceFix1.direction ?? null);
-    this.ref1WindSpeed.set(etp.windToReferenceFix1.direction ?? null);
+    this.ref1WindDirection.set(etp.getWindToReferenceFix1().direction ?? null);
+    this.ref1WindSpeed.set(etp.getWindToReferenceFix1().magnitude ?? null);
     this.etpToRef1Bearing.set(etp.etpBearingToReferenceFix1 ?? null);
     this.etpToRef1Distance.set(etp.etpDistanceToReferenceFix1 ?? null);
     this.etpToRef1Time.set(
@@ -88,8 +88,8 @@ export class MfdFmsFplnEquiTimePoint extends FmsPage {
       ),
     );
     this.ref2Ident.set(etp.referenceFix2?.ident ?? null);
-    this.ref2WindDirection.set(etp.windToReferenceFix2.direction ?? null);
-    this.ref2WindSpeed.set(etp.windToReferenceFix2.direction ?? null);
+    this.ref2WindDirection.set(etp.getWindToReferenceFix1().direction ?? null);
+    this.ref2WindSpeed.set(etp.getWindToReferenceFix2().magnitude ?? null);
     this.etpToRef2Bearing.set(etp.etpBearingToReferenceFix2 ?? null);
     this.etpToRef2Distance.set(etp.etpDistanceToReferenceFix2 ?? null);
     this.etpToRef2Time.set(
@@ -123,7 +123,7 @@ export class MfdFmsFplnEquiTimePoint extends FmsPage {
         <div class="mfd-fpln-etp-ppos-airport-vertical-line first"></div>
         <div class="mfd-fpln-etp-ppos-airport-horizontal-line second"></div>
         <div class="mfd-fpln-etp-ppos-airport-vertical-line second"></div>
-        <div>
+        <div class="mfd-etp-ref-info-container left">
           <MfdEtpRefInfo
             bearingToFix={this.bearingToRef1}
             distanceToFix={this.distanceToRef1}
@@ -136,6 +136,21 @@ export class MfdFmsFplnEquiTimePoint extends FmsPage {
             trackFromEtpToFix={this.etpToRef1Bearing}
             distanceFromEtpToFix={this.etpToRef1Distance}
             timeFromEtpToFix={this.etpToRef1Time}
+          ></MfdEtpRefInfo>
+        </div>
+        <div class="mfd-etp-ref-info-container right">
+          <MfdEtpRefInfo
+            bearingToFix={this.bearingToRef2}
+            distanceToFix={this.distanceToRef2}
+            timeToFix={this.timeToRef2}
+            timeHeader={this.timeHeader}
+            refIdent={this.ref2Ident}
+            refInputDisabled={this.etpRefDisabled}
+            windDirection={this.ref2WindDirection}
+            windSpeed={this.ref2WindSpeed}
+            trackFromEtpToFix={this.etpToRef2Bearing}
+            distanceFromEtpToFix={this.etpToRef1Distance}
+            timeFromEtpToFix={this.etpToRef2Time}
           ></MfdEtpRefInfo>
         </div>
       </>
@@ -166,7 +181,7 @@ export class MfdEtpRefInfo extends LifecycleComponent<MfdEtpRefInfoProps> {
           distanceToFix={this.props.distanceToFix}
           timeHeader={this.props.timeHeader}
           timeToFix={this.props.timeToFix}
-          bearingIsTrack={false}
+          isFromEtp={false}
         ></MfdEtpBrgDistanceTimeToFixInfo>
       </>
     );
@@ -178,7 +193,7 @@ export interface MfdEtpBrgDistanceTimeProps extends ComponentProps {
   distanceToFix: Subscribable<number | null>;
   timeToFix: Subscribable<string>;
   timeHeader: Subscribable<string>;
-  bearingIsTrack: boolean;
+  isFromEtp: boolean;
 }
 
 export class MfdEtpBrgDistanceTimeToFixInfo extends LifecycleComponent<MfdEtpBrgDistanceTimeProps> {
@@ -186,7 +201,48 @@ export class MfdEtpBrgDistanceTimeToFixInfo extends LifecycleComponent<MfdEtpBrg
     return (
       <>
         <div class="mfd-fpln-etp-brg-dist-utc-ref-box">
-          <span class="mfd-label bigger">DIST</span>
+          <div class="fr">
+            <span class="mfd-label bigger etp-ref-info-brg-header">{this.props.isFromEtp ? 'TRK' : 'BRG'}</span>
+            <span class="mfd-value bigger etp-ref-info-brg-value">
+              {this.props.bearingOrTrackToFix.map((v) => (v !== null ? v.toFixed(0).padStart(3, '0') : '---'))}
+            </span>
+            <span
+              class="mfd-label-unit bigger etp-ref-info-brg-unit"
+              style={{
+                visibility: this.props.bearingOrTrackToFix
+                  .map((v) => (v !== null ? 'visible' : 'hidden'))
+                  .withLifecycle(this.defaultLifecycle),
+              }}
+            >
+              °
+            </span>
+          </div>
+          <div class="fr">
+            <span class="mfd-label bigger etp-ref-info-dist-header">DIST</span>
+            <span class={{ 'mfd-value': true, bigger: true, 'etp-ref-info-dist-value-to': !this.props.isFromEtp }}>
+              {this.props.distanceToFix.map((v) =>
+                v !== null
+                  ? this.props.isFromEtp
+                    ? v.toFixed(0).padStart(4, '\xa0')
+                    : v.toFixed(0).padEnd(4, '\xa0')
+                  : '----',
+              )}
+            </span>
+            <span
+              class={{ 'mfd-label-unit': true, bigger: true, 'etp-ref-info-dist-unit-to': !this.props.isFromEtp }}
+              style={{
+                visibility: this.props.distanceToFix
+                  .map((v) => (v !== null ? 'visible' : 'hidden'))
+                  .withLifecycle(this.defaultLifecycle),
+              }}
+            >
+              NM
+            </span>
+          </div>
+          <div class="fr">
+            <span class="mfd-label bigger etp-ref-info-time-header">{this.props.timeHeader}</span>
+            <span class="mfd-value bigger etp-ref-info-time-value">{this.props.timeToFix}</span>
+          </div>
         </div>
       </>
     );

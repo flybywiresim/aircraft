@@ -101,3 +101,74 @@ $etp-airport-lines-vertical-position: 181px;
   left: 79px;
   top: 50px;
 }
+
+.mfd-fpln-etp-brg-dist-utc-ref-box {
+  display: flex;
+  flex-direction: column;
+  padding-left: 20px;
+  width: 242px;
+  height: 130px;
+  border: 1px solid $display-grey;
+}
+
+.mfd-etp-ref-info-container {
+  position: absolute;
+}
+
+.mfd-etp-ref-info-container.right {
+
+  height: 125px;
+
+}
+
+.mfd-etp-ref-info-container.left {
+  top: 250px;
+  left: 24px;
+}
+
+.etp-ref-info-brg-header {
+  position: relative;
+  top: 10px;
+}
+
+$etp-ref-info-brg-value-y-pos: 6px;
+
+.etp-ref-info-brg-value {
+ position: relative;
+ left: 28px;
+ top: $etp-ref-info-brg-value-y-pos;
+}
+
+.etp-ref-info-brg-unit {
+position: relative;
+ left: 40px;
+ top: $etp-ref-info-brg-value-y-pos;
+}
+
+.etp-ref-info-dist-header {
+   position: relative;
+  top: 22px;
+}
+
+.etp-ref-info-dist-value-to {
+  position: relative;
+  top: 19px;
+  left: 15px;
+}
+
+.etp-ref-info-dist-unit-to {
+    position: relative;
+	  top: 22px;
+    left: 30px;
+}
+
+.etp-ref-info-time-header {
+  position: relative;
+  top: 35px
+}
+
+.etp-ref-info-time-value {
+    position: relative;
+    top: 31.8px;
+    left: 9.8px;
+}

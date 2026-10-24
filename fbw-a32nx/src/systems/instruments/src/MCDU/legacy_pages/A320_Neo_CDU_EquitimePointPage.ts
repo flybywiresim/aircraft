@@ -279,7 +279,7 @@ export class CDUEquitimePointPage {
         });
     };
 
-    const timeHeader = mcdu.getTimePredictionHeader(FlightPlanIndex.Active);
+    const timeHeader = mcdu.getTimePredictionHeader(FlightPlanIndex.Active).padEnd(4, '\xa0');
 
     mcdu.setTemplate(
       FormatTemplate([
