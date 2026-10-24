@@ -5,9 +5,9 @@ import { FmgcFlightPhase } from '@shared/flightphase';
 import { CDUVerticalRevisionPage } from './A320_Neo_CDU_VerticalRevisionPage';
 import { Column, FormatTemplate } from '../legacy/A320_Neo_CDU_Format';
 import { VerticalWaypointPrediction } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
-import { FmsFormatters } from '../legacy/FmsFormatters';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
+import { TimeFormatters } from '@flybywiresim/fbw-sdk';
 
 export class CduRtaPage {
   static readonly returnColumn = new Column(0, '<RETURN');
@@ -38,7 +38,7 @@ export class CduRtaPage {
     const allowEtt = isPreFlight || !flightplan.isActiveOrCopiedFromActive();
     const ettCell = allowEtt
       ? ettExists
-        ? `${FmsFormatters.milisecondsTohhmmss(ett)}`
+        ? `${TimeFormatters.milisecondsTohhmmss(ett)}`
         : '*[\xa0\xa0\xa0\xa0\xa0]'
       : '';
     mcdu.setTemplate(

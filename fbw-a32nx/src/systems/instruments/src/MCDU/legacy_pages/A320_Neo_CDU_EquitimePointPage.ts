@@ -89,8 +89,8 @@ export class CDUEquitimePointPage {
       trueWindRef1LabelColumn.update('TRU WIND');
 
       trueWindRef1Column.update(
-        etpService.isWindToReferenceFix1PilotEntered
-          ? `${formatWindVector(etpService.windToReferenceFix1)}`
+        etpService.getIsWindVectorToFix1Entered().get()
+          ? `${formatWindVector(etpService.getWindToReferenceFix1())}`
           : '[ ]°/[ ]',
       );
 
@@ -144,8 +144,8 @@ export class CDUEquitimePointPage {
       trueWindRef2LabelColumn.update('TRU WIND');
 
       trueWindRef2Column.update(
-        etpService.isWindToReferenceFix2PilotEntered
-          ? `${formatWindVector(etpService.windToReferenceFix2)}`
+        etpService.getIsWindVectorToFix2Entered().get()
+          ? `${formatWindVector(etpService.getWindToReferenceFix2())}`
           : '[ ]°/[ ]',
       );
 
@@ -174,12 +174,8 @@ export class CDUEquitimePointPage {
       };
     }
 
-    if (etpService.referenceFix1 !== undefined || etpService.referenceFix2 !== undefined) {
-      acToColumn.update('NO (ETP)');
-    }
-
     const etp = etpService.get();
-    if (etpService.referenceFix1 !== undefined && etpService.referenceFix2 !== undefined && etp) {
+    if (etpService.referenceFix1 !== undefined && etpService.referenceFix2 !== undefined && etp !== undefined) {
       if (etpService.etpBearingToReferenceFix1 !== undefined) {
         etpToRef1BrgColumn.update(`${etpService.etpBearingToReferenceFix1.toFixed(0).padStart(3, '0')}°`, Column.green);
       }
@@ -231,6 +227,12 @@ export class CDUEquitimePointPage {
           );
         }
       }
+    } else if (
+      etpService.referenceFix1 !== undefined &&
+      etpService.referenceFix2 !== undefined &&
+      !etpService.isEtpRecomputing().get()
+    ) {
+      acToColumn.update('NO (ETP)');
     }
 
     // Reference 1
