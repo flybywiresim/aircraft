@@ -1,4 +1,4 @@
-// Copyright (c) 2024 FlyByWire Simulations
+// Copyright (c) 2024-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import './oans-style.scss';
@@ -74,6 +74,9 @@ export interface OansProps extends ComponentProps {
 }
 
 const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+
+/** AMDB uses negative placeholder values (e.g. -32765) for runway lengths that are not available. */
+const validRunwayLength = (length?: number): number => (length !== undefined && length >= 0 ? length : NaN);
 
 export class OansControlPanel extends DisplayComponent<OansProps> {
   private readonly subs: Subscription[] = [];
@@ -436,8 +439,8 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
           }
 
           if (idx !== -1 && this.selectedEntityType.get() === ControlPanelMapDataSearchMode.Runway) {
-            this.runwayLda.set(this.mapDataFeatures[idx].properties.lda ?? NaN);
-            this.runwayTora.set(this.mapDataFeatures[idx].properties.tora ?? NaN);
+            this.runwayLda.set(validRunwayLength(this.mapDataFeatures[idx].properties.lda));
+            this.runwayTora.set(validRunwayLength(this.mapDataFeatures[idx].properties.tora));
           }
         } else if (this.oansAvailable.get()) {
           this.selectedEntityString.set('');
