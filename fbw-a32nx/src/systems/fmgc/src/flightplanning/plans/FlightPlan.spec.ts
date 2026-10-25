@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2025 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 // Copyright (c) 2021-2022 Synaptic Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
@@ -6,7 +6,8 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { setupTestDatabase } from '../test/Database';
 import { assertDiscontinuity, assertNotDiscontinuity } from '../test/LegUtils';
-import { LegType, WaypointDescriptor } from '@flybywiresim/fbw-sdk';
+import { LegType, TurnDirection, WaypointDescriptor } from '@flybywiresim/fbw-sdk';
+import { HoldData, HoldType } from '@fmgc/flightplanning/data/flightplan';
 import { loadAirwayLegs } from '../segments/enroute/AirwayLoading';
 import { emptyFlightPlan } from '../test/FlightPlan';
 import { testFlightPlanService } from '@fmgc/flightplanning/test/TestFlightPlanService';
@@ -70,6 +71,45 @@ describe('a base flight plan', () => {
     expect(fp.legElementAt(2).terminationWaypoint().ident).toBe('NOSUS');
     expect(fp.legElementAt(3).terminationWaypoint().ident).toBe('DEBUS');
     expect(fp.legElementAt(4).terminationWaypoint().ident).toBe('DUTIL');
+  });
+
+  it('notifies about changes when editing an existing manual hold', async ({ onTestFinished }) => {
+    const handlerFn = vi.fn(() => {});
+
+    const sub = testEventBus.getSubscriber<FlightPlanEvents>().on('flightPlan.legDefinitionEdit').handle(handlerFn);
+    onTestFinished(() => sub.destroy());
+
+    const fp = emptyFlightPlan();
+    await fp.setOriginAirport('CYVR');
+    await fp.setDestinationAirport('CYYZ');
+
+    const waypoint = await NavigationDatabaseService.activeDatabase.searchWaypoint('NOSUS');
+    await fp.insertWaypointBefore(1, waypoint[0]);
+
+    const defaultHold: HoldData = {
+      type: HoldType.Computed,
+      inboundMagneticCourse: 100,
+      turnDirection: TurnDirection.Right,
+      time: 1,
+    };
+    const holdIndex = await fp.addOrEditManualHold(1, { ...defaultHold }, undefined, defaultHold);
+
+    handlerFn.mockClear();
+    const versionBeforeEdit = fp.version;
+    const editedHold: HoldData = {
+      type: HoldType.Pilot,
+      inboundMagneticCourse: 200,
+      turnDirection: TurnDirection.Left,
+      time: 1.5,
+    };
+    await fp.addOrEditManualHold(holdIndex, { ...editedHold }, editedHold, defaultHold);
+
+    const holdLeg = fp.legElementAt(holdIndex);
+    expect(holdLeg.definition.course).toBe(200);
+    expect(holdLeg.definition.turnDirection).toBe(TurnDirection.Left);
+    expect(holdLeg.definition.lengthTime).toBe(1.5);
+    expect(fp.version).toBeGreaterThan(versionBeforeEdit);
+    expect(handlerFn).toHaveBeenCalledTimes(1);
   });
 
   describe.skip('deleting legs', () => {

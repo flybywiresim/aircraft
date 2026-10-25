@@ -1558,6 +1558,9 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         targetLeg.defaultHold = defaultHold;
       }
 
+      this.incrementVersion();
+      this.syncLegDefinitionChange(atIndex);
+
       return atIndex;
     }
 

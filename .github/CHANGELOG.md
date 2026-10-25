@@ -114,6 +114,7 @@ Always start an item with "1."; GitHub will number the rendered list automatical
 1. [A380X/FMS] Added wind uplink request - @BravoMike99 (bruno_pt99)
 1. [A32NX/FMS] Disable approach wind modification if no airport is present - @BravoMike99 (bruno_pt99)
 1. [A32NX/FUEL SYSTEM] Close center tank valves if they are triggered open with no fuel in center tank - @donstim (donbikes)
+1. [FMS] Fix changes to an existing hold (inbound course, turn direction, time or distance) not taking effect - @marquezinii
 
 ## 2024.1.0
 
