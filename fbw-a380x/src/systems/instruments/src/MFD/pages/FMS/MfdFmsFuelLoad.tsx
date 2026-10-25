@@ -120,6 +120,16 @@ export class MfdFmsFuelLoad extends FmsFlightPlanPage<MfdFmsFuelLoadProps> {
 
   private readonly fuelPlanningIsDisabled = Subject.create<boolean>(true);
 
+  private readonly cruiseFlightLevel = Subject.create<number | null>(null);
+
+  /** Only shown with CRZ FL, ZFW and ZFWCG entered. 'inherit' keeps it hidden with the BLOCK line after engine start. */
+  private readonly fuelPlanningVisibility = MappedSubject.create(
+    ([crzFl, zfw, zfwCg]) => (crzFl !== null && zfw !== null && zfwCg !== null ? 'inherit' : 'hidden'),
+    this.cruiseFlightLevel,
+    this.zeroFuelWeight,
+    this.zeroFuelWeightCenterOfGravity,
+  );
+
   private readonly destinationAlternateTimeHeader = this.activeFlightPhase.map((v) =>
     v === FmgcFlightPhase.Preflight ? 'TIME' : 'UTC',
   );
@@ -340,6 +350,7 @@ export class MfdFmsFuelLoad extends FmsFlightPlanPage<MfdFmsFuelLoadProps> {
       this.costIndexModeDisabled,
       this.jettisonGrossWeightVisibility,
       this.destEfobAmber,
+      this.fuelPlanningVisibility,
     );
   }
 
@@ -359,6 +370,7 @@ export class MfdFmsFuelLoad extends FmsFlightPlanPage<MfdFmsFuelLoadProps> {
       this.zeroFuelWeight.set(null);
     }
     this.zeroFuelWeightCenterOfGravity.set(pd?.zeroFuelWeightCenterOfGravity.get() ?? null);
+    this.cruiseFlightLevel.set(pd?.cruiseFlightLevel.get() ?? null);
 
     const pdBlockFuel = pd?.blockFuel.get();
     if (pdBlockFuel !== undefined && pdBlockFuel !== null) {
@@ -516,7 +528,14 @@ export class MfdFmsFuelLoad extends FmsFlightPlanPage<MfdFmsFuelLoadProps> {
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
               />
-              <div style="display: flex; flex: 1; justify-content: center;">
+              <div
+                style={{
+                  display: 'flex',
+                  flex: '1',
+                  'justify-content': 'center',
+                  visibility: this.fuelPlanningVisibility,
+                }}
+              >
                 <Button
                   disabled={this.fuelPlanningIsDisabled}
                   label={
