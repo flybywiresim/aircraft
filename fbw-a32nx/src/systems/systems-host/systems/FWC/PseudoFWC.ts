@@ -6971,10 +6971,7 @@ export class PseudoFWC {
       simVarIsActive: this.toMemo,
       whichCodeToReturn: () => [
         this.autoBrake.get() === 3 ? 1 : 0,
-        SimVar.GetSimVarValue('L:A32NX_NO_SMOKING_MEMO', 'bool') === 1 &&
-        SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool') === 1
-          ? 3
-          : 2,
+        SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool') === 1 ? 3 : 2,
         SimVar.GetSimVarValue('L:A32NX_CABIN_READY', 'bool') ? 5 : 4,
         this.spoilersArmed.get() ? 7 : 6,
         this.slatFlapSelectionS18F10 || this.slatFlapSelectionS22F15 || this.slatFlapSelectionS22F20 ? 9 : 8,
