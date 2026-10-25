@@ -91,6 +91,20 @@ interface A32NXDisplayManagementBaseEvents {
    */
   a32nx_dmc_discrete_word_272_right: number;
   /**
+   * The left DMC discrete word 276. Raw ARINC word.
+   * | Bit |            Description            |
+   * |:---:|:---------------------------------:|
+   * | 19  | INHG selected on CAPT side        |
+   */
+  a32nx_dmc_discrete_word_276_left: number;
+  /**
+   * The right DMC discrete word 276. Raw ARINC word.
+   * | Bit |            Description            |
+   * |:---:|:---------------------------------:|
+   * | 19  | INHG selected on F/O side         |
+   */
+  a32nx_dmc_discrete_word_276_right: number;
+  /**
    * The left DMC discrete word. Raw ARINC word.
    * | Bit |            Description            |
    * |:---:|:---------------------------------:|
@@ -106,6 +120,10 @@ interface A32NXDisplayManagementBaseEvents {
    * | 12  | QNH baro mode                     |
    */
   a32nx_dmc_discrete_word_350_right: number;
+  /** Left DMC BCD word 222, baro correction CAPT side. Raw ARINC word. */
+  a32nx_dmc_baro_correction_left: number;
+  /** Right DMC BCD word 223, baro correction F/O side. Raw ARINC word. */
+  a32nx_dmc_baro_correction_right: number;
   /** The left DMC displayed altitude feedback. Raw ARINC word. */
   a32nx_dmc_altitude_left: number;
   /** The right DMC displayed altitude feedback. Raw ARINC word. */
@@ -177,11 +195,18 @@ export class A32NXDisplayManagementPublisher extends SimVarPublisher<A32NXDispla
         'a32nx_dmc_discrete_word_272_right',
         { name: 'L:A32NX_DMC_DISCRETE_WORD_272_RIGHT', type: SimVarValueType.Enum },
       ],
+      ['a32nx_dmc_discrete_word_276_left', { name: 'L:A32NX_DMC_DISCRETE_WORD_276_LEFT', type: SimVarValueType.Enum }],
+      [
+        'a32nx_dmc_discrete_word_276_right',
+        { name: 'L:A32NX_DMC_DISCRETE_WORD_276_RIGHT', type: SimVarValueType.Enum },
+      ],
       ['a32nx_dmc_discrete_word_350_left', { name: 'L:A32NX_DMC_DISCRETE_WORD_350_LEFT', type: SimVarValueType.Enum }],
       [
         'a32nx_dmc_discrete_word_350_right',
         { name: 'L:A32NX_DMC_DISCRETE_WORD_350_RIGHT', type: SimVarValueType.Enum },
       ],
+      ['a32nx_dmc_baro_correction_left', { name: 'L:A32NX_DMC_BARO_CORRECTION_LEFT', type: SimVarValueType.Enum }],
+      ['a32nx_dmc_baro_correction_right', { name: 'L:A32NX_DMC_BARO_CORRECTION_RIGHT', type: SimVarValueType.Enum }],
       ['a32nx_dmc_altitude_left', { name: 'L:A32NX_DMC_ALTITUDE_LEFT', type: SimVarValueType.Enum }],
       ['a32nx_dmc_altitude_right', { name: 'L:A32NX_DMC_ALTITUDE_RIGHT', type: SimVarValueType.Enum }],
       ['a32nx_dmc_ir_1_pitch_angle_left', { name: 'L:A32NX_DMC_IR_1_PITCH_ANGLE_LEFT', type: SimVarValueType.Enum }],
