@@ -602,10 +602,7 @@ export class FwsMemos {
       simVarIsActive: this.fws.toMemo.map((t) => !!t),
       whichCodeToReturn: () => [
         0,
-        SimVar.GetSimVarValue('L:A32NX_NO_SMOKING_MEMO', 'bool') === 1 &&
-        SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool') === 1
-          ? 2
-          : 1,
+        SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool') === 1 ? 2 : 1,
         this.fws.spoilersArmed.get() ? 4 : 3,
         this.fws.slatFlapSelectionS18F10 || this.fws.slatFlapSelectionS22F15 || this.fws.slatFlapSelectionS22F20
           ? 6
@@ -635,10 +632,7 @@ export class FwsMemos {
       simVarIsActive: this.fws.ldgMemo.map((t) => !!t),
       whichCodeToReturn: () => [
         0,
-        SimVar.GetSimVarValue('L:A32NX_NO_SMOKING_MEMO', 'bool') === 1 &&
-        SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool') === 1
-          ? 2
-          : 1,
+        SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'bool') === 1 ? 2 : 1,
         this.fws.isAllGearDownlocked ? 4 : 3,
         this.fws.spoilersArmed.get() ? 6 : 5,
         (!SimVar.GetSimVarValue('L:A380X_FM_LANDING_CONF3', 'bool') &&
