@@ -76,8 +76,8 @@ export class DmcPublisher extends SimVarPublisher<DmcDiscreteInputEvents> {
   private handleTrueRef(): void {
     // true ref is active when the PB is pressed or the ADIRU is at an extreme latitude
     // and the ADIRU must not be in ATT reversion mode
-    const trueRequested = this.irMaintWord.get().bitValueOr(15, false) || this.trueRefPb.get();
-    this.trueRefActive.set(trueRequested && !this.irMaintWord.get().bitValueOr(2, false));
+    const trueRequested = this.irMaintWord.get().bitValueOr(25, false) || this.trueRefPb.get();
+    this.trueRefActive.set(trueRequested && !this.irMaintWord.get().bitValueOr(12, false));
   }
 
   private handleHeading(): void {

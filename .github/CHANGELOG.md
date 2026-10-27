@@ -116,6 +116,9 @@ Always start an item with "1."; GitHub will number the rendered list automatical
 1. [A32NX/FMS] Disable approach wind modification if no airport is present - @BravoMike99 (bruno_pt99)
 1. [A32NX/FUEL SYSTEM] Close center tank valves if they are triggered open with no fuel in center tank - @donstim (donbikes)
 1. [A380X/FUEL SYSTEM] Prevent CG control transfer end from ending normal trim tank transfers - @donstim (donbikes)
+1. [ADIRS] Add computerized ADIRS simulation - @lukecologne (luke)
+1. [ADIRS] Add basic simulation of air data sensors - @lukecologne (luke)
+1. [ADIRS] Add simulation of ADIRS power supplies - @lukecologne (luke)
 
 ## 2024.1.0
 

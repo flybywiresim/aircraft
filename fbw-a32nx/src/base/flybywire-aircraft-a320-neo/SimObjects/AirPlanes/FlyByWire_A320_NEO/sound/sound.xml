@@ -1997,6 +1997,11 @@
             <Range LowerBound="1" />
         </Sound>
 
+        <!-- TODO Should be unfified with the mech call horn above -->
+        <Sound WwiseData="true" WwiseEvent="mechhorn" NodeName="WHEELS_C" LocalVar="A32NX_ADIRS_MECH_HORN_CALL_ON" Continuous="true">
+            <Range LowerBound="1" />
+        </Sound>
+
         <Sound WwiseData="true" WwiseEvent="evachorncockpit" NodeName="PUSH_OVHD_ELEC_BAT1" LocalVar="A32NX_EVAC_COMMAND_TOGGLE" Continuous="true">
             <Range UpperBound="0" />
             <Requires LocalVar="PUSH_OVHD_EVAC_HORN">
