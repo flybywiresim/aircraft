@@ -41,6 +41,7 @@ pub enum FailureType {
     // ATA24
     Generator(usize),
     ApuGenerator(usize),
+    EmergencyGenerator,
     TransformerRectifier(usize),
     StaticInverter,
     ElectricalBus(ElectricalBusType),
