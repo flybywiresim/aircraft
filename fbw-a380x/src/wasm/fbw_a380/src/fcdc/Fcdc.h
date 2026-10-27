@@ -4,6 +4,8 @@
 #include "../utils/TriggeredMonostableNode.h"
 #include "FcdcIO.h"
 
+#include <tuple>
+
 enum class LateralLaw {
   NormalLaw,
   DirectLaw,
@@ -15,7 +17,8 @@ enum class PitchLaw {
   AlternateLaw1A,
   AlternateLaw1B,
   AlternateLaw1C,
-  AlternateLaw2,
+  AlternateLaw2A,
+  AlternateLaw2B,
   DirectLaw,
   None,
 };
@@ -32,8 +35,6 @@ class Fcdc {
 
   FcdcDiscreteInputs discreteInputs;
 
-  FcdcAnalogInputs analogInputs;
-
   FcdcBusInputs busInputs;
 
  private:
@@ -49,10 +50,21 @@ class Fcdc {
 
   void updateBtvRowRop(double deltaTime);
 
-  PitchLaw getPitchLawStatusFromBits(bool bit1, bool bit2, bool bit3);
+  PitchLaw getLawStatusFromBits(bool bit1, bool bit2, bool bit3);
 
-  LateralLaw getLateralLawStatusFromBits(bool bit1, bool bit2);
+  std::tuple<bool, bool, bool, bool> computeAileronStatusFromComputer(base_arinc_429& word, int offset, bool defaultValue);
 
+  std::tuple<bool, bool, bool, bool> computeElevatorStatusFromComputer(base_arinc_429& word, int offset, bool defaultValue);
+
+  std::tuple<bool, bool, bool, bool> computeRudderStatusFromComputer(base_arinc_429& word, int offset, bool defaultValue);
+
+  std::tuple<bool, bool, bool, bool> computeSpoilerStatusFromPrim(base_arinc_429& word, int offset, bool defaultValue);
+
+  std::tuple<bool, bool, bool, bool> computeSpoilerStatusFromSec(base_arinc_429& word, int offset, bool defaultValue);
+
+  std::tuple<real_T, bool> computeSurfacePosition(base_arinc_429 pos1, base_arinc_429 pos2, base_arinc_429 pos3, base_arinc_429 pos4);
+
+  std::tuple<real_T, bool> computeSurfacePosition(base_arinc_429 pos1, base_arinc_429 pos2);
   // Computer monitoring and self-test vars
 
   bool monitoringHealthy;

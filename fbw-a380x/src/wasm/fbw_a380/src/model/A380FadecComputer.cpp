@@ -115,6 +115,7 @@ void A380FadecComputer::step()
   int32_T TLA_begin;
   int32_T TLA_end;
   real32_T rtb_Switch_fctl_aileron_status_word_Data;
+  real32_T rtb_Switch_fctl_capability_score_Data;
   real32_T rtb_Switch_fctl_discrete_status_word_1_Data;
   real32_T rtb_Switch_fctl_elevator_1_position_deg_Data;
   real32_T rtb_Switch_fctl_elevator_2_position_deg_Data;
@@ -216,6 +217,7 @@ void A380FadecComputer::step()
   real32_T rtb_Switch_fg_yaw_fd_command_2_Data;
   real32_T rtb_y_pg;
   uint32_T rtb_Switch_fctl_aileron_status_word_SSM;
+  uint32_T rtb_Switch_fctl_capability_score_SSM;
   uint32_T rtb_Switch_fctl_discrete_status_word_1_SSM;
   uint32_T rtb_Switch_fctl_elevator_1_position_deg_SSM;
   uint32_T rtb_Switch_fctl_elevator_2_position_deg_SSM;
@@ -481,6 +483,8 @@ void A380FadecComputer::step()
     rtb_Switch_fctl_radio_height_2_ft_Data = A380FadecComputer_U.in.prim_1.fctl.radio_height_2_ft.Data;
     rtb_Switch_fctl_fctl_law_status_word_SSM = A380FadecComputer_U.in.prim_1.fctl.fctl_law_status_word.SSM;
     rtb_Switch_fctl_fctl_law_status_word_Data = A380FadecComputer_U.in.prim_1.fctl.fctl_law_status_word.Data;
+    rtb_Switch_fctl_capability_score_SSM = A380FadecComputer_U.in.prim_1.fctl.capability_score.SSM;
+    rtb_Switch_fctl_capability_score_Data = A380FadecComputer_U.in.prim_1.fctl.capability_score.Data;
     rtb_Switch_fctl_discrete_status_word_1_SSM = A380FadecComputer_U.in.prim_1.fctl.discrete_status_word_1.SSM;
     rtb_Switch_fctl_discrete_status_word_1_Data = A380FadecComputer_U.in.prim_1.fctl.discrete_status_word_1.Data;
     rtb_Switch_fctl_v_alpha_lim_kn_SSM = A380FadecComputer_U.in.prim_1.fctl.v_alpha_lim_kn.SSM;
@@ -725,6 +729,8 @@ void A380FadecComputer::step()
     rtb_Switch_fctl_radio_height_2_ft_Data = A380FadecComputer_U.in.prim_2.fctl.radio_height_2_ft.Data;
     rtb_Switch_fctl_fctl_law_status_word_SSM = A380FadecComputer_U.in.prim_2.fctl.fctl_law_status_word.SSM;
     rtb_Switch_fctl_fctl_law_status_word_Data = A380FadecComputer_U.in.prim_2.fctl.fctl_law_status_word.Data;
+    rtb_Switch_fctl_capability_score_SSM = A380FadecComputer_U.in.prim_2.fctl.capability_score.SSM;
+    rtb_Switch_fctl_capability_score_Data = A380FadecComputer_U.in.prim_2.fctl.capability_score.Data;
     rtb_Switch_fctl_discrete_status_word_1_SSM = A380FadecComputer_U.in.prim_2.fctl.discrete_status_word_1.SSM;
     rtb_Switch_fctl_discrete_status_word_1_Data = A380FadecComputer_U.in.prim_2.fctl.discrete_status_word_1.Data;
     rtb_Switch_fctl_v_alpha_lim_kn_SSM = A380FadecComputer_U.in.prim_2.fctl.v_alpha_lim_kn.SSM;
@@ -969,6 +975,8 @@ void A380FadecComputer::step()
     rtb_Switch_fctl_radio_height_2_ft_Data = A380FadecComputer_U.in.prim_3.fctl.radio_height_2_ft.Data;
     rtb_Switch_fctl_fctl_law_status_word_SSM = A380FadecComputer_U.in.prim_3.fctl.fctl_law_status_word.SSM;
     rtb_Switch_fctl_fctl_law_status_word_Data = A380FadecComputer_U.in.prim_3.fctl.fctl_law_status_word.Data;
+    rtb_Switch_fctl_capability_score_SSM = A380FadecComputer_U.in.prim_3.fctl.capability_score.SSM;
+    rtb_Switch_fctl_capability_score_Data = A380FadecComputer_U.in.prim_3.fctl.capability_score.Data;
     rtb_Switch_fctl_discrete_status_word_1_SSM = A380FadecComputer_U.in.prim_3.fctl.discrete_status_word_1.SSM;
     rtb_Switch_fctl_discrete_status_word_1_Data = A380FadecComputer_U.in.prim_3.fctl.discrete_status_word_1.Data;
     rtb_Switch_fctl_v_alpha_lim_kn_SSM = A380FadecComputer_U.in.prim_3.fctl.v_alpha_lim_kn.SSM;
@@ -1546,6 +1554,8 @@ void A380FadecComputer::step()
   A380FadecComputer_Y.out.prim_input.fctl.radio_height_2_ft.Data = rtb_Switch_fctl_radio_height_2_ft_Data;
   A380FadecComputer_Y.out.prim_input.fctl.fctl_law_status_word.SSM = rtb_Switch_fctl_fctl_law_status_word_SSM;
   A380FadecComputer_Y.out.prim_input.fctl.fctl_law_status_word.Data = rtb_Switch_fctl_fctl_law_status_word_Data;
+  A380FadecComputer_Y.out.prim_input.fctl.capability_score.SSM = rtb_Switch_fctl_capability_score_SSM;
+  A380FadecComputer_Y.out.prim_input.fctl.capability_score.Data = rtb_Switch_fctl_capability_score_Data;
   A380FadecComputer_Y.out.prim_input.fctl.discrete_status_word_1.SSM = rtb_Switch_fctl_discrete_status_word_1_SSM;
   A380FadecComputer_Y.out.prim_input.fctl.discrete_status_word_1.Data = rtb_Switch_fctl_discrete_status_word_1_Data;
   A380FadecComputer_Y.out.prim_input.fctl.v_alpha_lim_kn.SSM = rtb_Switch_fctl_v_alpha_lim_kn_SSM;
