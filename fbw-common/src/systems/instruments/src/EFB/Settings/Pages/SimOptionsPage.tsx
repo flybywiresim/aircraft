@@ -308,6 +308,9 @@ export const SimOptionsPage = () => {
                       setOansAmdbBridgeUrl(url);
                     }}
                   />
+                  <div className="mx-auto w-72 pt-2 text-sm text-theme-unselected">
+                    {t('Settings.SimOptions.OansAirportDataAmdbBridgeCredit')}
+                  </div>
                 </div>
               )}
             </SettingItem>

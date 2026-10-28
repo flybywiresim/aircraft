@@ -689,6 +689,7 @@
       "None": "None",
       "OansAirportData": "OANS Airport Map Data",
       "OansAirportDataAmdbBridge": "AMDB Bridge",
+      "OansAirportDataAmdbBridgeCredit": "Map data: X-Plane Scenery Gateway (GPL), © OpenStreetMap contributors (ODbL), FAA, OurAirports",
       "OansAirportDataInvalidAddress": "Enter an address starting with http:// or https://",
       "OansAirportDataNavigraph": "Navigraph",
       "OansPerformanceMode": "OANS Performance Mode (Unload Airport Map When Not Used)",
