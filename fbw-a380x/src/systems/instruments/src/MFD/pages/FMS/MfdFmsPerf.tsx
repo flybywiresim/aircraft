@@ -18,7 +18,7 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 
-import { Button } from '../../../MsfsAvionicsCommon/UiWidgets/Button';
+import { Button, ButtonMenuItem } from '../../../MsfsAvionicsCommon/UiWidgets/Button';
 import { RadioButtonGroup } from '../../../MsfsAvionicsCommon/UiWidgets/RadioButtonGroup';
 import { AbstractMfdPageProps } from '../../MFD';
 import { Footer } from '../common/Footer';
@@ -77,6 +77,33 @@ enum FlightPhaseTabIndex {
   Approach = 4,
   GoAround = 5,
 }
+
+interface EfbTakeoffData {
+  airport: string;
+  runway: string;
+  v1: number;
+  vr: number;
+  v2: number;
+  flaps: number;
+  flex: number;
+  trim: number;
+  trimValid: number;
+  packs: number;
+  antiIce: number;
+  weight: number;
+  publishedAt: number;
+}
+
+const runwayIdentForComparison = (ident: string | undefined): string | undefined => {
+  if (!ident) return undefined;
+  const normalized = ident.toUpperCase();
+  return normalized.match(/(?:RW)?(\d{1,2}[LCR]?)$/)?.[1].replace(/^0+(?=\d)/, '');
+};
+
+const decodeEfbIdent = (value: number): string => {
+  if (!Number.isSafeInteger(value) || value <= 0) return '';
+  return value.toString(36).toUpperCase();
+};
 
 export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
   private readonly weightUnit = NXDataStore.getSetting('CONFIG_USING_METRIC_UNIT').map((v) =>
@@ -266,6 +293,212 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
 
   // TO page subjects, refs and methods
   private readonly originRunwayIdent = Subject.create<string>('---');
+
+  private readonly toRequestDialogVisible = Subject.create(false);
+  private readonly toRequestDialogTitle = Subject.create('');
+  private readonly toRequestState = Subject.create<'idle' | 'pending' | 'received' | 'missing' | 'selectRunway'>(
+    'idle',
+  );
+  private readonly toRequestFailure = Subject.create('NO EFB DATA');
+  private readonly toRequestTopLabel = MappedSubject.create(
+    ([state, failure]) => {
+      if (state === 'pending') return 'REQUEST';
+      if (state === 'received') return 'RECEIVED';
+      if (state === 'missing') return failure;
+      if (state === 'selectRunway') return 'SELECT RWY';
+      return 'CPNY T.O';
+    },
+    this.toRequestState,
+    this.toRequestFailure,
+  );
+  private readonly toRequestBottomLabel = this.toRequestState.map((state) => {
+    if (state === 'pending') return 'PENDING...';
+    if (state === 'received') return 'CPNY T.O';
+    if (state === 'missing') return 'REQUEST';
+    if (state === 'selectRunway') return 'IN F-PLN';
+    return 'REQUEST';
+  });
+  private readonly toRequestButtonLabel: VNode = (
+    <div style="display: flex; flex-direction: row; justify-content: space-between;">
+      <span style="text-align: center; margin-right: 10px;">
+        {this.toRequestTopLabel}
+        <br />
+        {this.toRequestBottomLabel}
+      </span>
+      <span
+        class={{ hidden: this.toRequestState.map((state) => state === 'pending' || state === 'received') }}
+        style="display: flex; align-items: center; justify-content: center;"
+      >
+        *
+      </span>
+    </div>
+  );
+  private readonly toRequestMenuItems = this.toRequestState.map((state): ButtonMenuItem[] =>
+    state === 'received'
+      ? [
+          { label: 'INSERT*', action: () => this.toRequestDialogVisible.set(true) },
+          { label: 'CLEAR*', action: () => this.clearEfbTakeoff() },
+        ]
+      : [],
+  );
+  private pendingEfbTakeoff: EfbTakeoffData | null = null;
+  private toRequestTimer: number | null = null;
+  private toRequestAttempts = 0;
+  private toRequestId: number | null = null;
+
+  private requestEfbTakeoff(): void {
+    this.clearEfbTakeoff();
+    if (this.readEfbTakeoff()) {
+      this.toRequestState.set('received');
+      return;
+    }
+    const request = SimVar.GetSimVarValue('L:A380X_EFB_TO_REQUEST', 'number');
+    this.toRequestId = (Number.isFinite(request) ? request : 0) + 1;
+    SimVar.SetSimVarValue('L:A380X_EFB_TO_REQUEST', 'number', this.toRequestId).catch(console.error);
+    this.toRequestState.set('pending');
+    this.toRequestAttempts = 0;
+    this.toRequestTimer = window.setInterval(() => {
+      this.toRequestAttempts += 1;
+      if (this.readEfbTakeoff()) {
+        this.stopEfbTakeoffRequest();
+        this.toRequestState.set('received');
+      } else if (this.toRequestAttempts >= 24) {
+        this.stopEfbTakeoffRequest();
+        this.toRequestState.set('missing');
+      }
+    }, 250);
+  }
+
+  private stopEfbTakeoffRequest(): void {
+    if (this.toRequestTimer !== null) {
+      window.clearInterval(this.toRequestTimer);
+      this.toRequestTimer = null;
+    }
+  }
+
+  private clearEfbTakeoff(): void {
+    this.stopEfbTakeoffRequest();
+    this.pendingEfbTakeoff = null;
+    this.toRequestId = null;
+    this.toRequestDialogVisible.set(false);
+    this.toRequestState.set('idle');
+  }
+
+  private readEfbTakeoff(): boolean {
+    const prefix = 'L:A380X_EFB_TO_';
+    const read = (name: string): number => SimVar.GetSimVarValue(`${prefix}${name}`, 'number');
+    const publishedAt = read('VALID');
+    if (!Number.isFinite(publishedAt) || publishedAt <= 0) {
+      const status = read('STATUS');
+      this.toRequestFailure.set(
+        status === 1
+          ? 'SELECT EFB RWY'
+          : status === 2
+            ? 'ENTER EFB APT'
+            : status === 3
+              ? 'EFB RESULT BAD'
+              : status === 4
+                ? 'EFB SEND FAIL'
+                : this.toRequestId !== null && read('RESPONSE') === this.toRequestId
+                  ? 'NO EFB RESULT'
+                  : 'EFB NO REPLY',
+      );
+      return false;
+    }
+    if (Date.now() - publishedAt >= 30 * 60_000) {
+      this.toRequestFailure.set('EFB DATA OLD');
+      return false;
+    }
+    const airport = decodeEfbIdent(read('AIRPORT'));
+    const runway = runwayIdentForComparison(decodeEfbIdent(read('RUNWAY'))) ?? '';
+    const data: EfbTakeoffData = {
+      airport,
+      runway,
+      v1: read('V1'),
+      vr: read('VR'),
+      v2: read('V2'),
+      flaps: read('FLAPS'),
+      flex: read('FLEX'),
+      trim: read('TRIM'),
+      trimValid: read('TRIM_VALID'),
+      packs: read('PACKS'),
+      antiIce: read('ANTI_ICE'),
+      weight: read('WEIGHT'),
+      publishedAt,
+    };
+    const valid =
+      publishedAt > 0 &&
+      read('VALID') === publishedAt &&
+      airport.length === 4 &&
+      runway.length > 0 &&
+      [data.v1, data.vr, data.v2, data.flaps, data.weight].every(Number.isFinite) &&
+      data.v1 >= 90 &&
+      data.v1 <= data.vr &&
+      data.vr <= data.v2 &&
+      data.flaps >= 1 &&
+      data.flaps <= 3 &&
+      (data.packs === 0 || data.packs === 1) &&
+      data.antiIce >= 0 &&
+      data.antiIce <= 2 &&
+      (data.flex === -1 || (data.flex >= 0 && data.flex <= 99)) &&
+      (data.trimValid === 0 || (data.trimValid === 1 && Number.isFinite(data.trim))) &&
+      data.weight > 0;
+    if (!valid) {
+      this.toRequestFailure.set('INVALID EFB DATA');
+      return false;
+    }
+    this.pendingEfbTakeoff = data;
+    const fplnAirport = this.loadedFlightPlan?.originAirport?.ident;
+    const fplnRunway = runwayIdentForComparison(this.loadedFlightPlan?.originRunway?.ident);
+    const mismatch =
+      (fplnAirport && fplnAirport !== airport) || (fplnRunway && fplnRunway !== runway)
+        ? `\nF-PLN ${fplnAirport ?? '----'}/${fplnRunway ?? '--'} DIFFERS`
+        : '';
+    this.toRequestDialogTitle.set(
+      `${airport}/${runway}  ${Math.round(data.weight / 1_000)}T${mismatch}\n` +
+        `V1 ${data.v1}  VR ${data.vr}  V2 ${data.v2}\n` +
+        `CONF ${data.flaps}  ${data.flex >= 0 ? `FLEX ${data.flex}` : 'TOGA'}\n` +
+        `PACKS ${data.packs ? 'ON' : 'OFF/APU'}  A/ICE ${['OFF', 'ENG', 'ENG+WING'][data.antiIce]}` +
+        (data.trimValid === 1 ? `  THS ${data.trim < 0 ? 'DN' : 'UP'}${Math.abs(data.trim)}` : ''),
+    );
+    return true;
+  }
+
+  private confirmEfbTakeoff(): void {
+    const data = this.pendingEfbTakeoff;
+    this.toRequestDialogVisible.set(false);
+    if (
+      !data ||
+      Date.now() - data.publishedAt >= 30 * 60_000 ||
+      SimVar.GetSimVarValue('L:A380X_EFB_TO_VALID', 'number') !== data.publishedAt
+    ) {
+      this.clearEfbTakeoff();
+      return;
+    }
+    const fpIndex = this.loadedFlightPlanIndex.get();
+    this.props.flightPlanInterface.setPerformanceData('v1', data.v1, fpIndex);
+    this.props.flightPlanInterface.setPerformanceData('vr', data.vr, fpIndex);
+    this.props.flightPlanInterface.setPerformanceData('v2', data.v2, fpIndex);
+    this.props.flightPlanInterface.setPerformanceData('takeoffFlaps', data.flaps, fpIndex);
+    this.props.flightPlanInterface.setPerformanceData('takeoffPacks', data.packs, fpIndex);
+    this.props.flightPlanInterface.setPerformanceData('takeoffAntiIce', data.antiIce, fpIndex);
+    if (data.trimValid === 1) {
+      this.props.flightPlanInterface.setPerformanceData('takeoffThsFor', data.trim, fpIndex);
+    }
+    this.props.flightPlanInterface.setPerformanceData(
+      'flexTakeoffTemperature',
+      data.flex >= 0 ? data.flex : null,
+      fpIndex,
+    );
+    this.toThrustSettingChanged(data.flex >= 0 ? TakeoffPowerSetting.FLEX : TakeoffPowerSetting.TOGA);
+    if (fpIndex === FlightPlanIndex.Active) {
+      this.props.fmcService.master.acInterface.setTakeoffFlaps(data.flaps);
+      if (data.trimValid === 1) {
+        this.props.fmcService.master.acInterface.setTakeoffTrim(data.trim);
+      }
+    }
+    this.clearEfbTakeoff();
+  }
 
   private readonly toShift = Subject.create<number | null>(null);
 
@@ -771,7 +1004,9 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
     this.showNoiseFields(pd.noiseEnabled!.get());
 
     this.takeoffShiftDisabled.set(this.loadedFlightPlan.originRunway === undefined);
-    this.originRunwayIdent.set(this.loadedFlightPlan.originRunway?.ident.substring(4).padEnd(4, ' ') ?? '---');
+    this.originRunwayIdent.set(
+      runwayIdentForComparison(this.loadedFlightPlan.originRunway?.ident)?.padEnd(4, ' ') ?? '---',
+    );
     this.takeoffShiftMaxValueMeters.set(this.loadedFlightPlan.originRunway?.length ?? Infinity);
 
     // V-speeds to be confirmed due to rwy change?
@@ -1025,6 +1260,7 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
   }
 
   public destroy(): void {
+    this.stopEfbTakeoffRequest();
     this.flightPlanChangeNotifier.destroy();
 
     super.destroy();
@@ -2028,16 +2264,30 @@ export class MfdFmsPerf extends FmsFlightPlanPage<MfdFmsPerfProps> {
                     />
                   </div>
                   <div style={{ visibility: this.visibilityConsideringFlightPlanIndex }}>
+                    <ConfirmationDialog
+                      visible={this.toRequestDialogVisible}
+                      cancelAction={() => {
+                        this.toRequestDialogVisible.set(false);
+                      }}
+                      confirmAction={() => this.confirmEfbTakeoff()}
+                      contentContainerStyle="width: 460px; min-height: 205px;"
+                    >
+                      <span style="white-space: pre-line;">{this.toRequestDialogTitle}</span>
+                    </ConfirmationDialog>
                     <ConditionalComponent
                       width={176}
                       height={62}
                       condition={this.toPageInactive}
                       componentIfFalse={
                         <Button
-                          label="CPNY T.O<br />REQUEST"
-                          disabled={true}
-                          onClick={() => console.log('CPNY T.O REQUEST')}
-                          buttonStyle="padding-left: 30px; padding-right: 30px"
+                          label={this.toRequestButtonLabel}
+                          onClick={() => this.requestEfbTakeoff()}
+                          disabled={this.toRequestState.map((state) => state === 'pending')}
+                          idPrefix="mfd-fms-perf-cpny-to-request"
+                          menuItems={this.toRequestMenuItems}
+                          showArrow={false}
+                          dropdownMenuRightAligned
+                          buttonStyle="width: 178px; height: 62px; padding-left: 8px; padding-right: 8px;"
                         />
                       }
                       componentIfTrue={<></>}

@@ -1,0 +1,34 @@
+.mfd-atccom-dcl-form {
+  margin: 18px 24px;
+  padding: 18px 24px;
+  border: 1px solid #aeb0b7;
+  max-width: 600px;
+}
+
+.mfd-atccom-dcl-title {
+  margin-bottom: 18px;
+  font-size: 24px;
+  color: #fff;
+}
+
+.mfd-atccom-dcl-row {
+  display: grid;
+  grid-template-columns: 210px 180px;
+  align-items: center;
+  min-height: 52px;
+  font-size: 20px;
+  color: #fff;
+}
+
+.mfd-atccom-dcl-status {
+  height: 30px;
+  margin-top: 12px;
+  font-size: 19px;
+  color: #00ffff;
+}
+
+.mfd-atccom-request-footer {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 24px;
+}

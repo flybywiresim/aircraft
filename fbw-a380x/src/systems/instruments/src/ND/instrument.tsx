@@ -60,6 +60,7 @@ import './style.scss';
 import './oans-style.scss';
 import { VerticalDisplay } from './VerticalDisplay/VerticalDisplay';
 import { InternalKccuKeyEvent } from '../MFD/shared/MFDSimvarPublisher';
+import { WeatherRadar } from './WeatherRadar';
 
 declare type MousePosition = {
   x: number;
@@ -272,6 +273,7 @@ class NDInstrument implements FsInstrument {
             rangeChangeMessage={a380NdRangeChange}
             modeChangeMessage={a380NdModeChange}
             mapOptions={{ waypointBoxing: true, secondaryFlightPlanWaypointsInWhite: true }}
+            weatherLayer={(mode) => <WeatherRadar bus={this.bus} side={this.efisSide} mode={mode} />}
             fmMessages={Object.values(NDFMMessageTypes)}
           />
           <ContextMenu

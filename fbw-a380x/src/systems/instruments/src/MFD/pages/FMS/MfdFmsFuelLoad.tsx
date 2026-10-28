@@ -118,7 +118,10 @@ export class MfdFmsFuelLoad extends FmsFlightPlanPage<MfdFmsFuelLoadProps> {
   private readonly minimumFuelAtDestination = Subject.create<number | null>(null);
   private readonly minimumFuelAtDestinationIsPilotEntered = Subject.create<boolean>(false);
 
-  private readonly fuelPlanningIsDisabled = Subject.create<boolean>(true);
+  // Keep the request available even before the first EFB publication. This lets the crew
+  // request data after entering or importing the OFP on the EFB without reopening the page.
+  private readonly fuelPlanningIsDisabled = Subject.create<boolean>(false);
+  private lastEfbOfpValid = 0;
 
   private readonly destinationAlternateTimeHeader = this.activeFlightPhase.map((v) =>
     v === FmgcFlightPhase.Preflight ? 'TIME' : 'UTC',
@@ -227,6 +230,7 @@ export class MfdFmsFuelLoad extends FmsFlightPlanPage<MfdFmsFuelLoadProps> {
           }
 
           this.loadFlightPlanPerformanceData();
+          this.importEfbOfpData();
 
           const loadedfpIndex = this.loadedFlightPlanIndex.get();
           // FIXME: Move to main update loop once calculated by the predictions
@@ -403,6 +407,45 @@ export class MfdFmsFuelLoad extends FmsFlightPlanPage<MfdFmsFuelLoadProps> {
     this.costIndex.set(pd?.costIndex ? pd.costIndex.get() : null);
   }
 
+  private importEfbOfpData(force = false): void {
+    const publishedAt = SimVar.GetSimVarValue('L:A380X_EFB_OFP_VALID', 'number');
+    const hasOfp = Number.isFinite(publishedAt) && publishedAt > 0;
+    if (!force && (!hasOfp || publishedAt <= this.lastEfbOfpValid)) return;
+
+    const ofpZfw = hasOfp ? SimVar.GetSimVarValue('L:A380X_EFB_OFP_ZFW', 'number') : 0;
+    const ofpBlockFuel = hasOfp ? SimVar.GetSimVarValue('L:A380X_EFB_OFP_BLOCK_FUEL', 'number') : 0;
+    const taxiFuel = hasOfp ? SimVar.GetSimVarValue('L:A380X_EFB_OFP_TAXI_FUEL', 'number') : 0;
+    const loadedZfw = force ? SimVar.GetSimVarValue('L:A32NX_AIRFRAME_ZFW', 'number') : 0;
+    const loadedZfwCg = force ? SimVar.GetSimVarValue('L:A32NX_AIRFRAME_ZFW_CG_PERCENT_MAC', 'number') : 0;
+    const hasLoadedPax = force && SimVar.GetSimVarValue('L:A380X_EFB_LOADED_PAX_VALID', 'number') === 1;
+    const loadedPax = force ? SimVar.GetSimVarValue('L:A380X_EFB_LOADED_PAX', 'number') : 0;
+    const ofpPax = hasOfp ? SimVar.GetSimVarValue('L:A380X_EFB_OFP_PAX', 'number') : 0;
+    const loadedFuel = force ? SimVar.GetSimVarValue('FUEL TOTAL QUANTITY WEIGHT', 'kilograms') : 0;
+    const zfw = Number.isFinite(loadedZfw) && loadedZfw > 0 ? loadedZfw : ofpZfw;
+    const blockFuel = Number.isFinite(loadedFuel) && loadedFuel > 0 ? loadedFuel : ofpBlockFuel;
+    const fpIndex = this.loadedFlightPlanIndex.get();
+
+    if (zfw > 0) {
+      this.props.flightPlanInterface.setPerformanceData('zeroFuelWeight', zfw / 1000, fpIndex);
+    }
+    if (Number.isFinite(loadedZfwCg) && loadedZfwCg >= minZfwCg && loadedZfwCg <= maxZfwCg) {
+      this.props.flightPlanInterface.setPerformanceData('zeroFuelWeightCenterOfGravity', loadedZfwCg, fpIndex);
+    }
+    const pax = hasLoadedPax ? loadedPax : ofpPax;
+    if ((hasLoadedPax || hasOfp) && Number.isInteger(pax) && pax >= 0 && pax <= 853) {
+      this.props.flightPlanInterface.setPerformanceData('paxNumber', pax, fpIndex);
+      if (fpIndex === FlightPlanIndex.Active) this.props.fmcService.master.acInterface.updatePaxNumber(pax);
+    }
+    if (blockFuel > 0) {
+      this.props.flightPlanInterface.setPerformanceData('blockFuel', blockFuel / 1000, fpIndex);
+    }
+    if (taxiFuel > 0) {
+      this.props.flightPlanInterface.setPerformanceData('pilotTaxiFuel', taxiFuel / 1000, fpIndex);
+    }
+    if (hasOfp) this.lastEfbOfpValid = Math.max(this.lastEfbOfpValid, publishedAt);
+    this.fuelPlanningIsDisabled.set(false);
+  }
+
   updateDestAndAltnPredictions() {
     const hasFp = this.loadedFlightPlan !== null;
     const fpIndex = hasFp ? this.loadedFlightPlanIndex.get() : null;
@@ -529,7 +572,7 @@ export class MfdFmsFuelLoad extends FmsFlightPlanPage<MfdFmsFuelLoadProps> {
                       <span style="display: flex; align-items: center; justify-content: center;">*</span>
                     </div>
                   }
-                  onClick={() => console.log('FUEL PLANNING')}
+                  onClick={() => this.importEfbOfpData(true)}
                   buttonStyle="padding-right: 2px;"
                 />
               </div>
