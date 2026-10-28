@@ -5501,12 +5501,12 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
 
     // Insert winds
-    const uplinkAlternateCruiseLevel = plan.pendingWindUplink.alternateWind?.altitude;
+    const uplinkAlternateCruiseAltitude = plan.pendingWindUplink.alternateWind?.altitude;
     const computedAlternateCruiseLevel = this.computeAlternateCruiseLevel(forPlan);
     if (
-      uplinkAlternateCruiseLevel !== undefined &&
+      uplinkAlternateCruiseAltitude !== undefined &&
       computedAlternateCruiseLevel !== undefined &&
-      Math.round(uplinkAlternateCruiseLevel) !== Math.round(computedAlternateCruiseLevel)
+      Math.round(uplinkAlternateCruiseAltitude * 100) !== Math.round(computedAlternateCruiseLevel)
     ) {
       this.addMessageToQueue(NXSystemMessages.checkAltnWind);
     }
