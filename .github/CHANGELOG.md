@@ -117,6 +117,7 @@ Always start an item with "1."; GitHub will number the rendered list automatical
 1. [A32NX/FUEL SYSTEM] Close center tank valves if they are triggered open with no fuel in center tank - @donstim (donbikes)
 1. [A380X/FUEL SYSTEM] Prevent CG control transfer end from ending normal trim tank transfers - @donstim (donbikes)
 1. [A32NX/FMS] Fixed +/- altitude constraints entered on the F-PLN page being inverted - @shinji1100
+1. [OANS] Added an EFB option to load OANS airport maps from AMDB Bridge instead of Navigraph - @Vihaan2012-cmyk
 
 ## 2024.1.0
 

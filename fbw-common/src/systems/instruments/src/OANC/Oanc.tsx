@@ -63,7 +63,7 @@ import { OancLabelManager } from './OancLabelManager';
 import { OancPositionComputer } from './OancPositionComputer';
 import { OancMarkerManager } from './OancMarkerManager';
 import { ResetPanelSimvars } from './ResetPanelPublisher';
-import { NavigraphAmdbClient } from './api/NavigraphAmdbClient';
+import { ConfiguredAmdbClient } from './api/ConfiguredAmdbClient';
 import { pointAngle } from './OancMapUtils';
 import { LubberLine } from '../ND/pages/arc/LubberLine';
 
@@ -210,7 +210,7 @@ export class Oanc<T extends number> extends DisplayComponent<OancProps<T>> {
     featureCollection([]), // Layer 4: TAXIWAY GUIDANCE LINES (scaled width), HOLD SHORT LINES
   ];
 
-  public readonly amdbClient = new NavigraphAmdbClient();
+  public readonly amdbClient = new ConfiguredAmdbClient();
 
   private readonly labelManager = new OancLabelManager<T>(this);
 

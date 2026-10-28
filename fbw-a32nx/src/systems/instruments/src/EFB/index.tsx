@@ -62,6 +62,7 @@ render(
           wheelChocks: true,
           cabinLighting: false,
           oansPerformanceMode: false,
+          oansAmdbSource: false,
         },
         throttle: {
           numberOfAircraftThrottles: 2,

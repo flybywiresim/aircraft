@@ -118,6 +118,7 @@ export const OitEfbWrapper: React.FC<OitEfbWrapperProps> = ({ eventBus }) => {
             wheelChocks: false,
             cabinLighting: true,
             oansPerformanceMode: true,
+            oansAmdbSource: true,
           },
           throttle: {
             numberOfAircraftThrottles: 4,

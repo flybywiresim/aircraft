@@ -18,6 +18,8 @@ export interface NXDataStoreSettings {
   CONFIG_TAF_SRC: ConfigTafSource;
   CONFIG_AUTO_SIM_ROUTE_LOAD: boolean;
   CONFIG_USING_METRIC_UNIT: boolean;
+  CONFIG_OANS_AMDB_SOURCE: 'NAVIGRAPH' | 'AMDB_BRIDGE';
+  CONFIG_OANS_AMDB_BRIDGE_URL: string;
   EFB_UI_THEME: 'blue' | 'dark' | 'light';
 }
 
@@ -35,6 +37,8 @@ export class NXDataStore {
     CONFIG_TAF_SRC: ConfigWeatherMap.NOAA,
     CONFIG_AUTO_SIM_ROUTE_LOAD: false,
     CONFIG_USING_METRIC_UNIT: true,
+    CONFIG_OANS_AMDB_SOURCE: 'NAVIGRAPH',
+    CONFIG_OANS_AMDB_BRIDGE_URL: 'http://localhost:8770',
     EFB_UI_THEME: 'blue',
   };
 

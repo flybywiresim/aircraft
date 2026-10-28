@@ -17,10 +17,10 @@ import {
 
 import { AmdbAirportSearchResult } from '@flybywiresim/fbw-sdk';
 import {
+  AmdbDataInterface,
   ControlPanelAirportSearchMode,
   ControlPanelStore,
   ControlPanelUtils,
-  NavigraphAmdbClient,
 } from '@flybywiresim/oanc';
 import { RadioButtonGroup } from './RadioButtonGroup';
 import { DropdownMenu } from './DropdownMenu';
@@ -28,7 +28,7 @@ import { DropdownMenu } from './DropdownMenu';
 import './ControlPanel.scss';
 
 export interface ControlPanelProps extends ComponentProps {
-  amdbClient: NavigraphAmdbClient;
+  amdbClient: AmdbDataInterface;
 
   isVisible: Subscribable<boolean>;
 

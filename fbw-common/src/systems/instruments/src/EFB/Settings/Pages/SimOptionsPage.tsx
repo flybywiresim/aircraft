@@ -54,6 +54,8 @@ export const SimOptionsPage = () => {
     'CONFIG_A380X_OANS_PERFORMANCE_MODE',
     0,
   );
+  const [oansAmdbSource, setOansAmdbSource] = usePersistentSetting('CONFIG_OANS_AMDB_SOURCE');
+  const [oansAmdbBridgeUrl, setOansAmdbBridgeUrl] = usePersistentSetting('CONFIG_OANS_AMDB_BRIDGE_URL');
 
   const defaultBaroButtons: ButtonType[] = [
     { name: t('Settings.SimOptions.Auto'), setting: 'AUTO' },
@@ -275,6 +277,39 @@ export const SimOptionsPage = () => {
           {aircraftContext.settingsPages.sim.oansPerformanceMode && (
             <SettingItem name={t('Settings.SimOptions.OansPerformanceMode')}>
               <Toggle value={!!oansPerformanceMode} onToggle={(value) => setOansPerformanceMode(value ? 1 : 0)} />
+            </SettingItem>
+          )}
+
+          {aircraftContext.settingsPages.sim.oansAmdbSource && (
+            <SettingItem name={t('Settings.SimOptions.OansAirportData')}>
+              <SelectGroup>
+                <SelectItem onSelect={() => setOansAmdbSource('NAVIGRAPH')} selected={oansAmdbSource === 'NAVIGRAPH'}>
+                  {t('Settings.SimOptions.OansAirportDataNavigraph')}
+                </SelectItem>
+                <SelectItem
+                  onSelect={() => setOansAmdbSource('AMDB_BRIDGE')}
+                  selected={oansAmdbSource === 'AMDB_BRIDGE'}
+                >
+                  {t('Settings.SimOptions.OansAirportDataAmdbBridge')}
+                </SelectItem>
+              </SelectGroup>
+              {oansAmdbSource === 'AMDB_BRIDGE' && (
+                <div className="pt-2 text-center">
+                  <SimpleInput
+                    className="w-72 text-center"
+                    value={oansAmdbBridgeUrl}
+                    onBlur={(value) => {
+                      const url = value.replace(/\s/g, '');
+                      if (!/^https?:\/\/.+/.test(url)) {
+                        toast.error(t('Settings.SimOptions.OansAirportDataInvalidAddress'));
+                        setOansAmdbBridgeUrl(oansAmdbBridgeUrl);
+                        return;
+                      }
+                      setOansAmdbBridgeUrl(url);
+                    }}
+                  />
+                </div>
+              )}
             </SettingItem>
           )}
         </SettingsPage>

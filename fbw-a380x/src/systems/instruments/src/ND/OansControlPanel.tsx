@@ -40,7 +40,7 @@ import {
   ControlPanelMapDataSearchMode,
   ControlPanelStore,
   ControlPanelUtils,
-  NavigraphAmdbClient,
+  ConfiguredAmdbClient,
 } from '@flybywiresim/oanc';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
@@ -107,7 +107,7 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
 
   private readonly oansFailed = MappedSubject.create(([reset]) => reset, this.oansResetPulled);
 
-  private amdbClient = new NavigraphAmdbClient();
+  private amdbClient = new ConfiguredAmdbClient();
 
   private readonly lengthUnit = NXDataStore.getSetting('CONFIG_USING_METRIC_UNIT').map((v) =>
     v ? UnitType.METER : UnitType.FOOT,
@@ -303,6 +303,10 @@ export class OansControlPanel extends DisplayComponent<OansProps> {
     });
 
     NXDataStore.getAndSubscribeLegacy('NAVIGRAPH_ACCESS_TOKEN', () => this.loadOansDb());
+    this.subs.push(
+      NXDataStore.getSetting('CONFIG_OANS_AMDB_SOURCE').sub(() => this.loadOansDb()),
+      NXDataStore.getSetting('CONFIG_OANS_AMDB_BRIDGE_URL').sub(() => this.loadOansDb()),
+    );
 
     this.subs.push(
       this.props.isVisible.sub((it) => this.style.setValue('visibility', it ? 'inherit' : 'hidden'), true),
