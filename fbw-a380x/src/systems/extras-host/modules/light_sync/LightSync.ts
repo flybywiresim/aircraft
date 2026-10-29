@@ -96,6 +96,7 @@ export class LightSync implements Instrument {
     this.setPotentiometer(98, autoBrightness); // MFD
     this.setPotentiometer(8, 0); // Console
     this.setPotentiometer(78, autoBrightness); // OIT
+    this.setPotentiometer(71, autoBrightness); // HUD
 
     // Instruments F/O
     this.setPotentiometer(90, autoBrightness); // PFD
@@ -104,6 +105,7 @@ export class LightSync implements Instrument {
     this.setPotentiometer(99, autoBrightness); // MFD
     this.setPotentiometer(9, 0); // Console
     this.setPotentiometer(79, autoBrightness); // OIT
+    this.setPotentiometer(72, autoBrightness); // HUD
 
     // Pedestal
     this.setRmpBrightness(1, autoBrightness); // rmpCptLightLevel
