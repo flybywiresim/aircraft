@@ -107,21 +107,8 @@ import { MAXIMUM_CERTIFIED_FLIGHT_LEVEL } from '@shared/A32NXPerformanceConstant
 export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
 
-  private static readonly speedsManagedPfdVar = RegisteredSimVar.create<number>(
-    'L:A32NX_SPEEDS_MANAGED_PFD',
-    SimVarValueType.Knots,
-  );
-
-  private static readonly fmApproachHeadWindRegisteredSimVar = RegisteredSimVar.create(
-    'L:A32NX_FM_APPROACH_HEADWIND_COMPONENT',
-    SimVarValueType.String,
-  );
-
-  private static readonly approachVappRegisteredSimVar = RegisteredSimVar.create(
-    'L:A32NX_SPEEDS_VAPP',
-    SimVarValueType.Enum,
-  );
-
+  private static readonly MMO = 0.8;
+  private static readonly VMO = 340;
   protected readonly sub = this.bus.getSubscriber<ClockEvents & EngineOutEvents & A32NXFcuBusEvents>();
 
   /** Naughty hack. We assume that we're always subclassed by A320_Neo_CDU_MainDisplay. */
@@ -443,6 +430,25 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
   private readonly destinationRunwayMagneticBearing = Subject.create<number | null>(null);
 
+  private readonly flapHandleIndex = RegisteredSimVar.create<number>(
+    'L:A32NX_FLAPS_HANDLE_INDEX',
+    SimVarValueType.Enum,
+  ); // FIXME: FMGC should get this info from FAC
+
+  private readonly vMax = RegisteredSimVar.create<number>('L:A32NX_SPEEDS_VMAX', SimVarValueType.Enum);
+
+  private readonly speedsManagedPfdVar = RegisteredSimVar.create<number>(
+    'L:A32NX_SPEEDS_MANAGED_PFD',
+    SimVarValueType.Knots,
+  );
+
+  private readonly fmApproachHeadWindRegisteredSimVar = RegisteredSimVar.create(
+    'L:A32NX_FM_APPROACH_HEADWIND_COMPONENT',
+    SimVarValueType.String,
+  );
+
+  private readonly approachVappRegisteredSimVar = RegisteredSimVar.create('L:A32NX_SPEEDS_VAPP', SimVarValueType.Enum);
+
   constructor(public readonly bus: EventBus) {
     FMCMainDisplay.DEBUG_INSTANCE = this;
     this.currFlightPlanService.createFlightPlans();
@@ -588,10 +594,10 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
     this.subscriptions.push(
       this.arincHeadWindComponentRaw.sub((v) => {
-        FMCMainDisplay.fmApproachHeadWindRegisteredSimVar.set(v.toString());
+        this.fmApproachHeadWindRegisteredSimVar.set(v.toString());
       }),
       this.speedsManagedPfd.sub((v) => {
-        FMCMainDisplay.speedsManagedPfdVar.set(v ?? 0);
+        this.speedsManagedPfdVar.set(v ?? 0);
       }, true),
       this.managedSpeedIsMach.sub((v) => {
         if (v) {
@@ -627,7 +633,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
           this.handleFcuVSKnob(this.onStepClimbDescent.bind(this));
         }
       }),
-      this.approachVapp.sub((v) => FMCMainDisplay.approachVappRegisteredSimVar.set(v ?? 0), true),
+      this.approachVapp.sub((v) => this.approachVappRegisteredSimVar.set(v ?? 0), true),
       this.destinationRunwayMagneticBearing.sub((v) => {
         const pd = this.flightPlanService.hasActive ? this.flightPlanService.active.performanceData : null;
         this.updateTowerHeadwind(pd?.approachWindMagnitude.get() ?? null, pd?.approachWindDirection.get() ?? null, v);
@@ -1285,10 +1291,10 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
   }
 
-  private getManagedTargets(v, m) {
+  private getManagedTargets(speedKnots: number, mach: number) {
     //const vM = _convertMachToKCas(m, _convertCtoK(Simplane.getAmbientTemperature()), SimVar.GetSimVarValue("AMBIENT PRESSURE", "millibar"));
-    const vM = SimVar.GetGameVarValue('FROM MACH TO KIAS', 'number', m);
-    return v > vM ? [vM, true] : [v, false];
+    const vM = SimVar.GetGameVarValue('FROM MACH TO KIAS', 'number', mach);
+    return speedKnots > vM ? [vM, true] : [speedKnots, false];
   }
 
   private updateManagedSpeeds() {
@@ -1309,7 +1315,34 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.updateHoldingSpeed();
     this.clearCheckSpeedModeMessage();
 
-    if (this.holdDecelReached) {
+    const fmDiscreteWord1 = this.fmgc1DiscreteWord1.get();
+    // Expedite
+    if (fmDiscreteWord1.bitValueOr(24, false)) {
+      // CLB
+      if (fmDiscreteWord1.bitValue(11)) {
+        let characteristicSpeed: number | undefined = undefined;
+        switch (this.flapHandleIndex.get()) {
+          // FIXME: Should use speeds from FAC?
+          case 0:
+            characteristicSpeed = this.computedVgd;
+            break;
+          case 1:
+            characteristicSpeed = this.computedVss;
+            break;
+          default:
+            characteristicSpeed = this.computedVfs;
+        }
+        if (characteristicSpeed) {
+          vPfd = characteristicSpeed;
+          isMach = false;
+        }
+        // DES
+      } else {
+        const cleanConfig = this.flapHandleIndex.get() === 0;
+        vPfd = cleanConfig ? FMCMainDisplay.VMO : this.vMax.get() - 10;
+        isMach = cleanConfig ? this.getManagedTargets(FMCMainDisplay.VMO, FMCMainDisplay.MMO)[1] : false;
+      }
+    } else if (this.holdDecelReached) {
       vPfd = this.holdSpeedTarget;
     } else {
       if (this.setHoldSpeedMessageActive) {
@@ -1355,7 +1388,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         }
         case FmgcFlightPhase.Descent: {
           // We fetch this data from VNAV
-          vPfd = FMCMainDisplay.speedsManagedPfdVar.get();
+          vPfd = this.speedsManagedPfdVar.get();
           isMach = this.getManagedTargets(this.getManagedDescentSpeed(), this.getManagedDescentSpeedMach())[1];
           break;
         }
@@ -1784,7 +1817,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   private getAppManagedSpeed() {
     const plan = this.getFlightPlan(FlightPlanIndex.Active);
 
-    switch (SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'Number')) {
+    switch (this.flapHandleIndex.get()) {
       case 0:
         return this.computedVgd;
       case 1:

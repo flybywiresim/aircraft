@@ -61,7 +61,6 @@ export class McduFsInstrument implements FsInstrument {
     this.backplane.addPublisher('Engine', new EnginePublisher(this.bus));
     this.backplane.addPublisher('fgBus', this.fgBusPublisher);
     this.backplane.addPublisher('FcuBus', this.fcuBusPublisher);
-
     this.doInit();
   }
 
