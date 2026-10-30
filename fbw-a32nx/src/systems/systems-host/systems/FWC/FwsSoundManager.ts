@@ -711,7 +711,7 @@ export class FwsSoundManager {
 
   onUpdate(deltaTime: number) {
     // Enforce one cycle delay before repeating
-    if (!this.intermediatePlaying && this.repeatNextCycleSound) {
+    if (!this.intermediatePlaying && this.repeatNextCycleSound && this.currentSoundPlaying === null) {
       const soundKey = this.repeatNextCycleSound;
       this.repeatNextCycleSound = null;
       this.playSound(soundKey);
@@ -721,12 +721,12 @@ export class FwsSoundManager {
     const currentSound = this.currentSoundPlaying ? FwsAuralsList[this.currentSoundPlaying] : null;
     const playingSoundKey = this.currentSoundPlaying;
     if (currentSound && this.currentSoundPlayTimeRemaining > 0) {
+      const isAuralWarning = this.isAuralWarning(currentSound);
       if (this.currentSoundPlayTimeRemaining - deltaTime / 1_000 > 0) {
         // Wait for sound to be finished
         this.currentSoundPlayTimeRemaining -= deltaTime / 1_000;
       } else {
         // Sound finishes in this cycle
-        const isAuralWarning = this.isAuralWarning(currentSound);
         if (isAuralWarning) {
           if (currentSound.localVarName) {
             SimVar.SetSimVarValue(`L:${currentSound.localVarName}`, SimVarValueType.Bool, false);
@@ -748,13 +748,11 @@ export class FwsSoundManager {
             // Buffer the subsequent intermediate straight away to avoid cycle delays.
             this.selectAndPlayMostImportantSound(deltaTime);
           }
-        }
-
-        if (!this.intermediatePlaying) {
+        } else {
           if (!isAuralWarning) {
             // Enforce one cycle delay before repeating the sound if applicable, otherwise sim won't interrupt the sound.
             if (
-              !currentSound?.continuous &&
+              !currentSound.continuous &&
               this.numberOfTimesToRepeatSound !== null &&
               this.numberOfTimesToRepeatSound > 0
             ) {
@@ -763,33 +761,34 @@ export class FwsSoundManager {
               return;
             } else {
               this.numberOfTimesToRepeatSound = null;
+              this.repeatNextCycleSound = null;
               this.setFwsSynthethicVoiceOutputs(currentSound.id, false);
             }
           }
+        }
+      }
+      if (!this.intermediatePlaying) {
+        if (currentSound?.continuous) {
           // Interrupt if sound with higher category is present in queue and current sound is continuous
           let shouldInterrupt = false;
-          let rescheduleSound: keyof typeof FwsAuralsList | null = null;
-          if (currentSound?.continuous) {
-            this.soundQueue.forEach((sk) => {
-              const s = FwsAuralsList[sk];
-              if (
-                s &&
-                (s.type > currentSound.type ||
-                  (s.type === currentSound.type && (s.priority ?? 0) > (currentSound.priority ?? 0)))
-              ) {
-                shouldInterrupt = true;
-              }
-            });
-          }
-
-          if (shouldInterrupt) {
-            if (this.currentSoundPlaying && currentSound!.continuous) {
-              rescheduleSound = this.currentSoundPlaying;
-              this.stopCurrentSound();
-              if (rescheduleSound) {
-                this.enqueueSound(rescheduleSound);
-              }
+          let interruptKey: keyof typeof FwsAuralsList | null = null;
+          this.soundQueue.forEach((sk) => {
+            const s = FwsAuralsList[sk];
+            if (
+              s &&
+              (s.type > currentSound.type || //FIXME: the priority should only be checked within AW/SC & ACOs, not across differnet types. The two types can play independently.
+                (s.type === currentSound.type && (s.priority ?? 0) > (currentSound.priority ?? 0)))
+            ) {
+              shouldInterrupt = true;
+              interruptKey = sk;
             }
+          });
+
+          if (shouldInterrupt && this.currentSoundPlaying) {
+            const rescheduleSound = this.currentSoundPlaying;
+            this.stopCurrentSound();
+            this.playSound(interruptKey!);
+            this.enqueueSound(rescheduleSound);
           }
         }
       }

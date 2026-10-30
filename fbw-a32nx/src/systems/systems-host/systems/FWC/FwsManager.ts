@@ -22,7 +22,7 @@ export class FwsManager {
   private readonly fwsSoundManager: FwsSoundManager;
   private readonly pseudoFwc: PseudoFWC;
   private readonly fwcFlightPhases = new FwsLegacyFlightPhases();
-  private readonly fwsUpdateThrottler = new UpdateThrottler(FwsManager.FWC_PROCESSING_INTERVAL_MS); // has to be > 100 due to pulse nodes
+  private readonly fwsUpdateThrottler = new UpdateThrottler(FwsManager.FWC_PROCESSING_INTERVAL_MS);
   private readonly acEssBusPowered = ConsumerSubject.create(
     this.bus.getSubscriber<A32NXElectricalSystemEvents>().on('a32nx_elec_ac_ess_bus_is_powered'),
     false,
