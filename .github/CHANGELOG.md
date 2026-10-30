@@ -108,8 +108,7 @@ Always start an item with "1."; GitHub will number the rendered list automatical
 1. [A380X/RMP] Fix RMP brightness initialisation - @CameronCarlyon (YouBaconMeCrazy)
 1. [A380X] Make flightdeck lighting panel-state and time-of-day aware. Adjust existing values. @CameronCarlyon (YouBaconMeCrazy)
 1. [FMS] Limit step descent guidance to -1000fpm - @Jonny23787 (Jonathan), @BlueberryKing (BlueberryKing)
-1. [A380X/SD] Correct EL/DC page APU TR text display color - @ksleungac (pzb-85)
-1. [A380X/FMS] Added FMS WIND page - @BravoMike99 (bruno_pt99)
+1. [A380X/SD] Correct EL/DC page APU TR text display color - @ksleungac (pzb-851. [A380X/FMS] Added FMS WIND page - @BravoMike99 (bruno_pt99)
 1. [A380X/FMS] Added "ENTRY NOT IN LIST" message - @BravoMike99 (bruno_pt99)
 1. [A380X/FMS] Fixed minimums of non active flightplans being taken into account - @BravoMike99 (bruno_pt99)
 1. [A380X/FMS] Added wind uplink request - @BravoMike99 (bruno_pt99)
@@ -117,6 +116,7 @@ Always start an item with "1."; GitHub will number the rendered list automatical
 1. [A32NX/FUEL SYSTEM] Close center tank valves if they are triggered open with no fuel in center tank - @donstim (donbikes)
 1. [A380X/FUEL SYSTEM] Prevent CG control transfer end from ending normal trim tank transfers - @donstim (donbikes)
 1. [A32NX/FMS] Fixed +/- altitude constraints entered on the F-PLN page being inverted - @shinji1100
+1. [A380X/FLIGHT MODEL] Flight model fixes - @donstim (donbikes)
 
 ## 2024.1.0
 
