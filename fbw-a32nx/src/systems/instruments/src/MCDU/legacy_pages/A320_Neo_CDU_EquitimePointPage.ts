@@ -228,8 +228,7 @@ export class CDUEquitimePointPage {
         }
       }
     } else if (
-      etpService.referenceFix1 !== undefined &&
-      etpService.referenceFix2 !== undefined &&
+      (etpService.referenceFix1 !== undefined || etpService.referenceFix2 !== undefined) &&
       !etpService.isEtpRecomputing().get()
     ) {
       acToColumn.update('NO (ETP)');

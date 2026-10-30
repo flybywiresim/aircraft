@@ -79,10 +79,10 @@ export const areWindEntriesTheSame = (one: WindEntry, two: WindEntry) =>
   MathUtils.isAboutEqual(one.altitude ?? 0, two.altitude ?? 0) && areWindVectorsTheSame(one.vector, two.vector);
 export const areWindVectorsTheSame = (one: WindVector | undefined, two: WindVector | undefined) =>
   (one === undefined && two === undefined) ||
-  (one !== undefined &&
-    two !== undefined &&
-    MathUtils.isAboutEqual(one.direction ?? 0, two.direction ?? 0) &&
-    MathUtils.isAboutEqual(one.magnitude ?? 0, two.magnitude ?? 0));
+  (one === undefined && two!.direction === undefined && two!.magnitude === undefined) ||
+  (two === undefined && one!.direction === undefined && one!.magnitude === undefined) ||
+  (MathUtils.isAboutEqual(one?.direction!, two?.direction!) &&
+    MathUtils.isAboutEqual(one?.magnitude!, two?.magnitude!));
 
 export function cloneWindVector(source: WindVector): WindVector {
   return {

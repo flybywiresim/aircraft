@@ -282,7 +282,7 @@ export class EquitimePoint {
   }
 
   async setPilotEnteredWindToReferenceFix2(windVector: WindVector | undefined): Promise<void> {
-    if (this.referenceFix2 !== undefined && !areWindVectorsTheSame(this.pilotEnteredWindToReferenceFix1, windVector)) {
+    if (this.referenceFix2 !== undefined && !areWindVectorsTheSame(this.pilotEnteredWindToReferenceFix2, windVector)) {
       this.setFixWindVector(2, windVector);
       this.resetPposTimeToRef(2);
       this.reset(true);
