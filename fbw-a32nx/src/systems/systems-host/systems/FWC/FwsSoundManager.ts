@@ -522,8 +522,8 @@ export class FwsSoundManager {
   private soundToRepeat: keyof typeof FwsAuralsList | null = null;
 
   private readonly intermediateSoundKeys: string[] = [];
-  private intermediatePlaying = false;
-  public intermediateGenerated = false;
+  public intermediatePlaying = false;
+  private intermediateGenerated = false;
 
   public hundredAboveEmitted = false;
   public minimumEmitted = false;
@@ -848,22 +848,23 @@ export class FwsSoundManager {
       this.speedEmitted = value;
     }
     if (
-      id === FwsSyntheticVoiceAural.TwoThousandFiveHundred ||
-      id === FwsSyntheticVoiceAural.TwentyFiveHundred ||
-      id === FwsSyntheticVoiceAural.TwoThousand ||
-      id === FwsSyntheticVoiceAural.OneThousand ||
-      id === FwsSyntheticVoiceAural.FiveHundred ||
-      id === FwsSyntheticVoiceAural.FourHundred ||
-      id === FwsSyntheticVoiceAural.ThreeHundred ||
-      id === FwsSyntheticVoiceAural.TwoHundred ||
-      id === FwsSyntheticVoiceAural.OneHundred ||
-      id === FwsSyntheticVoiceAural.Fifty ||
-      id === FwsSyntheticVoiceAural.Forty ||
-      id === FwsSyntheticVoiceAural.Thirty ||
-      id === FwsSyntheticVoiceAural.Twenty ||
-      id === FwsSyntheticVoiceAural.Ten ||
-      id === FwsSyntheticVoiceAural.Five ||
-      id === FwsSyntheticVoiceAural.Retard
+      !this.intermediatePlaying &&
+      (id === FwsSyntheticVoiceAural.TwoThousandFiveHundred ||
+        id === FwsSyntheticVoiceAural.TwentyFiveHundred ||
+        id === FwsSyntheticVoiceAural.TwoThousand ||
+        id === FwsSyntheticVoiceAural.OneThousand ||
+        id === FwsSyntheticVoiceAural.FiveHundred ||
+        id === FwsSyntheticVoiceAural.FourHundred ||
+        id === FwsSyntheticVoiceAural.ThreeHundred ||
+        id === FwsSyntheticVoiceAural.TwoHundred ||
+        id === FwsSyntheticVoiceAural.OneHundred ||
+        id === FwsSyntheticVoiceAural.Fifty ||
+        id === FwsSyntheticVoiceAural.Forty ||
+        id === FwsSyntheticVoiceAural.Thirty ||
+        id === FwsSyntheticVoiceAural.Twenty ||
+        id === FwsSyntheticVoiceAural.Ten ||
+        id === FwsSyntheticVoiceAural.Five ||
+        id === FwsSyntheticVoiceAural.Retard)
     ) {
       this.autoCalloutEmitted = value || this.hundredAboveEmitted || this.minimumEmitted;
     }

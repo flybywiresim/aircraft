@@ -2040,8 +2040,8 @@ export class PseudoFWC {
     return this.soundManager.autoCalloutEmitted;
   }
 
-  public getIntermediateCalloutGenerated() {
-    return this.soundManager.intermediateGenerated;
+  public getIntermediateCalloutPlaying() {
+    return this.soundManager.intermediatePlaying;
   }
 
   private registerKeyEvents() {

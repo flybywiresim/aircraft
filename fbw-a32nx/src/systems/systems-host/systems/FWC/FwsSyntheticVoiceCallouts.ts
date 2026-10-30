@@ -179,7 +179,7 @@ export class FwsSyntheticVoiceCallouts {
   private anyHeightThresholdBelow400Met = false;
   private anyActiveHeightThresholdBelow400Met = false;
 
-  private readonly intermediateGeneratedPulse = new NXLogicPulseNode();
+  private readonly intermediateNotPlayingPulse = new NXLogicPulseNode();
   private readonly below400FeetPulse = new NXLogicPulseNode();
 
   private readonly intermediateCalloutMemoryNode = new NXLogicMemoryNode(true);
@@ -318,7 +318,7 @@ export class FwsSyntheticVoiceCallouts {
     this.computeThresholds(height, deltaTime);
 
     const autoCalloutPlayed = this.fws.getAutoCalloutPlayed();
-    const intermediateGenerated = this.fws.getIntermediateCalloutGenerated();
+    const intermediateGenerated = this.fws.getIntermediateCalloutPlaying();
 
     this.radioAltimeterCalloutLogic(
       deltaTime,
@@ -496,7 +496,7 @@ export class FwsSyntheticVoiceCallouts {
     tla1Reverse: boolean,
     tla2Reverse: boolean,
     autoCalloutPlayed: boolean,
-    intermediateGenerated: boolean,
+    intermediatePlaying: boolean,
   ): void {
     // 2500
     const height = raValue ?? 0;
@@ -825,9 +825,9 @@ export class FwsSyntheticVoiceCallouts {
 
     const intermeidateMemoryNode = this.intermediateCalloutMemoryNode.write(
       this.gpwsActive || this.climbingOrOnGround || this.heightAbove410Feet,
-      this.anyActiveHeightThresholdBelow400Met || autoCalloutPlayed,
+      this.anyActiveHeightThresholdBelow400Met && autoCalloutPlayed,
     );
-    const intermediatePulse = this.intermediateGeneratedPulse.write(intermediateGenerated);
+    const intermediatePulse = this.intermediateNotPlayingPulse.write(!intermediatePlaying);
     const below400FeetPulse = this.below400FeetPulse.write(this.anyHeightThresholdBelow400Met);
 
     const startIntermediatePulses = intermediatePulse || below400FeetPulse;
