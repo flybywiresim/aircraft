@@ -69,6 +69,7 @@ Always start an item with "1."; GitHub will number the rendered list automatical
 1. [A380X/FMS] Disable destination QNH, temperature and wind fields on the PERF APPR page if no destination airport exists - @HendersonTyler
 1. [A380X/MFD] Show dashed placeholders for unset APPR and airport idents on PERF APPR page - @zain-asif-dev
 1. [A380X/MFD] Fix F speed showing CONF3 value instead of F2 on PERF APPR page - @smchuk
+1. [A32NX/FWS] Add `BARO VALUE DISAGREE` master caution, rename `ALTI DISCREPANCY` master caution to `ALT DISCREPANCY` - @FozzieHi (fozzie)
 1. [A380X/LIGHTS] Implement storm light switch function - @heclak (Heclak)
 1. [A380X/LIGHTS] Add side console lights - @heclak (Heclak)
 1. [A380X/RMP] Fixed a bug where the PILOT_TRANSMITTER_SET key event would toggle transmission rather than only setting it on - @tracernz (Mike)
@@ -90,11 +91,33 @@ Always start an item with "1."; GitHub will number the rendered list automatical
 1. [A380X/FG] Add FD bar flashing for mode reversion and initial FD engagement - @lukecologne (luke)
 1. [A380X/FG] Add FD reset during ROLL OUT when diverging from runway heading - @lukecologne (luke)
 1. [A380X/VD] Fix VD altitude constraint display and logic - @lukecologne & BravoMike99
-1. [A32NX/MCDU] Accept tropopause pilot entry as flight level - @BravoMike99 (bruno_pt99)
-1. [A32NX/MCDU] Fixed CRZ FL showing as amber after cruise phase on the INIT page - @BravoMike99 (bruno_pt99)
-1. [A32NX/MCDU] Added flight phase restrictions to CRZ TEMP, GND TEMP, FROM/TO & CO RTE on the INIT page - @BravoMike99 (bruno_pt99)
-1. [A32NX/MCDU] Layout improvements in PERF and INIT pages when mandatory data is missing in the active flightplan - @BravoMike99 (bruno_pt99)
+1. [A32NX/FMS] Accept tropopause pilot entry as flight level - @BravoMike99 (bruno_pt99)
+1. [A32NX/FMS] Fixed CRZ FL showing as amber after cruise phase on the INIT page - @BravoMike99 (bruno_pt99)
+1. [A32NX/FMS] Added flight phase restrictions to CRZ TEMP, GND TEMP, FROM/TO & CO RTE on the INIT page - @BravoMike99 (bruno_pt99)
+1. [A32NX/FMS] Layout improvements in PERF and INIT pages when mandatory data is missing in the active flightplan - @BravoMike99 (bruno_pt99)
 1. [A380X/FCTL] Add pitch up compensation in flare law - @lukecologne (luke)
+1. [A32NX/EFB] Update A32NX takeoff perf calcs - @donstim (donbikes)
+1. [A380X/FLIGHT MODEL] Fix outer fuel tank transfer rate - @donstim (donbikes)
+1. [A32NX/FMS] Allow cruise flight level pilot entry below FCU altitude - @BravoMike99 (bruno_pt99)
+1. [A32NX/FG] Fixed uncommanded OP CLB activation during approach - @lukecologne (luke)
+1. [A32NX/FG] Fixed ground speed mini not working below 700 feet - @lukecologne (luke)
+1. [A32NX/FG] Fixed managed speed target not constrained by characteristic speeds outside of approach phase - @lukecologne (luke)
+1. [A32NX/FG] Fixed ATHR being constrainted by "F" speed when landing in CONF 3 - @lukecologne (luke)
+1. [A32NX/FG] Target the lower speed margin when underspeeding or on geometric path in DES mode - @lukecologne (luke)
+1. [A380X/FWS] Single chime sound can be interrupted - @BravoMike99 (bruno_pt99)
+1. [A380X/RMP] Fix RMP brightness initialisation - @CameronCarlyon (YouBaconMeCrazy)
+1. [A380X] Make flightdeck lighting panel-state and time-of-day aware. Adjust existing values. @CameronCarlyon (YouBaconMeCrazy)
+1. [FMS] Limit step descent guidance to -1000fpm - @Jonny23787 (Jonathan), @BlueberryKing (BlueberryKing)
+1. [A380X/SD] Correct EL/DC page APU TR text display color - @ksleungac (pzb-85)
+1. [A380X/FMS] Added FMS WIND page - @BravoMike99 (bruno_pt99)
+1. [A380X/FMS] Added "ENTRY NOT IN LIST" message - @BravoMike99 (bruno_pt99)
+1. [A380X/FMS] Fixed minimums of non active flightplans being taken into account - @BravoMike99 (bruno_pt99)
+1. [A380X/FMS] Added wind uplink request - @BravoMike99 (bruno_pt99)
+1. [A32NX/FMS] Disable approach wind modification if no airport is present - @BravoMike99 (bruno_pt99)
+1. [A32NX/FUEL SYSTEM] Close center tank valves if they are triggered open with no fuel in center tank - @donstim (donbikes)
+1. [A380X/FUEL SYSTEM] Prevent CG control transfer end from ending normal trim tank transfers - @donstim (donbikes)
+1. [A32NX/FMS] Fixed +/- altitude constraints entered on the F-PLN page being inverted - @shinji1100
+1. [A32NX/FWS] Add intermediate callouts to FWC - @BravoMike99 (bruno_pt99)
 
 ## 2024.1.0
 
@@ -234,8 +257,6 @@ Always start an item with "1."; GitHub will number the rendered list automatical
 1. [A380X/MFD] Fixed PERF APPR QNH entries in inHg being displayed as hPa - @Daboss57 (Daboss57)
 1. [EFB] Add FAA and LIDO charts supplied by MSFS2024 - @tracernz (Mike)
 1. [A32NX/FLIGHT MODEL] Updated A32NX flight model for MSFS 2024 - @donstim (donbikes)
-1. [A32NX/FWS] Add `BARO VALUE DISAGREE` master caution, rename `ALTI DISCREPANCY` master caution to `ALT DISCREPANCY` - @FozzieHi (fozzie)
-1. [A32NX/FWS] Add intermediate callouts to FWC - @BravoMike99 (bruno_pt99)
 
 ## 0.14.0
 

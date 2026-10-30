@@ -476,6 +476,7 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   fmgc_approach_type::ILS,
   fmgc_approach_type::RNAV,
   fmgc_des_submode::SPEED_THRUST,
+  fmgc_des_submode::VPATH_SPEED,
   fmgc_flight_phase::Approach,
   fmgc_flight_phase::Takeoff,
   fmgc_flight_phase::Goaround,
@@ -533,6 +534,11 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   24.0F,
   24.0F,
   40.0F,
+  0.0F,
+  0.0F,
+  0.0F,
+  0.0F,
+  0.0F,
   0.0F,
   0.0F,
   0.0F,
@@ -715,6 +721,7 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   false,
   false,
   false,
+  false,
   true,
   true,
   true,
@@ -857,6 +864,7 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   1,
   1,
   1,
+  4,
 
   {
     {
@@ -949,7 +957,12 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
         0.0,
         0.0,
         0.0,
-        0.0
+
+        {
+          0U,
+          0.0F
+        },
+        false
       },
 
       {
@@ -3984,6 +3997,13 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
   0.0,
   0.0,
   0.0,
+  -1.0,
+  1.0,
+  360.0,
+  0.0,
+  0.017453292519943295,
+  0.33333333333333331,
+  0.0,
   -5.0,
   9.81,
   9.81,
@@ -4023,6 +4043,7 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
 
   { 0.0F, 20.0F, 30.0F, 45.0F, 60.0F, 80.0F, 100.0F },
   -1.0F,
+  -5.0F,
   0.0F,
   0.0F,
   -2.0F,
@@ -4136,6 +4157,8 @@ FmgcComputer::Parameters_FmgcComputer_T FmgcComputer::FmgcComputer_P{
 
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
   false,
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
 
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
 

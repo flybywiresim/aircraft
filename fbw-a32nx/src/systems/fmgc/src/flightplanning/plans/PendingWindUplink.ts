@@ -1,3 +1,4 @@
+// Copyright (c) 2026 FlyByWire Simulations
 import { FlightPlanWindEntry } from '../data/wind';
 
 interface BasePendingCruiseWind {
@@ -65,8 +66,8 @@ export class PendingWindUplink {
     const levels: number[] = [];
     for (const fix of this.cruiseWinds) {
       for (const level of fix.levels) {
-        if (!levels.includes(level.altitude)) {
-          levels.push(level.altitude);
+        if (!levels.includes(level.altitude!)) {
+          levels.push(level.altitude!);
         }
       }
     }

@@ -105,7 +105,6 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   updateConstraints(): void;
   setScratchpadMessage(message: McduMessage): void;
   logTroubleshootingError(msg: any): void;
-  updateTowerHeadwind(): void;
   onToRwyChanged(): void;
   directToWaypoint(waypoint: Fix): Promise<void>;
   directToLeg(legIndex: number): Promise<void>;
@@ -191,7 +190,7 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   getDistanceToDestination(): number | undefined;
   setPerfApprQNH(s: string, forPlan: FlightPlanIndex): boolean;
   setPerfApprTemp(s: string, forPlan: FlightPlanIndex): boolean;
-  setPerfApprWind(s: string, forPlan: FlightPlanIndex): boolean;
+  setPerfApprWind(s: string, forPlan: FlightPlanIndex): Promise<boolean>;
   updatePerfSpeeds(): void;
   setPerfApprTransAlt(s: string, forPlan: FlightPlanIndex): boolean;
   setPerfApprVApp(s: string, forPlan: FlightPlanIndex): boolean;
@@ -225,7 +224,7 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   setEstimatedTakeoffTime(text: string, forPlan: FlightPlanIndex): void;
   computeAlternateCruiseLevel(forPlan: FlightPlanIndex): number | undefined;
   uplinkWinds(forPlan: FlightPlanIndex, sentCallback?: () => void): Promise<void>;
-  getHistoryWinds(cruiseLevel: number | null): Readonly<WindEntry>[] | undefined;
+  getHistoryWinds(cruiseLevel: number | null): Promise<Readonly<WindEntry>[]>;
   getTimePrediction(secondsFromPresent: number, forPlan: FlightPlanIndex): string;
   getTimePredictionHeader(forPlan: FlightPlanIndex): string;
   clearEngineOutCondition(): void;
@@ -270,8 +269,6 @@ interface LegacyFmsPageFmsInterface extends FmsDataInterface, FmsDisplayInterfac
   _toFlexChecked: boolean;
   perfClbPredToAltitudePilot?: number;
   perfDesPredToAltitudePilot?: number;
-  managedSpeedTarget: number;
-  managedSpeedTargetIsMach: boolean;
   managedSpeedClimb: number;
   managedSpeedClimbMach: number;
   climbSpeedLimit: number;

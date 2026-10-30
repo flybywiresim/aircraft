@@ -916,7 +916,7 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
   private static readonly v2SecondSegBrakeThresholds: Record<number, [number, number]> = {
     1: [-0.011031, 189.0],
     2: [0.02346, 68.33],
-    3: [0.014175, 106.14],
+    3: [0.017377, 96.924],
   };
 
   private static readonly v2SecondSegBrakeBaseTable1: Record<number, [number, number]> = {
@@ -3443,7 +3443,12 @@ export class A320251NTakeoffPerformanceCalculator implements TakeoffPerformanceC
 
     const tempFactors = A320251NTakeoffPerformanceCalculator.runwayTemperatureFactor[conf];
 
-    const runwayAltFactor = runwayLength - pressureAlt / 12;
+    let runwayAltFactor: number;
+    if (conf == 2) {
+      runwayAltFactor = runwayLength - pressureAlt / 15;
+    } else {
+      runwayAltFactor = runwayLength - pressureAlt / 12;
+    }
     let weightDelta = 1000 * (runwayAltFactor * tempFactors[0] + tempFactors[1]) * (Math.min(temp, tRef) - isaTemp);
     if (temp > tRef) {
       weightDelta += 1000 * (runwayAltFactor * tempFactors[2] + tempFactors[3]) * (Math.min(temp, tMax) - tRef);

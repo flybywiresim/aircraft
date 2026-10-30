@@ -3,11 +3,12 @@
 #include <ini_type_conversion.h>
 #include <stdio.h>
 #include <chrono>
+#include <cstdio>
 #include <fstream>
 #include <iomanip>
-#include <iostream>
 #include <sstream>
 #include <vector>
+
 
 #include "FlightDataRecorder.h"
 
@@ -21,8 +22,8 @@ void FlightDataRecorder::initialize() {
   loadConfiguration();
 
   // print configuration
-  std::cout << "WASM: Flight Data Recorder Configuration : Enabled                        = " << idIsEnabled->get() << std::endl;
-  std::cout << "WASM: Flight Data Recorder Configuration : Interface Version              = " << INTERFACE_VERSION << std::endl;
+  std::printf("WASM: Flight Data Recorder Configuration : Enabled                        = %d\n", idIsEnabled->get());
+  std::printf("WASM: Flight Data Recorder Configuration : Interface Version              = %d\n", INTERFACE_VERSION);
 }
 
 void FlightDataRecorder::update(const BaseData& baseData,

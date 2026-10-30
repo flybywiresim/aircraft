@@ -98,6 +98,8 @@ export class CDUInitPage {
       mcdu.updateFlightNo(value, forPlan, (result) => {
         if (!result) {
           scratchpadCallback();
+        } else {
+          CDUInitPage.ShowPage1(mcdu, forPlan);
         }
       });
     };
@@ -355,16 +357,6 @@ export class CDUInitPage {
 
     mcdu.onRightInput[5] = (scratchpadValue, scratchpadCallback) => {
       mcdu.trySetGroundTemp(scratchpadValue, forPlan).then((result) => {
-        if (result) {
-          CDUInitPage.ShowPage1(mcdu, forPlan);
-        } else {
-          scratchpadCallback();
-        }
-      });
-    };
-
-    mcdu.onLeftInput[2] = (value, scratchpadCallback) => {
-      mcdu.tryUpdateFromTo(value, forPlan, (result) => {
         if (result) {
           CDUInitPage.ShowPage1(mcdu, forPlan);
         } else {
