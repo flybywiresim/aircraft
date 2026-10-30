@@ -17,7 +17,7 @@ import { areWindVectorsTheSame, cloneWindVector, WindVector } from './flightplan
 import { FmsError, FmsErrorType } from './FmsError';
 import { GuidanceToFmsEvents } from './events/GuidanceToFmsEvents';
 
-export interface EquitimePointInterface {
+interface EquitimePointInterface {
   etpTimeToRef1: number;
   etpTimeToRef2: number;
   pposTimeToRef1: number;
@@ -25,6 +25,7 @@ export interface EquitimePointInterface {
   pposDistanceToEtp: number;
   pposTimeToEtp: number;
   etp: ReturnType<Geometry['pointFromEndOfPath']>;
+  sequenced: boolean;
 }
 
 export class EquitimePoint {
@@ -214,8 +215,13 @@ export class EquitimePoint {
           return;
         }
 
-        this.result.pposDistanceToEtp = legPredictions.distanceFromAircraft - distanceFromLegTermination;
-        this.result.pposTimeToEtp = predictions.interpolateTimeAtDistance(this.result.pposDistanceToEtp) / 3600;
+        const distanceToComputedEtp = legPredictions.distanceFromAircraft - distanceFromLegTermination;
+        const sequenced = distanceToComputedEtp < 0;
+        this.result.pposDistanceToEtp = sequenced ? undefined : distanceToComputedEtp;
+        this.result.pposTimeToEtp = sequenced
+          ? undefined
+          : predictions.interpolateTimeAtDistance(distanceToComputedEtp) / 3600;
+        this.result.sequenced = sequenced;
         this.isEtpRecomputingDueToInputChange.set(false);
         this.lastEtpRecomputeTime = time;
       }
@@ -230,6 +236,7 @@ export class EquitimePoint {
     this.result.etpTimeToRef2 = undefined;
     this.result.pposDistanceToEtp = undefined;
     this.result.pposTimeToEtp = undefined;
+    this.result.sequenced = false;
     this.lastEtpRecomputeTime = at;
     this.isEtpRecomputingDueToInputChange.set(cleanRecompute);
   }
@@ -250,7 +257,7 @@ export class EquitimePoint {
   }
 
   get(): ReturnType<Geometry['pointFromEndOfPath']> | undefined {
-    return this.result.etp;
+    return this.result.sequenced ? undefined : this.result.etp;
   }
 
   async setPilotEnteredReferenceFix1(fix: Fix | undefined): Promise<void> {
