@@ -356,13 +356,13 @@ impl PressureValve {
                     );
                 }
             }
-            Some(PressureValveSignal::Close(target_open, travel_time)) => {
-                if self.open_amount > target_open {
-                    self.open_amount -= Ratio::new::<percent>(
-                        self.get_valve_change_for_delta(context, travel_time)
-                            .min(self.open_amount.get::<percent>() - target_open.get::<percent>()),
-                    );
-                }
+            Some(PressureValveSignal::Close(target_open, travel_time))
+                if self.open_amount > target_open =>
+            {
+                self.open_amount -= Ratio::new::<percent>(
+                    self.get_valve_change_for_delta(context, travel_time)
+                        .min(self.open_amount.get::<percent>() - target_open.get::<percent>()),
+                );
             }
             _ => (),
         }
