@@ -303,19 +303,26 @@ export class CDUInitPage {
     };
     mcdu.onRightInput[1] = () => {
       if (requestEnable) {
+        // If an engine is running or the aircraft is flying, the requested F-PLN is loaded into the SEC F-PLN
+        // instead of the active one. Ref: FCOM DSC-22_20-30-80
+        const requestIntoPlan =
+          forPlan === FlightPlanIndex.Active && (mcdu.isAnEngineOn() || mcdu.isFlying())
+            ? FlightPlanIndex.FirstSecondary
+            : forPlan;
+
         getSimBriefOfp(mcdu, () => {
           if (mcdu.page.Current === mcdu.page.InitPageA) {
             CDUInitPage.ShowPage1(mcdu, forPlan);
           }
         })
           .then((data) => {
-            SimBriefUplinkAdapter.uplinkFlightPlanFromSimbrief(mcdu, mcdu.flightPlanService, forPlan, data, {
+            SimBriefUplinkAdapter.uplinkFlightPlanFromSimbrief(mcdu, mcdu.flightPlanService, requestIntoPlan, data, {
               doUplinkProcedures: false,
             })
               .then(() => {
                 console.log('SimBrief data uplinked.');
 
-                mcdu.flightPlanService.uplinkInsert(forPlan);
+                mcdu.flightPlanService.uplinkInsert(requestIntoPlan);
 
                 if (mcdu.page.Current === mcdu.page.InitPageA) {
                   CDUInitPage.ShowPage1(mcdu, forPlan);
