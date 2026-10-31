@@ -424,6 +424,29 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.fmgc2DiscreteWord1,
   );
 
+  private readonly fmgc1DiscreteWord3 = Arinc429LocalVarConsumerSubject.create(
+    this.bus.getSubscriber<A32NXFgBusEvents>().on('fmgc_discrete_word_3_1'),
+  );
+
+  private readonly fmgc2DiscreteWord3 = Arinc429LocalVarConsumerSubject.create(
+    this.bus.getSubscriber<A32NXFgBusEvents>().on('fmgc_discrete_word_3_2'),
+  );
+
+  private readonly fmgcDiscreteWord3 = MappedSubject.create(
+    ([fg1, fg2]) => {
+      return fg1.isNormalOperation() ? fg1 : fg2;
+    },
+    this.fmgc1DiscreteWord3,
+    this.fmgc2DiscreteWord3,
+  );
+
+  private readonly clbArmed = this.fmgcDiscreteWord3.map((v) => v.bitValueOr(24, false));
+
+  /** The preselected speed/mach for the next flight phase that is currently sent to the FG, if any. */
+  private armedPreSelSpeedMach: number | undefined = undefined;
+
+  private preSelSpeedMachUpdateTimeout: ReturnType<typeof setTimeout> | undefined = undefined;
+
   private readonly openOrManagedVerticalModeActive = this.fmgc1DiscreteWord1.map((v) => {
     return v.bitValueOr(11, false) || v.bitValue(12) || v.bitValue(14);
   });
@@ -731,6 +754,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_PFD', 'knots', 0); // Simulink model uses 0 as non valid
     SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_ATHR', 'knots', -1);
 
+    clearTimeout(this.preSelSpeedMachUpdateTimeout);
+    this.armedPreSelSpeedMach = undefined;
     SimVar.SetSimVarValue('L:A32NX_MachPreselVal', 'mach', -1);
     SimVar.SetSimVarValue('L:A32NX_SpeedPreselVal', 'knots', -1);
 
@@ -814,6 +839,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.updateMinimums();
       this.updateIlsCourse();
       this.updatePerfPageAltPredictions();
+      this.updateArmedPreSelSpeedMach();
       // this.checkEfobBelowMin(deltaTime);
     }
 
@@ -935,7 +961,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         }
 
         /** Arm preselected speed/mach for next flight phase */
-        this.updatePreSelSpeedMach(plan.performanceData.preselectedClimbSpeed.get() ?? undefined);
+        this.updateArmedPreSelSpeedMach();
 
         break;
       }
@@ -954,14 +980,14 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
           this.activatePreSelSpeedMach(plan.performanceData.preselectedClimbSpeed.get() ?? undefined);
         }
 
-        /** Arm preselected speed/mach for next flight phase */
-        this.updatePreSelSpeedMach(plan.performanceData.preselectedCruiseSpeed.get() ?? undefined);
-
         const fcuAltitude = this.fcuSelectedAltitude.get().valueOr(null);
 
         if (!cruiseLevel && fcuAltitude !== null) {
           this.flightPlanService.setPerformanceData('cruiseFlightLevel', fcuAltitude / 100);
         }
+
+        /** Arm preselected speed/mach for next flight phase */
+        this.updateArmedPreSelSpeedMach();
 
         break;
       }
@@ -980,7 +1006,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         }
 
         /** Disarm preselected speed/mach for next flight phase */
-        this.updatePreSelSpeedMach(undefined);
+        this.updateArmedPreSelSpeedMach();
 
         this.flightPlanService.deleteAllClimbWindEntries();
 
@@ -1384,28 +1410,72 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     this.managedSpeedIsMach.set(isMach);
   }
 
-  private activatePreSelSpeedMach(preSel) {
+  private activatePreSelSpeedMach(preSel: number | undefined) {
     if (preSel) {
+      // The preselected value might not have been armed (e.g. CLB not armed), so make sure the FG reads it on activation
+      clearTimeout(this.preSelSpeedMachUpdateTimeout);
+      this.armedPreSelSpeedMach = preSel;
+      this.writePreSelSpeedMach(preSel);
       SimVar.SetSimVarValue('K:A32NX.FMS_PRESET_SPD_ACTIVATE', 'number', 1);
+    }
+  }
+
+  /**
+   * Gets the preselected speed/mach of the next flight phase which should be sent to the FG.
+   * The CLB preselected speed is only sent when CLB is armed, and the CRZ preselected speed/mach only when the FCU
+   * selected altitude is the cruise altitude.
+   */
+  private getArmedPreSelSpeedMach(): number | undefined {
+    if (!this.flightPlanService.hasActive) {
+      return undefined;
+    }
+
+    const performanceData = this.flightPlanService.active.performanceData;
+
+    switch (this.flightPhaseManager.phase) {
+      case FmgcFlightPhase.Takeoff:
+        return this.clbArmed.get() ? performanceData.preselectedClimbSpeed.get() ?? undefined : undefined;
+      case FmgcFlightPhase.Climb: {
+        const fcuAltitude = this.fcuSelectedAltitude.get().valueOr(null);
+        const cruiseLevel = performanceData.cruiseFlightLevel.get();
+        const fcuAltitudeIsCruiseAltitude =
+          fcuAltitude !== null && cruiseLevel !== null && Math.round(fcuAltitude / 100) === cruiseLevel;
+
+        return fcuAltitudeIsCruiseAltitude ? performanceData.preselectedCruiseSpeed.get() ?? undefined : undefined;
+      }
+      default:
+        return undefined;
+    }
+  }
+
+  private updateArmedPreSelSpeedMach() {
+    const preSel = this.getArmedPreSelSpeedMach();
+
+    if (preSel !== this.armedPreSelSpeedMach) {
+      this.armedPreSelSpeedMach = preSel;
+      this.updatePreSelSpeedMach(preSel);
     }
   }
 
   private updatePreSelSpeedMach(preSel: number | undefined) {
     // The timeout is required to create a delay for the current value to be read and the new one to be set
-    setTimeout(() => {
-      if (preSel) {
-        if (preSel > 1) {
-          SimVar.SetSimVarValue('L:A32NX_SpeedPreselVal', 'knots', preSel);
-          SimVar.SetSimVarValue('L:A32NX_MachPreselVal', 'mach', -1);
-        } else {
-          SimVar.SetSimVarValue('L:A32NX_SpeedPreselVal', 'knots', -1);
-          SimVar.SetSimVarValue('L:A32NX_MachPreselVal', 'mach', preSel);
-        }
+    clearTimeout(this.preSelSpeedMachUpdateTimeout);
+    this.preSelSpeedMachUpdateTimeout = setTimeout(() => this.writePreSelSpeedMach(preSel), 200);
+  }
+
+  private writePreSelSpeedMach(preSel: number | undefined) {
+    if (preSel) {
+      if (preSel > 1) {
+        SimVar.SetSimVarValue('L:A32NX_SpeedPreselVal', 'knots', preSel);
+        SimVar.SetSimVarValue('L:A32NX_MachPreselVal', 'mach', -1);
       } else {
         SimVar.SetSimVarValue('L:A32NX_SpeedPreselVal', 'knots', -1);
-        SimVar.SetSimVarValue('L:A32NX_MachPreselVal', 'mach', -1);
+        SimVar.SetSimVarValue('L:A32NX_MachPreselVal', 'mach', preSel);
       }
-    }, 200);
+    } else {
+      SimVar.SetSimVarValue('L:A32NX_SpeedPreselVal', 'knots', -1);
+      SimVar.SetSimVarValue('L:A32NX_MachPreselVal', 'mach', -1);
+    }
   }
 
   private checkSpeedLimit() {
@@ -3537,12 +3607,9 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   }
 
   public trySetPreSelectedClimbSpeed(s: string, forPlan: FlightPlanIndex): boolean {
-    const isNextPhase = this.flightPhaseManager.phase === FmgcFlightPhase.Takeoff;
     if (s === Keypad.clrValue) {
       this.flightPlanService.setPerformanceData('preselectedClimbSpeed', null, forPlan);
-      if (isNextPhase) {
-        this.updatePreSelSpeedMach(undefined);
-      }
+      this.updateArmedPreSelSpeedMach();
       return true;
     }
 
@@ -3570,21 +3637,15 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     }
 
     this.flightPlanService.setPerformanceData('preselectedClimbSpeed', spd, forPlan);
-
-    if (isNextPhase) {
-      this.updatePreSelSpeedMach(spd);
-    }
+    this.updateArmedPreSelSpeedMach();
 
     return true;
   }
 
   public trySetPreSelectedCruiseSpeed(s: string, forPlan: FlightPlanIndex): boolean {
-    const isNextPhase = this.flightPhaseManager.phase === FmgcFlightPhase.Climb;
     if (s === Keypad.clrValue) {
       this.flightPlanService.setPerformanceData('preselectedCruiseSpeed', null, forPlan);
-      if (isNextPhase) {
-        this.updatePreSelSpeedMach(undefined);
-      }
+      this.updateArmedPreSelSpeedMach();
       return true;
     }
 
@@ -3618,10 +3679,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
       this.flightPlanService.setPerformanceData('preselectedCruiseSpeed', spd, forPlan);
     }
 
-    if (isNextPhase && forPlan === FlightPlanIndex.Active) {
-      const plan = this.getFlightPlan(FlightPlanIndex.Active);
-      this.updatePreSelSpeedMach(plan.performanceData.preselectedCruiseSpeed.get() ?? undefined);
-    }
+    this.updateArmedPreSelSpeedMach();
 
     return true;
   }
