@@ -3,8 +3,8 @@
 import {
   ArraySubject,
   ComponentProps,
-  DisplayComponent,
   FSComponent,
+  LifecycleComponent,
   MappedSubject,
   Subject,
   Subscribable,
@@ -1524,7 +1524,7 @@ export interface MfdFmsWindPageTableHeaderProps extends ComponentProps {
   isHistoryPage?: boolean;
 }
 
-export class MfdFmsWindPageTableHeader extends DisplayComponent<MfdFmsWindPageTableHeaderProps> {
+export class MfdFmsWindPageTableHeader extends LifecycleComponent<MfdFmsWindPageTableHeaderProps> {
   public render(): VNode {
     return (
       <div>

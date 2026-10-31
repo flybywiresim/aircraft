@@ -1,8 +1,8 @@
 import './MfdFmsFplnFixInfo.scss';
 
-import { Button } from '../../../../MsfsAvionicsCommon/UiWidgets/Button';
-import { InputField } from '../../../../MsfsAvionicsCommon/UiWidgets/InputField';
-import { TopTabNavigator, TopTabNavigatorPage } from '../../../../MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
+import { Button } from '../../../../../MsfsAvionicsCommon/UiWidgets/Button';
+import { InputField } from '../../../../../MsfsAvionicsCommon/UiWidgets/InputField';
+import { TopTabNavigator, TopTabNavigatorPage } from '../../../../../MsfsAvionicsCommon/UiWidgets/TopTabNavigator';
 
 import { Fix, MagVar } from '@flybywiresim/fbw-sdk';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
@@ -22,13 +22,13 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 
-import { hhmmFormatter } from '../../../shared/utils';
-import { FixFormat, RadialFormat, RadiusFormat } from '../../common/DataEntryFormats';
-import { FlightPlanFooter } from '../../common/FlightPlanFooter';
-import { FmsFlightPlanPage } from '../../common/FmsFlightPlanPage';
-import { Footer } from '../../common/Footer';
+import { hhmmFormatter } from '../../../../shared/utils';
+import { FixFormat, RadialFormat, RadiusFormat } from '../../../common/DataEntryFormats';
+import { FlightPlanFooter } from '../../../common/FlightPlanFooter';
+import { Footer } from '../../../common/Footer';
+import { FmsPage } from '../../../common/FmsPage';
 
-export class MfdFmsFplnFixInfo extends FmsFlightPlanPage {
+export class MfdFmsFplnFixInfo extends FmsPage {
   private readonly flightPlanManager = new ObservableFlightPlanManager(
     this.props.bus,
     this.props.fmcService.master!.flightPlanInterface,
@@ -75,7 +75,7 @@ export class MfdFmsFplnFixInfo extends FmsFlightPlanPage {
                       void this.props.fmcService.master!.flightPlanInterface.setFixInfoEntry(
                         value,
                         null,
-                        this.loadedFlightPlanIndex.get(),
+                        FlightPlanIndex.Active,
                       );
                       return;
                     }
@@ -89,7 +89,7 @@ export class MfdFmsFplnFixInfo extends FmsFlightPlanPage {
                     void this.props.fmcService.master!.flightPlanInterface.setFixInfoEntry(
                       value,
                       new FixInfoEntry(fix, [], []),
-                      this.loadedFlightPlanIndex.get(),
+                      FlightPlanIndex.Active,
                     );
                   }}
                   errorHandler={(msg) => this.props.mfd.showFmsErrorMessage(msg.type)}
@@ -141,7 +141,7 @@ export class MfdFmsFplnFixInfo extends FmsFlightPlanPage {
 
                             return fixInfo;
                           },
-                          this.loadedFlightPlanIndex.get(),
+                          FlightPlanIndex.Active,
                         );
                       }}
                       errorHandler={(msg) => this.props.mfd.showFmsErrorMessage(msg.type)}
@@ -179,7 +179,7 @@ export class MfdFmsFplnFixInfo extends FmsFlightPlanPage {
 
                             return fixInfo;
                           },
-                          this.loadedFlightPlanIndex.get(),
+                          FlightPlanIndex.Active,
                         );
                       }}
                       errorHandler={(msg) => this.props.mfd.showFmsErrorMessage(msg.type)}
@@ -219,7 +219,7 @@ export class MfdFmsFplnFixInfo extends FmsFlightPlanPage {
 
                             return fixInfo;
                           },
-                          this.loadedFlightPlanIndex.get(),
+                          FlightPlanIndex.Active,
                         );
                       }}
                       errorHandler={(msg) => this.props.mfd.showFmsErrorMessage(msg.type)}

@@ -14,6 +14,9 @@ import { FlightPlanPerformanceData } from '@fmgc/flightplanning/plans/performanc
 import { initPage } from '../../shared/utils';
 import { FmsPage } from './FmsPage';
 
+/**
+ * Page which listens to flightpplan manager events depending on the loaded flightplan.
+ */
 export abstract class FmsFlightPlanPage<T extends AbstractMfdPageProps = AbstractMfdPageProps> extends FmsPage<T> {
   private readonly sub = this.props.bus.getSubscriber<MfdSimvars>();
 

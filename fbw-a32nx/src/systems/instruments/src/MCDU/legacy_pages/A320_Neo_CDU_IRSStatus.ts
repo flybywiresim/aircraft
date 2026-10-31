@@ -1,10 +1,9 @@
 // Copyright (c) 2021-2023, 2025 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
-import { Arinc429Register, coordinateToString, RegisteredSimVar } from '@flybywiresim/fbw-sdk';
+import { Arinc429Register, coordinateToString, RegisteredSimVar, TimeFormatters } from '@flybywiresim/fbw-sdk';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
 import { SimVarValueType } from '@microsoft/msfs-sdk';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
-import { FmsFormatters } from '../legacy/FmsFormatters';
 
 export class CDUIRSStatus {
   private static frozen = false;
@@ -177,7 +176,7 @@ export class CDUIRSStatus {
         CDUIRSStatus.ShowPage(
           mcdu,
           index,
-          FmsFormatters.secondsTohhmm(Math.floor(SimVar.GetGlobalVarValue('ZULU TIME', 'seconds'))),
+          TimeFormatters.secondsTohhmm(Math.floor(SimVar.GetGlobalVarValue('ZULU TIME', 'seconds'))),
         );
       }
     };
