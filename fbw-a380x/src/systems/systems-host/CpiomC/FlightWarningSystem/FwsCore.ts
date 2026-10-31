@@ -267,6 +267,12 @@ export class FwsCore {
   /** Keys/IDs of only the failures which are currently presented on the EWD */
   public readonly presentedFailures: string[] = [];
 
+  /**
+   * Keys/IDs of secondary failures which are currently active, but were already cleared.
+   * They can't be recalled, and are only presented again when a new primary failure becomes active.
+   */
+  public readonly clearedSecondaryFailures: string[] = [];
+
   /** Keys/IDs of the active abnormal non-sensed procedures */
   public readonly activeAbnormalNonSensedKeys: SetSubject<number> = SetSubject.create([] as number[]);
 
@@ -2423,6 +2429,7 @@ export class FwsCore {
           this.clearedAbnormalProceduresList.clear();
           this.allCurrentFailures.length = 0;
           this.presentedFailures.length = 0;
+          this.clearedSecondaryFailures.length = 0;
           this.recallFailures.length = 0;
         } else {
           FwsCore.sendFailureWarning(this.bus);
@@ -2446,6 +2453,7 @@ export class FwsCore {
           this.activeDeferredProceduresList.clear();
           this.allCurrentFailures.length = 0;
           this.presentedFailures.length = 0;
+          this.clearedSecondaryFailures.length = 0;
           this.recallFailures.length = 0;
         }
       }),
@@ -5565,6 +5573,7 @@ export class FwsCore {
     const auralCrcKeys: string[] = [];
     let newScKey = false;
     let anyScKeyActive = false;
+    let newPrimaryFailure = false;
 
     const itemIsActiveConsideringFaultSuppression = (
       item: FwsSuppressableItem,
@@ -5606,6 +5615,11 @@ export class FwsCore {
       if (!itemIsActiveConsideringFaultSuppression(value, key, 0.6)) {
         failureKeys = failureKeys.filter((e) => e !== key);
         recallFailureKeys = recallFailureKeys.filter((e) => e !== key);
+
+        const clearedSecondaryFailureIndex = this.clearedSecondaryFailures.indexOf(key);
+        if (clearedSecondaryFailureIndex !== -1) {
+          this.clearedSecondaryFailures.splice(clearedSecondaryFailureIndex, 1);
+        }
       }
     }
 
@@ -5626,7 +5640,9 @@ export class FwsCore {
       const proc = EcamAbnormalProcedures[key];
       const isProcedure = !value.nonProcedureKey;
       const newWarning = isProcedure
-        ? !this.presentedFailures.includes(key) && !recallFailureKeys.includes(key)
+        ? !this.presentedFailures.includes(key) &&
+          !recallFailureKeys.includes(key) &&
+          !this.clearedSecondaryFailures.includes(key)
         : !this.allCurrentFailures.includes(key);
 
       if (proc === undefined && isProcedure) {
@@ -5642,6 +5658,10 @@ export class FwsCore {
         if (newWarning) {
           if (isProcedure) {
             failureKeys.push(key);
+
+            if (proc.sensed && !FwsAbnormalSensed.isSecondaryFailure(key)) {
+              newPrimaryFailure = true;
+            }
           }
 
           if (value.failure === 3) {
@@ -5806,7 +5826,7 @@ export class FwsCore {
             return [];
           }, ewdLimitationsAllPhasesKeys);
 
-          if (!recallFailureKeys.includes(key)) {
+          if (!recallFailureKeys.includes(key) && !this.clearedSecondaryFailures.includes(key)) {
             if (value.sysPage > -1) {
               failureSystemCount++;
             }
@@ -5894,10 +5914,25 @@ export class FwsCore {
       }
     });
 
+    // Present the cleared secondary failures again if a new primary failure became active
+    if (newPrimaryFailure) {
+      for (const key of this.clearedSecondaryFailures) {
+        failureKeys.push(key);
+        const clearedState = this.clearedAbnormalProceduresList.getValue(key);
+
+        if (clearedState) {
+          this.presentedAbnormalProceduresList.setValue(key, clearedState);
+          this.clearedAbnormalProceduresList.delete(key);
+        }
+      }
+      this.clearedSecondaryFailures.length = 0;
+    }
+
     // Delete inactive failures from internal map
     this.presentedAbnormalProceduresList.get().forEach((procedure, key) => {
-      if (!allFailureKeys.includes(key) || this.recallFailures.includes(key)) {
-        if (this.recallFailures.includes(key)) {
+      const isCleared = this.recallFailures.includes(key) || this.clearedSecondaryFailures.includes(key);
+      if (!allFailureKeys.includes(key) || isCleared) {
+        if (isCleared) {
           this.clearedAbnormalProceduresList.setValue(key, procedure);
         } else {
           this.clearedAbnormalProceduresList.delete(key);

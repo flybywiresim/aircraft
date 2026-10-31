@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2025 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -111,6 +111,11 @@ export class FwsAbnormalSensed {
 
   private activeProcedure: ProcedureLinesGenerator | undefined = undefined;
 
+  /** Secondary failures are identified by their ID starting with 9998 */
+  static isSecondaryFailure(id: string): boolean {
+    return id.substring(0, 4) === '9998';
+  }
+
   static compareAbnormalProceduresByPriority(
     idA: string,
     idB: string,
@@ -119,9 +124,9 @@ export class FwsAbnormalSensed {
     nonSensedA: boolean,
     nonSensedB: boolean,
   ) {
-    // 9998: Secondary failures at the end; non-sensed procedures at the top
-    const bPriority = idB.substring(0, 4) === '9998' ? 0 : nonSensedB ? 4 : failureLevelB;
-    const aPriority = idA.substring(0, 4) === '9998' ? 0 : nonSensedA ? 4 : failureLevelA;
+    // Secondary failures at the end; non-sensed procedures at the top
+    const bPriority = FwsAbnormalSensed.isSecondaryFailure(idB) ? 0 : nonSensedB ? 4 : failureLevelB;
+    const aPriority = FwsAbnormalSensed.isSecondaryFailure(idA) ? 0 : nonSensedA ? 4 : failureLevelA;
 
     // Sort desceding, from highest failure level to lowest
     return bPriority - aPriority;
@@ -257,7 +262,17 @@ export class FwsAbnormalSensed {
       this.fws.allCurrentFailures.splice(this.fws.allCurrentFailures.indexOf(activeProcedureId), 1);
     }
 
-    this.fws.recallFailures = this.fws.allCurrentFailures.filter((item) => !this.fws.presentedFailures.includes(item));
+    // Cleared secondary failures can't be recalled
+    if (
+      FwsAbnormalSensed.isSecondaryFailure(activeProcedureId) &&
+      !this.fws.clearedSecondaryFailures.includes(activeProcedureId)
+    ) {
+      this.fws.clearedSecondaryFailures.push(activeProcedureId);
+    }
+
+    this.fws.recallFailures = this.fws.allCurrentFailures.filter(
+      (item) => !this.fws.presentedFailures.includes(item) && !this.fws.clearedSecondaryFailures.includes(item),
+    );
   }
 
   private scrollToSelectedLine() {
