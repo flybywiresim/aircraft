@@ -7,7 +7,12 @@ import { MfdFmsFpln } from './MfdFmsFpln';
 import { ContextMenuElement } from '../../../../MsfsAvionicsCommon/UiWidgets/ContextMenu';
 import { BitFlags } from '@microsoft/msfs-sdk';
 import { FlightPlanLegFlags } from '@fmgc/flightplanning/legs/FlightPlanLeg';
-import { isConstraintRevisionAllowed, lateralRevisionHoldPage, showReturnButtonUriExtra } from '../../../shared/utils';
+import {
+  dirToUri,
+  isConstraintRevisionAllowed,
+  lateralRevisionHoldPage,
+  showReturnButtonUriExtra,
+} from '../../../shared/utils';
 
 export enum FplnRevisionsMenuType {
   Waypoint,
@@ -50,22 +55,8 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
         type === FplnRevisionsMenuType.TooSteepPath ||
         isFromLeg ||
         !isLegTerminatingAtDatabaseFix,
-      onPressed: () => {
-        //FIXME This should navigate to DIR TO page instead.
-        const ppos = fpln.props.fmcService.master?.navigation.getPpos();
-        if (ppos) {
-          fpln.props.fmcService.master?.flightPlanInterface.directToLeg(
-            ppos,
-            SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree'),
-            legIndex,
-            true,
-            planIndex,
-          );
-          fpln.props.mfd.uiService.navigateTo(
-            `fms/${fpln.props.mfd.uiService.activeUri.get().category}/f-pln-direct-to`,
-          );
-        }
-      },
+      // The DIR TO page selects the waypoint passed in the URI and creates the TMPY direct to
+      onPressed: () => fpln.props.mfd.uiService.navigateTo(`${dirToUri}/${legIndex}`),
     },
     {
       name: 'INSERT NEXT WPT',

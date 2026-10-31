@@ -134,6 +134,16 @@ export class MfdFmsFplnDirectTo extends FmsFlightPlanPage<MfdFmsFplnDirectToProp
 
     this.onNewData();
 
+    // Opened from FROM P.POS DIR TO lateral revision: select the revised waypoint as if it was picked from the dropdown.
+    // Skipped if a TMPY already exists, e.g. when returning to this page through back navigation.
+    const revisedLegIndex = parseInt(this.props.mfd.uiService.activeUri.get().extra ?? '');
+    if (!Number.isNaN(revisedLegIndex) && !this.props.flightPlanInterface.hasTemporary) {
+      const dropdownIndex = this.availableWaypointsToLegIndex.indexOf(revisedLegIndex);
+      if (dropdownIndex !== -1) {
+        this.onDropdownModified(dropdownIndex, '');
+      }
+    }
+
     this.subs.push(
       this.tmpyActive.sub((v) => {
         if (
