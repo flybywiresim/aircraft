@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// Copyright (c) 2023-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { ConsumerSubject, EventBus, MappedSubject, NodeReference, Subject, Subscribable } from '@microsoft/msfs-sdk';
@@ -227,7 +227,19 @@ export class OansBrakeToVacateSelection<T extends number> {
     ) {
       return;
     }
-    this.btvExitPositionOansReference = exitDistFromCenterLine1 < exitDistFromCenterLine2 ? exitLoc1 : exitLoc2;
+    const exitPosition = exitDistFromCenterLine1 < exitDistFromCenterLine2 ? exitLoc1 : exitLoc2;
+
+    // Subtract 400m due to distance of touchdown zone from threshold
+    const exitDistance =
+      MathUtils.pointDistance(thrLoc[0], thrLoc[1], exitPosition[0], exitPosition[1]) - BTV_MIN_TOUCHDOWN_ZONE_DISTANCE;
+
+    // Don't accept exits located before the DRY stop line, BTV couldn't stop the aircraft in time.
+    // Both distances are counted from the touchdown zone. The DRY distance is only available in flight.
+    const dryStoppingDistance = this.dryStoppingDistance.get();
+    if (dryStoppingDistance > 0 && exitDistance < dryStoppingDistance) {
+      this.bus.getPublisher<FmsOansData>().pub('ndBtvExitTooShort', exit, true);
+      return;
+    }
 
     // Transform to WGS-84 coordinates
     const arpCoords = this.airportCoordinates?.get();
@@ -235,23 +247,16 @@ export class OansBrakeToVacateSelection<T extends number> {
       console.warn('Cannot select BTV exit position: airport coordinates unavailable');
       return;
     }
+    this.btvExitPositionOansReference = exitPosition;
     const globalExitCoordinates = OansMapProjection.airportToGlobalCoordinates(
       arpCoords,
       this.btvExitPositionOansReference,
     );
 
-    this.bus.getPublisher<FmsOansData>().pub('oansExitCoordinates', globalExitCoordinates, true);
-
-    // Subtract 400m due to distance of touchdown zone from threshold
-    const exitDistance =
-      MathUtils.pointDistance(
-        thrLoc[0],
-        thrLoc[1],
-        this.btvExitPositionOansReference[0],
-        this.btvExitPositionOansReference[1],
-      ) - BTV_MIN_TOUCHDOWN_ZONE_DISTANCE;
-
-    this.bus.getPublisher<FmsOansData>().pub('oansSelectedExit', exit, true);
+    const pub = this.bus.getPublisher<FmsOansData>();
+    pub.pub('ndBtvExitTooShort', null, true);
+    pub.pub('oansExitCoordinates', globalExitCoordinates, true);
+    pub.pub('oansSelectedExit', exit, true);
 
     this.btvPathGeometry = Array.from(feature.geometry.coordinates as Position[]);
     if (exitDistFromCenterLine1 < exitDistFromCenterLine2) {
@@ -282,6 +287,7 @@ export class OansBrakeToVacateSelection<T extends number> {
     const pub = this.bus.getPublisher<FmsOansData>();
     pub.pub('oansSelectedLandingRunway', null, true);
     pub.pub('oansSelectedExit', null, true);
+    pub.pub('ndBtvExitTooShort', null, true);
   }
 
   drawBtvPath() {

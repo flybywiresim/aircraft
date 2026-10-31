@@ -1,4 +1,4 @@
-// Copyright (c) 2024 FlyByWire Simulations
+// Copyright (c) 2024-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { ArincEventBus } from '@flybywiresim/fbw-sdk';
@@ -22,6 +22,8 @@ export interface FmsOansData {
   oansManualStoppingDistance: number | null;
   /** (OANS -> ND) QFU to be displayed in flashing RWY AHEAD warning in ND */
   ndRwyAheadQfu: string;
+  /** (OANS -> ND) Identifier of the last exit rejected for BTV because it is located before the DRY stop line. Null if none. */
+  ndBtvExitTooShort: string | null;
   /** (OANS -> BTV) Arinc429: Requested stopping distance (through OANS), in meters. */
   oansRequestedStoppingDistance: number;
   /** (OANS -> BTV) Arinc429: Distance to opposite end of runway, in meters. */

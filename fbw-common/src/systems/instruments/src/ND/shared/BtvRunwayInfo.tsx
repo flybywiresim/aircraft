@@ -1,4 +1,4 @@
-// Copyright (c) 2024 FlyByWire Simulations
+// Copyright (c) 2024-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import {
@@ -77,6 +77,34 @@ export class BtvRunwayInfo extends DisplayComponent<{
     this.sub.on('a380x_btv_turnaround_idle_reverse'),
   );
 
+  private readonly rotVisible = MappedSubject.create(([exit, rot]) => !!exit && !!rot, this.exitIdent, this.rot);
+
+  private readonly turnaroundVisible = MappedSubject.create(
+    ([exit, idle, max]) => !!exit && idle.isNormalOperation() && max.isNormalOperation(),
+    this.exitIdent,
+    this.turnaroundIdleRev,
+    this.turnaroundMaxRev,
+  );
+
+  /** Exit which was rejected for BTV, as it is located before the DRY stop line. */
+  private readonly exitTooShortIdent = ConsumerSubject.create(this.sub.on('ndBtvExitTooShort'), null);
+
+  private readonly exitTooShortString = this.exitTooShortIdent.map((ident) => (ident ? `BTV: ${ident} TOO SHORT` : ''));
+
+  // Displayed on the line below the last BTV line currently shown
+  private readonly exitTooShortY = MappedSubject.create(
+    ([exit, disagree, rotVisible, turnaroundVisible]) => {
+      if (exit) {
+        return turnaroundVisible ? 169 : rotVisible ? 140 : 111;
+      }
+      return disagree ? 140 : 111;
+    },
+    this.exitIdent,
+    this.btvFmsDisagree,
+    this.rotVisible,
+    this.turnaroundVisible,
+  );
+
   private distanceUnitFormatter(unit: Unit<UnitFamily.Distance>) {
     return unit === UnitType.METER ? 'M' : 'FT';
   }
@@ -147,13 +175,7 @@ export class BtvRunwayInfo extends DisplayComponent<{
             </text>
           </Layer>
         </g>
-        <g
-          visibility={MappedSubject.create(
-            ([exit, rot]) => (exit && rot ? 'visible' : 'hidden'),
-            this.exitIdent,
-            this.rot,
-          )}
-        >
+        <g visibility={this.rotVisible.map((it) => (it ? 'visible' : 'hidden'))}>
           <Layer x={2} y={111}>
             <rect x={0} y={-20} width={121} height={21} />
             <text x={0} y={0} class="White FontSmallest">
@@ -167,14 +189,7 @@ export class BtvRunwayInfo extends DisplayComponent<{
             </text>
           </Layer>
         </g>
-        <g
-          visibility={MappedSubject.create(
-            ([exit, idle, max]) => (exit && idle.isNormalOperation() && max.isNormalOperation() ? 'visible' : 'hidden'),
-            this.exitIdent,
-            this.turnaroundIdleRev,
-            this.turnaroundMaxRev,
-          )}
-        >
+        <g visibility={this.turnaroundVisible.map((it) => (it ? 'visible' : 'hidden'))}>
           <Layer x={2} y={140}>
             <rect x={0} y={-20} width={276} height={21} />
             <text x={0} y={0} class="White FontSmallest">
@@ -194,6 +209,20 @@ export class BtvRunwayInfo extends DisplayComponent<{
             </text>
             <text x={260} y={0} class="Cyan FontSmallest">
               '
+            </text>
+          </Layer>
+        </g>
+        <g
+          visibility={MappedSubject.create(
+            ([rwy, msg]) => (rwy !== null && msg ? 'visible' : 'hidden'),
+            this.runwayIdent,
+            this.exitTooShortString,
+          )}
+        >
+          <Layer x={this.exitTooShortY.map(() => 2)} y={this.exitTooShortY}>
+            <rect x={0} y={-20} width={this.exitTooShortString.map((it) => it.length * 14)} height={21} />
+            <text x={0} y={0} class="Amber FontSmallest">
+              {this.exitTooShortString}
             </text>
           </Layer>
         </g>
