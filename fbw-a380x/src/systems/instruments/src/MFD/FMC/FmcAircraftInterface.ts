@@ -28,7 +28,7 @@ import {
 } from '@flybywiresim/fbw-sdk';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { MmrRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
-import { Vmcl, maxZfw } from '@shared/PerformanceConstants';
+import { Vmcl, maxCertifiedFlightLevel, maxZfw } from '@shared/PerformanceConstants';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FmgcDataService } from './fmgc';
 import { ADIRS } from '../shared/Adirs';
@@ -36,7 +36,7 @@ import { NXSystemMessages } from '../shared/NXSystemMessages';
 import { A380OperatingSpeeds, A380SpeedsUtils } from '@shared/OperatingSpeeds';
 import { FlightPhaseManagerEvents } from '@fmgc/flightphase';
 import { FlightPlanService } from '@fmgc/flightplanning/FlightPlanService';
-import { FmsMessageVars } from '../../MsfsAvionicsCommon/providers/FmsMessagePublisher';
+import { FmsMessageVars } from '@shared/publishers/FmsMessagePublisher';
 import { MfdFmsFplnVertRev } from '../pages/FMS/F-PLN/MfdFmsFplnVertRev';
 import { MfdSurvEvents, VdAltitudeConstraint } from '../../MsfsAvionicsCommon/providers/MfdSurvPublisher';
 import { VerticalWaypointPrediction } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
@@ -49,6 +49,7 @@ import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { FcuEfisCpBusEvents } from '@shared/publishers/EfisCpBusPublisher';
 import { PrimChoiceProvider } from '@shared/publishers/PrimChoiceProvider';
 import { PrimFgBusBaseEvents } from '@shared/publishers/PrimFgPublisher';
+import { qnhToMillibar } from '../shared/QnhUtils';
 
 /**
  * Interface between FMS and rest of aircraft through SimVars and ARINC values (mostly data being sent here)
@@ -119,6 +120,12 @@ export class FmcAircraftInterface {
   private readonly speedVls = Subject.create(0);
   private readonly speedVmax = Subject.create(0);
   private readonly speedVfeNext = Subject.create(0);
+  private readonly simVarV1Speed = Subject.create<number | null>(null);
+  private readonly simVarVrSpeed = Subject.create<number | null>(null);
+  private readonly simVarV2Speed = Subject.create<number | null>(null);
+  private readonly simVarDestinationQnh = Subject.create<number | null>(null);
+  private readonly simVarMda = Subject.create<number | null>(null);
+  private readonly simVarDh = Subject.create<number | string | null>(null);
 
   private readonly tdReached = this.bus
     .getSubscriber<FmsMessageVars>()
@@ -449,6 +456,17 @@ export class FmcAircraftInterface {
         }
       }),
     );
+    // Simvar subs
+    this.subs.push(
+      this.simVarV1Speed.sub((v) => SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'Knots', v ?? -1), true),
+      this.simVarV2Speed.sub((v) => SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'Knots', v ?? 0), true),
+      this.simVarVrSpeed.sub((v) => SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'Knots', v ?? -1), true),
+      this.simVarDestinationQnh.sub((v) => {
+        SimVar.SetSimVarValue('L:A32NX_DESTINATION_QNH', 'Millibar', v !== null ? qnhToMillibar(v) : 0);
+      }, true),
+      this.simVarMda.sub((v) => SimVar.SetSimVarValue('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet', v ?? 0), true),
+      this.simVarDh.sub((v) => SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', v === null ? -1 : v), true),
+    );
   }
 
   thrustReductionAccelerationChecks() {
@@ -557,13 +575,14 @@ export class FmcAircraftInterface {
   }
 
   public updatePerformanceData() {
-    if (!this.flightPlanService.hasActive) {
-      return;
-    }
-
-    SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'Knots', this.flightPlanService.active.performanceData.v1.get() ?? -1);
-    SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'Knots', this.flightPlanService.active.performanceData.v2.get() ?? 0); // Simulink model uses 0 as not valid
-    SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'Knots', this.flightPlanService.active.performanceData.vr.get() ?? -1);
+    const performanceData = this.flightPlanService.hasActive ? this.flightPlanService.active.performanceData : null;
+    this.simVarV1Speed.set(performanceData?.v1.get() ?? null);
+    this.simVarV2Speed.set(performanceData?.v2.get() ?? null);
+    this.simVarVrSpeed.set(performanceData?.vr.get() ?? null);
+    const approachQnh = performanceData?.approachQnh.get() ?? null;
+    this.simVarDestinationQnh.set(approachQnh);
+    this.simVarMda.set(performanceData?.approachBaroMinimum.get() ?? null);
+    this.simVarDh.set(performanceData?.approachRadioMinimum.get() ?? null);
   }
 
   public getToSpeedsTooLow(): boolean {
@@ -785,6 +804,10 @@ export class FmcAircraftInterface {
   updateFmsData() {
     const activeFlightPlan = this.flightPlanService.hasActive ? this.flightPlanService.active : null;
 
+    const originChanged = this.fmsOrigin.get() !== (activeFlightPlan?.originAirport?.ident ?? null);
+    const arrivalChanged = this.fmsDestination.get() !== (activeFlightPlan?.destinationAirport?.ident ?? null);
+    const alternateChanged = this.fmsAlternate.get() !== (activeFlightPlan?.alternateDestinationAirport?.ident ?? null);
+
     this.fmsOrigin.set(activeFlightPlan?.originAirport?.ident ? activeFlightPlan.originAirport.ident : null);
 
     this.fmsDepartureRunway.set(activeFlightPlan?.originRunway?.ident ? activeFlightPlan.originRunway.ident : null);
@@ -802,6 +825,10 @@ export class FmcAircraftInterface {
     );
 
     this.fmgc.data.atcCallsign.set(activeFlightPlan?.flightNumber?.get() ?? null);
+
+    if (originChanged || arrivalChanged || alternateChanged) {
+      this.fmc.resetAtisAutoUpdate();
+    }
   }
 
   activatePreSelSpeedMach(preSel: number) {
@@ -1332,13 +1359,15 @@ export class FmcAircraftInterface {
       if (cruiseLevel !== null) {
         this.deleteOutdatedCruiseSteps(cruiseLevel, targetFlightLevel);
       }
-      this.fmc.addMessageToQueue(
-        NXSystemMessages.newCrzAlt.getModifiedMessage(primAltitude.value.toFixed(0)),
-        undefined,
-        undefined,
-      );
-      this.flightPlanService.active.setPerformanceData('cruiseFlightLevel', targetFlightLevel);
-      SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number', primAltitude.value);
+      if (targetFlightLevel < maxCertifiedFlightLevel) {
+        this.fmc.addMessageToQueue(
+          NXSystemMessages.newCrzAlt.getModifiedMessage(primAltitude.value.toFixed(0)),
+          undefined,
+          undefined,
+        );
+        this.flightPlanService.active.setPerformanceData('cruiseFlightLevel', targetFlightLevel);
+        SimVar.SetSimVarValue('L:A32NX_AIRLINER_CRUISE_ALTITUDE', 'number', primAltitude.value);
+      }
     }
   }
 
@@ -1379,6 +1408,7 @@ export class FmcAircraftInterface {
       const fcuFlightLevel = fcuAltitude !== null ? fcuAltitude / 100 : null;
       if (
         fcuFlightLevel !== null &&
+        fcuFlightLevel < maxCertifiedFlightLevel &&
         ((isClimb && fcuFlightLevel > (cruiseLevel ?? 0)) || (isCruise && fcuFlightLevel !== cruiseLevel))
       ) {
         const primFgDiscreteWord3 = this.masterPrimFgWord3.get();
