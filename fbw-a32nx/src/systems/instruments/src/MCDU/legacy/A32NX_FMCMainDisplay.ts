@@ -949,8 +949,13 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
           this.tryUpdatePerfPage(prevPhase, nextPhase);
         }
 
-        /** Activate pre selected speed/mach */
         if (prevPhase === FmgcFlightPhase.Takeoff) {
+          // Reset takeoff speeds once when entering climb from takeoff.
+          this.setV1Speed(null, FlightPlanIndex.Active);
+          this.setVrSpeed(null, FlightPlanIndex.Active);
+          this.setV2Speed(null, FlightPlanIndex.Active);
+
+          /** Activate pre selected speed/mach */
           this.activatePreSelSpeedMach(plan.performanceData.preselectedClimbSpeed.get() ?? undefined);
         }
 
@@ -1370,19 +1375,6 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
             vPfd = speed;
           }
           break;
-      }
-    }
-
-    // Reset V1/R/2 speed after the TAKEOFF phase
-    if (this.flightPhaseManager.phase > FmgcFlightPhase.Takeoff) {
-      if (this.v1Speed !== null) {
-        this.setV1Speed(null, FlightPlanIndex.Active);
-      }
-      if (this.vRSpeed !== null) {
-        this.setVrSpeed(null, FlightPlanIndex.Active);
-      }
-      if (this.v2Speed !== null) {
-        this.setV2Speed(null, FlightPlanIndex.Active);
       }
     }
 
