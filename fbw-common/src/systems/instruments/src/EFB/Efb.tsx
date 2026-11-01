@@ -62,6 +62,7 @@ import { EventBus } from '@microsoft/msfs-sdk';
 import { TroubleshootingContextProvider } from './TroubleshootingContext';
 import { checkFileHashes } from './Utils/fileHashes';
 import { setFileHashMismatches } from './Store/features/fileHashes';
+import { TelemetryConsent } from './TelemetryConsent';
 
 // './Assets/Efb.scss' is imported by the aircraft EFB instrument the wraps this file
 import './Assets/Theme.css';
@@ -543,6 +544,7 @@ export const EfbInstrument: React.FC<EfbInstrumentProps> = ({ failures, aircraft
             <ModalProvider>
               <EventBusContextProvider eventBus={eventBus}>
                 <Efb aircraftChecklistsProp={aircraftChecklists} />
+                <TelemetryConsent />
               </EventBusContextProvider>
             </ModalProvider>
           </Router>
