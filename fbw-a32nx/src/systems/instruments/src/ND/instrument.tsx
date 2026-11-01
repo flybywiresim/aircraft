@@ -10,7 +10,6 @@ import {
   FsInstrument,
   HEventPublisher,
   InstrumentBackplane,
-  SharedDataBusClient,
   Subject,
 } from '@microsoft/msfs-sdk';
 import {
@@ -20,8 +19,7 @@ import {
   a320TerrainThresholdPadValue,
   ArincEventBus,
   EfisSide,
-  EfisVectorsData,
-  EFIS_VECTORS_DATA_BUS_NAME,
+  EfisVectorsPublisher,
 } from '@flybywiresim/fbw-sdk';
 import { NDComponent } from '@flybywiresim/navigation-display';
 
@@ -50,10 +48,6 @@ class NDInstrument implements FsInstrument {
   private readonly bus: ArincEventBus;
 
   private readonly backplane = new InstrumentBackplane();
-
-  private readonly efisVectorsClient = new SharedDataBusClient(EFIS_VECTORS_DATA_BUS_NAME);
-
-  private readonly efisVectors = this.efisVectorsClient.of<EfisVectorsData>();
 
   private readonly simVarPublisher: NDSimvarPublisher;
 
@@ -116,6 +110,7 @@ class NDInstrument implements FsInstrument {
     this.backplane.addPublisher('fg', this.fgDataPublisher);
     this.backplane.addPublisher('fms-arinc', this.fmBusPublisher);
     this.backplane.addPublisher('fms-symbols', this.fmsSymbolsPublisher);
+    this.backplane.addPublisher('efis-vectors', new EfisVectorsPublisher(this.bus, side));
     this.backplane.addPublisher('vor', this.vorBusPublisher);
     this.backplane.addPublisher('tcas', this.tcasBusPublisher);
     this.backplane.addPublisher('dmc', this.dmcPublisher);
@@ -159,7 +154,6 @@ class NDInstrument implements FsInstrument {
       >
         <NDComponent
           bus={this.bus}
-          efisVectors={this.efisVectors}
           side={this.efisSide}
           rangeValues={a320EfisRangeSettings}
           terrainThresholdPaddingText={a320TerrainThresholdPadValue}
@@ -179,7 +173,6 @@ class NDInstrument implements FsInstrument {
    * A callback called when the instrument gets a frame update.
    */
   public Update(): void {
-    this.efisVectorsClient.update();
     this.backplane.onUpdate();
   }
 

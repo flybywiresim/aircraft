@@ -11,9 +11,7 @@ import {
   ClientState,
   EfisNdMode,
   EfisSide,
-  EfisVectorsData,
-  EfisVectorsGroup,
-  EFIS_VECTORS_DATA_BUS_NAME,
+  EfisVectorsEvents,
   ElevationSamplePathDto,
   FailuresConsumer,
   FcuBusPublisher,
@@ -34,7 +32,6 @@ import {
   Instrument,
   InstrumentBackplane,
   MappedSubject,
-  SharedDataBusClient,
   SimVarValueType,
   Subject,
   Subscription,
@@ -96,6 +93,7 @@ export class EfisTawsBridge implements Instrument {
   private readonly subscriptions: Subscription[] = [];
   private readonly sub = this.bus.getSubscriber<
     ClockEvents &
+      EfisVectorsEvents &
       ResetPanelSimvars &
       PowerSupplyBusTypes &
       EgpwcSimVars &
@@ -362,17 +360,9 @@ export class EfisTawsBridge implements Instrument {
   private aircraftStatusShouldBeUpdated = true;
 
   // FIXME receive path over complete distance
-  private readonly efisVectorsClient = new SharedDataBusClient(EFIS_VECTORS_DATA_BUS_NAME);
-
-  // TAWS currently uses a single lateral path for both displays.
+  // The systems-host publisher selects the left EFIS path for both displays.
   // Preserve publication notifications even when the FMS reuses the same array.
-  private readonly fmsLateralPath = this.efisVectorsClient
-    .of<EfisVectorsData>()
-    .getSubscribable('L', EfisVectorsGroup.ACTIVE)
-    .map(
-      (data) => data.value,
-      () => false,
-    );
+  private readonly fmsLateralPath = ConsumerSubject.create(this.sub.on('vectorsActive'), undefined, () => false);
 
   private readonly track1Word = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_true_track_1'));
   private readonly track2Word = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_true_track_2'));
@@ -566,8 +556,6 @@ export class EfisTawsBridge implements Instrument {
     if (deltaTime < 0) {
       return;
     }
-
-    this.efisVectorsClient.update();
 
     const tawsWxrSelected = SimVar.GetSimVarValue('L:A32NX_WXR_TAWS_SYS_SELECTED', SimVarValueType.Number);
     const extremeLatitude = this.validIrMaintWord.get()?.bitValueOr(15, false) ?? false;

@@ -13,13 +13,12 @@ import {
   Subject,
   Subscribable,
   Subscription,
-  TypedDataBusClient,
   VNode,
 } from '@microsoft/msfs-sdk';
 import {
   EfisNdMode,
-  EfisSide,
-  EfisVectorsData,
+  EFIS_VECTORS_GROUPS,
+  EfisVectorsEvents,
   EfisVectorsGroup,
   NdSymbol,
   NdSymbolTypeFlags,
@@ -68,11 +67,10 @@ const DEFAULT_CLIP = new Path2D(
 
 const DASHES = [15, 12];
 const NO_DASHES = [];
+const NO_VECTORS: readonly PathVector[] = [];
 
 export interface CanvasMapProps {
   bus: EventBus;
-  efisVectors: TypedDataBusClient<EfisVectorsData>;
-  side: EfisSide;
   x: Subscribable<number>;
   y: Subscribable<number>;
   options?: Partial<MapOptions>;
@@ -163,7 +161,7 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
   }
 
   private setupCallbacks() {
-    const sub = this.props.bus.getSubscriber<NDSimvars & FmsSymbolsData & ClockEvents>();
+    const sub = this.props.bus.getSubscriber<NDSimvars & FmsSymbolsData & EfisVectorsEvents & ClockEvents>();
 
     this.mapCenterLat.sub(() => {
       this.handleRecomputeMapParameters();
@@ -203,19 +201,12 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
       this.handleNewSymbols(data);
     });
 
-    for (const group of [
-      EfisVectorsGroup.ACTIVE,
-      EfisVectorsGroup.ACTIVE_EOSID,
-      EfisVectorsGroup.DASHED,
-      EfisVectorsGroup.TEMPORARY,
-      EfisVectorsGroup.MISSED,
-      EfisVectorsGroup.ALTERNATE,
-      EfisVectorsGroup.SECONDARY,
-    ]) {
+    for (const topic of Object.keys(EFIS_VECTORS_GROUPS) as (keyof EfisVectorsEvents)[]) {
+      const group = EFIS_VECTORS_GROUPS[topic];
       this.vectorSubscriptions.push(
-        this.props.efisVectors.getSubscribable(this.props.side, group).sub((data) => {
-          this.vectors[group] = data.value ?? [];
-        }, true),
+        sub.on(topic).handle((vectors) => {
+          this.vectors[group] = vectors ?? NO_VECTORS;
+        }),
       );
     }
 

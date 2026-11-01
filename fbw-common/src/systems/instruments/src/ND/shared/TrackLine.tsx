@@ -13,16 +13,8 @@ import {
   ConsumerSubject,
   Subject,
   Subscription,
-  TypedDataBusClient,
 } from '@microsoft/msfs-sdk';
-import {
-  MathUtils,
-  EfisNdMode,
-  EfisSide,
-  EfisVectorsData,
-  EfisVectorsGroup,
-  Arinc429ConsumerSubject,
-} from '@flybywiresim/fbw-sdk';
+import { MathUtils, EfisNdMode, EfisVectorsEvents, Arinc429ConsumerSubject } from '@flybywiresim/fbw-sdk';
 
 import { NDSimvars } from '../NDSimvarPublisher';
 import { GenericDisplayManagementEvents } from '../types/GenericDisplayManagementEvents';
@@ -31,8 +23,6 @@ import { GenericFlightGuidanceEvents } from '../types/GenericFlightGuidanceEvent
 
 export interface TrackLineProps {
   bus: EventBus;
-  efisVectors: TypedDataBusClient<EfisVectorsData>;
-  side: EfisSide;
   isUsingTrackUpMode: Subscribable<boolean>;
 }
 
@@ -47,7 +37,7 @@ export class TrackLine extends DisplayComponent<TrackLineProps> {
   private readonly lineRef = FSComponent.createRef<SVGLineElement>();
 
   private readonly sub = this.props.bus.getSubscriber<
-    GenericDisplayManagementEvents & GenericFlightGuidanceEvents & NDSimvars & GenericFcuEvents
+    GenericDisplayManagementEvents & GenericFlightGuidanceEvents & NDSimvars & GenericFcuEvents & EfisVectorsEvents
   >();
 
   private readonly ndMode = ConsumerSubject.create(this.sub.on('ndMode').whenChanged(), EfisNdMode.ARC);
@@ -84,9 +74,7 @@ export class TrackLine extends DisplayComponent<TrackLineProps> {
     this.y,
   );
 
-  private readonly areActiveVectorsTransmitted = this.props.efisVectors
-    .getSubscribable(this.props.side, EfisVectorsGroup.ACTIVE)
-    .map((data) => data.value !== undefined);
+  private readonly areActiveVectorsTransmitted = Subject.create(false);
 
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
@@ -95,6 +83,7 @@ export class TrackLine extends DisplayComponent<TrackLineProps> {
     this.trackWord.setConsumer(this.sub.on('track'));
 
     this.subscriptions.push(
+      this.sub.on('vectorsActive').handle((vectors) => this.areActiveVectorsTransmitted.set(vectors !== undefined)),
       this.headingWord.sub(() => this.handleLineVisibility(), true),
       this.trackWord.sub(() => this.handleLineVisibility(), true),
       this.ndMode.sub(() => this.handleLineVisibility(), true),
@@ -104,7 +93,6 @@ export class TrackLine extends DisplayComponent<TrackLineProps> {
 
   public destroy(): void {
     this.subscriptions.forEach((subscription) => subscription.destroy());
-    this.areActiveVectorsTransmitted.destroy();
     this.transform.destroy();
     this.y.destroy();
     this.rotate.destroy();

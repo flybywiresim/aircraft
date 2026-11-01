@@ -7,8 +7,7 @@ import {
   EfisNdMode,
   EfisRecomputingReason,
   EfisSide,
-  EfisVectorsData,
-  EfisVectorsGroup,
+  EfisVectorsEvents,
   FcuSimVars,
   MathUtils,
   VerticalPathCheckpoint,
@@ -25,7 +24,6 @@ import {
   Subject,
   SubscribableMapFunctions,
   Subscription,
-  TypedDataBusClient,
   VNode,
 } from '@microsoft/msfs-sdk';
 import { NDSimvars } from '../NDSimvarPublisher';
@@ -44,7 +42,6 @@ import { FcuEfisCpBusEvents } from '@shared/publishers/EfisCpBusPublisher';
 export interface VerticalDisplayProps extends ComponentProps {
   bus: ArincEventBus;
   side: EfisSide;
-  efisVectors: TypedDataBusClient<EfisVectorsData>;
 }
 
 export const VERTICAL_DISPLAY_MAX_ALTITUDE = 70000;
@@ -59,6 +56,7 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
 
   private readonly sub = this.props.bus.getArincSubscriber<
     AesuBusEvents &
+      EfisVectorsEvents &
       FcuEfisCpBusEvents &
       ClockEvents &
       FcuSimVars &
@@ -87,9 +85,8 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
     this.ndRangeSetting,
   );
 
-  private readonly fmsLateralPath = this.props.efisVectors
-    .getSubscribable(this.props.side, EfisVectorsGroup.ACTIVE)
-    .map((data) => data.value);
+  // FMS geometry can be updated and republished using the same array reference.
+  private readonly fmsLateralPath = ConsumerSubject.create(this.sub.on('vectorsActive'), undefined, () => false);
   private readonly fmsTargetVdProfile = ConsumerSubject.create(this.sub.on('a32nx_fms_vertical_target_profile'), []);
   private readonly fmsActualVdProfile = ConsumerSubject.create(this.sub.on('a32nx_fms_vertical_actual_profile'), []);
   private readonly displayedFmsPathForVerticalRangeEstimation = MappedSubject.create(

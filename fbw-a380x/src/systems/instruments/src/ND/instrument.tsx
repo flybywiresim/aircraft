@@ -11,7 +11,6 @@ import {
   HEvent,
   HEventPublisher,
   InstrumentBackplane,
-  SharedDataBusClient,
   MappedSubject,
   Subject,
 } from '@microsoft/msfs-sdk';
@@ -25,8 +24,7 @@ import {
   BtvSimvarPublisher,
   EfisNdMode,
   EfisSide,
-  EfisVectorsData,
-  EFIS_VECTORS_DATA_BUS_NAME,
+  EfisVectorsPublisher,
   FcuBusPublisher,
   FcuSimVars,
   FmsOansSimvarPublisher,
@@ -77,10 +75,6 @@ class NDInstrument implements FsInstrument {
   private readonly bus: ArincEventBus;
 
   private readonly backplane = new InstrumentBackplane();
-
-  private readonly efisVectorsClient = new SharedDataBusClient(EFIS_VECTORS_DATA_BUS_NAME);
-
-  private readonly efisVectors = this.efisVectorsClient.of<EfisVectorsData>();
 
   private readonly simVarPublisher: NDSimvarPublisher;
 
@@ -209,6 +203,7 @@ class NDInstrument implements FsInstrument {
     this.backplane.addPublisher('fg', this.fgDataPublisher);
     this.backplane.addPublisher('fms-arinc', this.fmBusPublisher);
     this.backplane.addPublisher('fms-symbols', this.fmsSymbolsPublisher);
+    this.backplane.addPublisher('efis-vectors', new EfisVectorsPublisher(this.bus, this.efisSide));
     this.backplane.addPublisher('vor', this.vorBusPublisher);
     this.backplane.addPublisher('tcas', this.tcasBusPublisher);
     this.backplane.addPublisher('dmc', this.dmcPublisher);
@@ -273,7 +268,6 @@ class NDInstrument implements FsInstrument {
           </div>
           <NDComponent
             bus={this.bus}
-            efisVectors={this.efisVectors}
             side={this.efisSide}
             rangeValues={a380EfisRangeSettings}
             terrainThresholdPaddingText={a380TerrainThresholdPadValue}
@@ -333,7 +327,7 @@ class NDInstrument implements FsInstrument {
             visible={this.cursorVisible}
             color={this.oansShown.map((it) => (it ? MouseCursorColor.Magenta : MouseCursorColor.Yellow))}
           />
-          <VerticalDisplay bus={this.bus} side={this.efisSide} efisVectors={this.efisVectors} />
+          <VerticalDisplay bus={this.bus} side={this.efisSide} />
         </CdsDisplayUnit>
       </div>,
       document.getElementById('ND_CONTENT'),
@@ -475,7 +469,6 @@ class NDInstrument implements FsInstrument {
    * A callback called when the instrument gets a frame update.
    */
   public Update(): void {
-    this.efisVectorsClient.update();
     this.backplane.onUpdate();
 
     if (this.oansRef.getOrDefault()) {
