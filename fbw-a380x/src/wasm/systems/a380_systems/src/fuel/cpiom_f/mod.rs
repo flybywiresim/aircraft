@@ -887,7 +887,7 @@ impl A380FuelQuantityManagementSystem {
     const SELF_TEST_DURATION: Duration = Duration::from_secs(30);
 
     // Duration for which the input values are memorized
-    const INPUT_MEMORIZATION_DURATION: Duration = Duration::from_secs(3);
+    const INPUT_MEMORIZATION_DURATION: Duration = Duration::from_secs(10);
 
     pub(super) fn new(context: &mut InitContext) -> Self {
         // TODO: This needs to be refactored when CPIOM implementation is done
