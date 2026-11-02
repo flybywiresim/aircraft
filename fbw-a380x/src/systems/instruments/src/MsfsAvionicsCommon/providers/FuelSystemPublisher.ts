@@ -89,14 +89,6 @@ export class FuelSystemPublisher extends SimVarPublisher<FuelSystemEvents> {
       ['fuel_line_flow', { name: 'FUELSYSTEM LINE FUEL FLOW:#index#', type: SimVarValueType.GPH, indexed: true }],
       ['fuel_tank_quantity', { name: 'FUELSYSTEM TANK QUANTITY:#index#', type: SimVarValueType.GAL, indexed: true }],
       [
-        'fuel_trigger_status',
-        { name: 'FUELSYSTEM TRIGGER STATUS:#index#', type: SimVarValueType.Bool, indexed: true, map: (v) => !!v },
-      ],
-      [
-        'fuel_junction_setting',
-        { name: 'FUELSYSTEM JUNCTION SETTING:#index#', type: SimVarValueType.Number, indexed: true },
-      ],
-      [
         'fuel_refuel_started_by_user',
         { name: 'L:A32NX_REFUEL_STARTED_BY_USR', type: SimVarValueType.Bool, indexed: false, map: (v) => !!v },
       ],

@@ -33,7 +33,8 @@ impl ApuConstants for Pw980Constants {
     const COOLDOWN_DURATION: Duration = Duration::from_secs(60);
     const AIR_INTAKE_FLAP_CLOSURE_PERCENT: f64 = 8.;
     const SHOULD_BE_AVAILABLE_DURING_SHUTDOWN: bool = false;
-    const FUEL_LINE_ID: u8 = 141;
+    // Line 112 in the A380 flight model: APULPValveToExtraAPU
+    const FUEL_LINE_ID: u8 = 112;
 }
 
 pub struct ShutdownPw980Turbine {

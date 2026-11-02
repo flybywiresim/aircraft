@@ -2354,7 +2354,7 @@
 
                 <UseTemplate Name="FBW_Airbus_Fuel_Crossfeed">
                     <NODE_ID>PUSH_OVHD_FUEL_XFEED</NODE_ID>
-                    <ID>46</ID>
+                    <ID>29</ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
@@ -2364,7 +2364,7 @@
                 </UseTemplate>
                 <UseTemplate Name="FBW_Airbus_Fuel_Crossfeed">
                     <NODE_ID>PUSH_OVHD_FUEL_XFEED2</NODE_ID>
-                    <ID>47</ID>
+                    <ID>30</ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
@@ -2374,7 +2374,7 @@
                 </UseTemplate>
                 <UseTemplate Name="FBW_Airbus_Fuel_Crossfeed"> <!--- FIX FUEL VALVE -->
                     <NODE_ID>PUSH_OVHD_FUEL_XFEED3</NODE_ID>
-                    <ID>48</ID>
+                    <ID>31</ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
@@ -2384,7 +2384,7 @@
                 </UseTemplate>
                 <UseTemplate Name="FBW_Airbus_Fuel_Crossfeed">
                     <NODE_ID>PUSH_OVHD_FUEL_XFEED4</NODE_ID>
-                    <ID>49</ID>
+                    <ID>32</ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
@@ -2441,6 +2441,7 @@
                     <TOOLTIPID>%((L:A380X_OVHD_FUEL_TRIMTK_XFR_PB_IS_AUTO, Bool) !)%{if}TT:#COCKPIT.TOOLTIPS.FUEL_XFEED_TURN_ON#%{else}TT:#COCKPIT.TOOLTIPS.FUEL_XFEED_TURN_OFF#%{end}</TOOLTIPID>
                 </UseTemplate>
 
+                <!-- TODO: fuel pump should send a signal to the FQMS and SEDC -->
                 <!-- FEED TK1 -->
                 <UseTemplate Name="FBW_Airbus_Fuel_Pump">
                     <NODE_ID>PUSH_OVHD_FUEL_FEEDTK1_MAIN</NODE_ID>
