@@ -118,6 +118,7 @@ Always start an item with "1."; GitHub will number the rendered list automatical
 1. [A380X/FUEL SYSTEM] Prevent CG control transfer end from ending normal trim tank transfers - @donstim (donbikes)
 1. [A32NX/FMS] Fixed +/- altitude constraints entered on the F-PLN page being inverted - @shinji1100
 1. [A32NX/FMS] Fixed FM light coming up too often - @saschl
+1. [EFB] Fixed local PDFs not displaying in EFB - @saschl
 
 ## 2024.1.0
 
