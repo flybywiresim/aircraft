@@ -35,6 +35,7 @@ import {
   NXDataStore,
   NXLogicPulseNode,
   RegisteredSimVar,
+  TimeFormatters,
   Units,
   UpdateThrottler,
   VerticalPathCheckpoint,
@@ -80,6 +81,7 @@ import { formatWindRequest } from '@fmgc/flightplanning/uplink/WindUplinkUtilts'
 import { FmsToDatalinkSubsystemEvents } from '../../../../shared/src/publishers/A380XFmsAtcBusPublisher';
 import { FlightPlanOperationEvents } from '@fmgc/events/FlightPlanOperationEvents';
 import { FlightPlanEvents } from '@fmgc/flightplanning/sync/FlightPlanEvents';
+import { EquitimePoint } from '@fmgc/EquitimePoint';
 
 export interface FmsErrorMessage {
   message: McduMessage;
@@ -377,6 +379,7 @@ export class FlightManagementComputer implements FmcInterface {
       this.efisInterfaces,
       a380EfisRangeSettings,
       A380AircraftConfig,
+      this.#navigation,
     );
     this.efisSymbolsLeft = new EfisSymbols(
       this.bus,
@@ -2213,5 +2216,46 @@ export class FlightManagementComputer implements FmcInterface {
       active.pendingWindUplink.onUplinkAborted();
       this.windUplinkRecievedActive.set(false);
     }
+  }
+
+  formatEta(secondsFromPresent: number | null, forPlan = FlightPlanIndex.Active): string {
+    if (secondsFromPresent === null) {
+      return '--:--';
+    }
+    const phase = this.flightPhase.get();
+    const plan = this.flightPlanInterface.has(forPlan) ? this.flightPlanInterface.get(forPlan) : null;
+    let time: number | null = null;
+    if (plan?.isActiveOrCopiedFromActive() && phase > FmgcFlightPhase.Preflight && phase < FmgcFlightPhase.Done) {
+      time = this.acInterface.getTime();
+    } else {
+      const ett = plan ? plan.performanceData.estimatedTakeoffTime.get() : null;
+      if (ett !== null) {
+        time = plan?.performanceData.estimatedTakeoffTimeExpired.get() ? this.acInterface.getTime() : ett;
+      }
+    }
+    if (time !== null) {
+      return TimeFormatters.milisecondsTohhmm(time + secondsFromPresent * 1000, true);
+    } else {
+      return TimeFormatters.secondsTohhmm(secondsFromPresent, true);
+    }
+  }
+
+  getTimePredictionHeader(forPlan: FlightPlanIndex): 'UTC' | 'TIME' {
+    const phase = this.flightPhase.get();
+    const plan = this.flightPlanInterface.has(forPlan) ? this.flightPlanInterface.get(forPlan) : null;
+    const ett = plan?.performanceData.estimatedTakeoffTime.get() ?? null;
+    if (
+      (plan?.isActiveOrCopiedFromActive() && phase > FmgcFlightPhase.Preflight && phase < FmgcFlightPhase.Done) ||
+      ett !== null
+    ) {
+      //TODO check for valid clock signal
+      return 'UTC';
+    } else {
+      return 'TIME';
+    }
+  }
+
+  public getEquitimePoint(): EquitimePoint {
+    return this.guidanceController.equitimePoint;
   }
 }

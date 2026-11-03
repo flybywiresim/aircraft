@@ -29,12 +29,14 @@
 
 .mfd-title-bar-container {
   display: flex;
+  margin-left: 2px;
+  margin-right: 2px;
 }
 
 .mfd-title-bar-title {
   flex: 10;
   background-color: $display-dark-grey;
-  padding: 3px 10px 3px 7px;
+  padding: 3px 10px 3px 10px;
 }
 
 .mfd-title-bar-text {

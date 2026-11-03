@@ -60,6 +60,10 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
       } else {
         this.paintWaypoint(false, context, rx, ry, symbol);
       }
+
+      if (symbol.constraints) {
+        this.paintSymbolConstraints(false, context, rx, ry, symbol);
+      }
     }
   }
 
@@ -93,18 +97,24 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
       }
 
       if (symbol.constraints) {
-        this.paintSymbolConstraints(context, rx, ry, symbol);
+        this.paintSymbolConstraints(true, context, rx, ry, symbol);
       }
     }
   }
 
-  private paintSymbolConstraints(context: CanvasRenderingContext2D, x: number, y: number, symbol: NdSymbol) {
-    context.fillStyle = '#ff94ff';
+  private paintSymbolConstraints(
+    isColorLayer: boolean,
+    context: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    symbol: NdSymbol,
+  ) {
+    context.fillStyle = isColorLayer ? '#ff94ff' : '#000';
 
     for (let i = 0; i < symbol.constraints.length; i++) {
       const line = symbol.constraints[i];
 
-      PaintUtils.paintText(true, context, x + 15, y + 35 + 18 * i, line, '#ff94ff');
+      PaintUtils.paintText(isColorLayer, context, x + 15, y + 35 + 18 * i, line, '#ff94ff');
     }
   }
 
