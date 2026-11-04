@@ -1112,6 +1112,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
       existingAlternateDraft.direction = vector.direction;
       existingAlternateDraft.magnitude = vector.magnitude;
+      this.alternateDraftWind.set(existingAlternateDraft);
       this.incrementVersion();
     } else {
       this.setPerformanceData('alternateWind', vector);
@@ -1261,7 +1262,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     const hasDraftCruise = draftCruiseWind !== null;
     const hasDraftDescent = draftDescentWind !== null;
     const hasDraftAlternate = draftAlternateWind !== null;
-    if (hasDraftClimb && hasDraftCruise && hasDraftDescent && hasDraftAlternate) {
+    if (!hasDraftClimb && !hasDraftCruise && !hasDraftDescent && !hasDraftAlternate) {
       return;
     }
 
