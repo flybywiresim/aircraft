@@ -1,4 +1,4 @@
-<!-- Copyright (c) 2023-2024 FlyByWire Simulations -->
+<!-- Copyright (c) 2023-2026 FlyByWire Simulations -->
 <!-- SPDX-License-Identifier: GPL-3.0 -->
 
 <ModelBehaviors>
@@ -561,11 +561,11 @@
             <UseTemplate Name = "ASOBO_GT_Anim_Code">
                 <ANIM_NAME>COCKPITDOOR_OPEN_ANIM</ANIM_NAME>
                 <ANIM_LAG>50</ANIM_LAG>
-                <ANIM_CODE>(L:COCKPITDOOR_OPEN) 100 *</ANIM_CODE>
+                <ANIM_CODE>(L:A380X_COCKPIT_DOOR_CLOSED, Bool) ! 100 *</ANIM_CODE>
             </UseTemplate>
             <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Code">
                 <LEFT_SINGLE_CODE>
-                    (L:COCKPITDOOR_OPEN) ! (&gt;L:COCKPITDOOR_OPEN)
+                    (L:A380X_COCKPIT_DOOR_CLOSED, Bool) ! (&gt;L:A380X_COCKPIT_DOOR_CLOSED, Bool)
                 </LEFT_SINGLE_CODE>
                 <TOOLTIPID>Open or Close Cockpit Door</TOOLTIPID>
             </UseTemplate>
