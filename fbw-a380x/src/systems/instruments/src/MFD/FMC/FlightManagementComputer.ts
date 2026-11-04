@@ -1006,12 +1006,12 @@ export class FlightManagementComputer implements FmcInterface {
     const plan = this.flightPlanInterface.get(flightPlanIndex);
 
     // CHECK ALTN WIND
-    const uplinkAlternateCruiseLevel = plan.pendingWindUplink.alternateWind?.altitude;
+    const uplinkAlternateWindCruiseAltitude = plan.pendingWindUplink.alternateWind?.altitude;
     const computedAlternateCruiseLevel = plan.getAlternateCruiseLevel();
     if (
-      uplinkAlternateCruiseLevel !== undefined &&
+      uplinkAlternateWindCruiseAltitude !== undefined &&
       computedAlternateCruiseLevel !== undefined &&
-      Math.round(uplinkAlternateCruiseLevel) !== Math.round(computedAlternateCruiseLevel)
+      Math.round(uplinkAlternateWindCruiseAltitude * 100) !== Math.round(computedAlternateCruiseLevel)
     ) {
       this.addMessageToQueue(NXSystemMessages.checkAltnWind);
     }
