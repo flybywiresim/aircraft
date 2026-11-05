@@ -47,7 +47,7 @@ import { BrakeToVacate } from './PseudoPRIM/BrakeToVacate';
 // FIXME should not import from instruments
 import { PseudoFwcSimvarPublisher } from '../instruments/src/MsfsAvionicsCommon/providers/PseudoFwcPublisher';
 // FIXME should not import from instruments
-import { FcdcSimvarPublisher } from '../instruments/src/MsfsAvionicsCommon/providers/FcdcPublisher';
+import { FcdcSimvarPublisher } from '@shared/publishers/FcdcPublisher';
 // FIXME should not import from instruments
 import {
   ResetPanelSimvarPublisher,

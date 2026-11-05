@@ -17,7 +17,6 @@ import { CondPage } from './Pages/Cond/CondPage';
 import { DoorPage } from './Pages/Doors/DoorPage';
 import { ElecDcPage } from './Pages/ElecDc/ElecDcPage';
 import { WheelPage } from './Pages/Wheel/WheelPage';
-import { FctlPage } from './Pages/Fctl/FctlPage';
 import { VideoPage } from './Pages/Video/VideoPage';
 import { useSimVar } from '@flybywiresim/fbw-sdk-react';
 
@@ -37,7 +36,7 @@ export const SystemDisplay = () => {
     8: <FuelPage />,
     9: <WheelPage />,
     10: <HydPage />,
-    11: <FctlPage />,
+    11: <></>,
     12: <CbPage />,
     13: <></>,
     14: <></>,

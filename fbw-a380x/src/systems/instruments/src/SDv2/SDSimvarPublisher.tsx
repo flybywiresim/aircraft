@@ -44,6 +44,53 @@ export type BaseSDSimvars = AdirsSimVars &
     afdx_14_14_reachable: boolean;
     afdx_4_3_reachable: boolean;
     afdx_14_13_reachable: boolean;
+    prim1Healthy: boolean;
+    prim2Healthy: boolean;
+    prim3Healthy: boolean;
+    sec1Healthy: boolean;
+    sec2Healthy: boolean;
+    sec3Healthy: boolean;
+    leftInnerAileronDeflection: number;
+    rightInnerAileronDeflection: number;
+    leftMiddleAileronDeflection: number;
+    rightMiddleAileronDeflection: number;
+    leftOuterAileronDeflection: number;
+    rightOuterAileronDeflection: number;
+    leftSpoiler1Deflection: number;
+    rightSpoiler1Deflection: number;
+    leftSpoiler2Deflection: number;
+    rightSpoiler2Deflection: number;
+    leftSpoiler3Deflection: number;
+    rightSpoiler3Deflection: number;
+    leftSpoiler4Deflection: number;
+    rightSpoiler4Deflection: number;
+    leftSpoiler5Deflection: number;
+    rightSpoiler5Deflection: number;
+    leftSpoiler6Deflection: number;
+    rightSpoiler6Deflection: number;
+    leftSpoiler7Deflection: number;
+    rightSpoiler7Deflection: number;
+    leftSpoiler8Deflection: number;
+    rightSpoiler8Deflection: number;
+    leftOuterElevatorDeflection: number;
+    rightOuterElevatorDeflection: number;
+    leftInnerElevatorDeflection: number;
+    rightInnerElevatorDeflection: number;
+    thsDeflection: number;
+    upperRudderDeflection: number;
+    lowerRudderDeflection: number;
+    greenPressureSwitch: boolean;
+    yellowPressureSwitch: boolean;
+    acEssPowered: boolean;
+    ac1Powered: boolean;
+    acEhaPowered: boolean;
+    sec1RudderStatusWord: number;
+    sec3RudderStatusWord: number;
+    sec1RudderTrimPosition: number;
+    sec3RudderTrimPosition: number;
+    dc1Powered: boolean;
+    dcEssPowered: boolean;
+    lgciu1LeftGearCompressed: boolean;
   };
 
 type IndexedTopics =
@@ -107,6 +154,87 @@ export class SDSimvarPublisher extends UpdatableSimVarPublisher<SDSimvars> {
     ['afdx_14_14_reachable', { name: 'L:A32NX_AFDX_14_14_REACHABLE', type: SimVarValueType.Bool }],
     ['afdx_4_3_reachable', { name: 'L:A32NX_AFDX_4_3_REACHABLE', type: SimVarValueType.Bool }],
     ['afdx_14_13_reachable', { name: 'L:A32NX_AFDX_14_13_REACHABLE', type: SimVarValueType.Bool }],
+    ['prim1Healthy', { name: 'L:A32NX_PRIM_1_HEALTHY', type: SimVarValueType.Bool }],
+    ['prim2Healthy', { name: 'L:A32NX_PRIM_2_HEALTHY', type: SimVarValueType.Bool }],
+    ['prim3Healthy', { name: 'L:A32NX_PRIM_3_HEALTHY', type: SimVarValueType.Bool }],
+    ['sec1Healthy', { name: 'L:A32NX_SEC_1_HEALTHY', type: SimVarValueType.Bool }],
+    ['sec2Healthy', { name: 'L:A32NX_SEC_2_HEALTHY', type: SimVarValueType.Bool }],
+    ['sec3Healthy', { name: 'L:A32NX_SEC_3_HEALTHY', type: SimVarValueType.Bool }],
+    [
+      'leftInnerAileronDeflection',
+      { name: 'L:A32NX_HYD_AILERON_LEFT_INWARD_DEFLECTION', type: SimVarValueType.Number },
+    ],
+    [
+      'rightInnerAileronDeflection',
+      { name: 'L:A32NX_HYD_AILERON_RIGHT_INWARD_DEFLECTION', type: SimVarValueType.Number },
+    ],
+    [
+      'leftMiddleAileronDeflection',
+      { name: 'L:A32NX_HYD_AILERON_LEFT_MIDDLE_DEFLECTION', type: SimVarValueType.Number },
+    ],
+    [
+      'rightMiddleAileronDeflection',
+      { name: 'L:A32NX_HYD_AILERON_RIGHT_MIDDLE_DEFLECTION', type: SimVarValueType.Number },
+    ],
+    [
+      'leftOuterAileronDeflection',
+      { name: 'L:A32NX_HYD_AILERON_LEFT_OUTWARD_DEFLECTION', type: SimVarValueType.Number },
+    ],
+    [
+      'rightOuterAileronDeflection',
+      { name: 'L:A32NX_HYD_AILERON_RIGHT_OUTWARD_DEFLECTION', type: SimVarValueType.Number },
+    ],
+    ['leftSpoiler1Deflection', { name: 'L:A32NX_HYD_SPOILER_1_LEFT_DEFLECTION', type: SimVarValueType.Number }],
+    ['rightSpoiler1Deflection', { name: 'L:A32NX_HYD_SPOILER_1_RIGHT_DEFLECTION', type: SimVarValueType.Number }],
+    ['leftSpoiler2Deflection', { name: 'L:A32NX_HYD_SPOILER_2_LEFT_DEFLECTION', type: SimVarValueType.Number }],
+    ['rightSpoiler2Deflection', { name: 'L:A32NX_HYD_SPOILER_2_RIGHT_DEFLECTION', type: SimVarValueType.Number }],
+    ['leftSpoiler3Deflection', { name: 'L:A32NX_HYD_SPOILER_3_LEFT_DEFLECTION', type: SimVarValueType.Number }],
+    ['rightSpoiler3Deflection', { name: 'L:A32NX_HYD_SPOILER_3_RIGHT_DEFLECTION', type: SimVarValueType.Number }],
+    ['leftSpoiler4Deflection', { name: 'L:A32NX_HYD_SPOILER_4_LEFT_DEFLECTION', type: SimVarValueType.Number }],
+    ['rightSpoiler4Deflection', { name: 'L:A32NX_HYD_SPOILER_4_RIGHT_DEFLECTION', type: SimVarValueType.Number }],
+    ['leftSpoiler5Deflection', { name: 'L:A32NX_HYD_SPOILER_5_LEFT_DEFLECTION', type: SimVarValueType.Number }],
+    ['rightSpoiler5Deflection', { name: 'L:A32NX_HYD_SPOILER_5_RIGHT_DEFLECTION', type: SimVarValueType.Number }],
+    ['leftSpoiler6Deflection', { name: 'L:A32NX_HYD_SPOILER_6_LEFT_DEFLECTION', type: SimVarValueType.Number }],
+    ['rightSpoiler6Deflection', { name: 'L:A32NX_HYD_SPOILER_6_RIGHT_DEFLECTION', type: SimVarValueType.Number }],
+    ['leftSpoiler7Deflection', { name: 'L:A32NX_HYD_SPOILER_7_LEFT_DEFLECTION', type: SimVarValueType.Number }],
+    ['rightSpoiler7Deflection', { name: 'L:A32NX_HYD_SPOILER_7_RIGHT_DEFLECTION', type: SimVarValueType.Number }],
+    ['leftSpoiler8Deflection', { name: 'L:A32NX_HYD_SPOILER_8_LEFT_DEFLECTION', type: SimVarValueType.Number }],
+    ['rightSpoiler8Deflection', { name: 'L:A32NX_HYD_SPOILER_8_RIGHT_DEFLECTION', type: SimVarValueType.Number }],
+    [
+      'leftOuterElevatorDeflection',
+      { name: 'L:A32NX_HYD_ELEVATOR_LEFT_OUTWARD_DEFLECTION', type: SimVarValueType.Number },
+    ],
+    [
+      'rightOuterElevatorDeflection',
+      { name: 'L:A32NX_HYD_ELEVATOR_RIGHT_OUTWARD_DEFLECTION', type: SimVarValueType.Number },
+    ],
+    [
+      'leftInnerElevatorDeflection',
+      { name: 'L:A32NX_HYD_ELEVATOR_LEFT_INWARD_DEFLECTION', type: SimVarValueType.Number },
+    ],
+    [
+      'rightInnerElevatorDeflection',
+      { name: 'L:A32NX_HYD_ELEVATOR_RIGHT_INWARD_DEFLECTION', type: SimVarValueType.Number },
+    ],
+    ['thsDeflection', { name: 'A:ELEVATOR TRIM POSITION', type: SimVarValueType.Number }],
+    ['upperRudderDeflection', { name: 'L:A32NX_HYD_UPPER_RUDDER_DEFLECTION', type: SimVarValueType.Number }],
+    ['lowerRudderDeflection', { name: 'L:A32NX_HYD_LOWER_RUDDER_DEFLECTION', type: SimVarValueType.Number }],
+    ['lowerRudderDeflection', { name: 'L:A32NX_HYD_LOWER_RUDDER_DEFLECTION', type: SimVarValueType.Number }],
+    ['greenPressureSwitch', { name: 'L:A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE_SWITCH', type: SimVarValueType.Bool }],
+    [
+      'yellowPressureSwitch',
+      { name: 'L:A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE_SWITCH', type: SimVarValueType.Bool },
+    ],
+    ['acEssPowered', { name: 'L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED', type: SimVarValueType.Bool }],
+    ['ac1Powered', { name: 'L:A32NX_ELEC_AC_1_BUS_IS_POWERED', type: SimVarValueType.Bool }],
+    ['acEhaPowered', { name: 'L:A32NX_ELEC_247XP_BUS_IS_POWERED', type: SimVarValueType.Bool }],
+    ['sec1RudderStatusWord', { name: 'L:A32NX_SEC_1_RUDDER_STATUS_WORD', type: SimVarValueType.Enum }],
+    ['sec3RudderStatusWord', { name: 'L:A32NX_SEC_3_RUDDER_STATUS_WORD', type: SimVarValueType.Enum }],
+    ['sec1RudderTrimPosition', { name: 'L:A32NX_SEC_1_RUDDER_ACTUAL_POSITION', type: SimVarValueType.Enum }],
+    ['sec3RudderTrimPosition', { name: 'L:A32NX_SEC_3_RUDDER_ACTUAL_POSITION', type: SimVarValueType.Enum }],
+    ['dc1Powered', { name: 'L:A32NX_ELEC_DC_1_BUS_IS_POWERED', type: SimVarValueType.Bool }],
+    ['dcEssPowered', { name: 'L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED', type: SimVarValueType.Bool }],
+    ['lgciu1LeftGearCompressed', { name: 'L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED', type: SimVarValueType.Bool }],
   ]);
 
   public constructor(bus: EventBus) {
