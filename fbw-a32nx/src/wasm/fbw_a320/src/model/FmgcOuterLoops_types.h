@@ -1,6 +1,18 @@
 #ifndef FmgcOuterLoops_types_h_
 #define FmgcOuterLoops_types_h_
 #include "rtwtypes.h"
+#ifndef DEFINED_TYPEDEF_FOR_ap_raw_output_command_
+#define DEFINED_TYPEDEF_FOR_ap_raw_output_command_
+
+struct ap_raw_output_command
+{
+  real_T Theta_c_deg;
+  real_T Phi_c_deg;
+  real_T Beta_c_deg;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_ap_raw_laws_flare_
 #define DEFINED_TYPEDEF_FOR_ap_raw_laws_flare_
 
@@ -17,14 +29,20 @@ struct ap_raw_laws_flare
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_ap_raw_output_command_
-#define DEFINED_TYPEDEF_FOR_ap_raw_output_command_
+#ifndef DEFINED_TYPEDEF_FOR_debug_alt_star_
+#define DEFINED_TYPEDEF_FOR_debug_alt_star_
 
-struct ap_raw_output_command
+struct debug_alt_star
 {
-  real_T Theta_c_deg;
-  real_T Phi_c_deg;
-  real_T Beta_c_deg;
+  boolean_T active;
+  real_T dh_offset_ft;
+  real_T k;
+  real_T max_h_dot_ft_min;
+  real_T H_dot_c_ft_min;
+  real_T AP_theta_c_raw;
+  real_T AP_theta_c_prot;
+  real_T FD_theta_c_raw;
+  real_T FD_theta_c_prot;
 };
 
 #endif
@@ -39,6 +57,7 @@ struct ap_raw_output
   ap_raw_output_command flight_director;
   ap_raw_output_command autopilot;
   ap_raw_laws_flare flare_law;
+  debug_alt_star alt_star_debug;
 };
 
 #endif

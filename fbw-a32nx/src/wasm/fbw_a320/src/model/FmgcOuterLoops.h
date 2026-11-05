@@ -75,7 +75,7 @@ class FmgcOuterLoops final
 
   struct D_Work_FmgcOuterLoops_T {
     real_T Delay_DSTATE;
-    real_T Delay_DSTATE_p;
+    real_T Delay_DSTATE_k;
     real_T Delay_DSTATE_f;
     real_T Delay_DSTATE_i;
     real_T Delay_DSTATE_l;
@@ -186,13 +186,13 @@ class FmgcOuterLoops final
   };
 
   struct Parameters_FmgcOuterLoops_T {
-    real_T ScheduledGain_BreakpointsForDimension1[7];
+    real_T ScheduledGain_BreakpointsForDimension1[3];
+    real_T ScheduledGain_BreakpointsForDimension1_i[7];
+    real_T ScheduledGain_BreakpointsForDimension1_k[7];
     real_T ScheduledGain2_BreakpointsForDimension1[7];
     real_T ScheduledGain_BreakpointsForDimension1_f[6];
     real_T ScheduledGain1_BreakpointsForDimension1[5];
     real_T ScheduledGain3_BreakpointsForDimension1[6];
-    real_T ScheduledGain_BreakpointsForDimension1_k[7];
-    real_T ScheduledGain_BreakpointsForDimension1_i[3];
     real_T ScheduledGain_BreakpointsForDimension1_h[8];
     real_T ScheduledGain3_BreakpointsForDimension1_j[5];
     real_T ScheduledGain2_BreakpointsForDimension1_f[8];
@@ -300,8 +300,8 @@ class FmgcOuterLoops final
     real_T LowPassFilter_C4_p;
     real_T HighPassFilter_C4_jw;
     real_T LowPassFilter_C4_k;
-    real_T DiscreteDerivativeVariableTs_Gain;
     real_T DiscreteTimeIntegratorVariableTs_Gain;
+    real_T DiscreteDerivativeVariableTs_Gain;
     real_T VS_Gain;
     real_T DiscreteDerivativeVariableTs1_Gain;
     real_T DiscreteDerivativeVariableTs_Gain_k;
@@ -312,26 +312,26 @@ class FmgcOuterLoops final
     real_T VS_Gain_n;
     real_T VS_Gain_b;
     real_T VS_Gain_d;
+    real_T DiscreteTimeIntegratorVariableTs_InitialCondition;
     real_T RateLimiterVariableTs_InitialCondition;
+    real_T RateLimiterVariableTs2_InitialCondition;
+    real_T RateLimiterVariableTs_InitialCondition_d;
     real_T DiscreteDerivativeVariableTs_InitialCondition;
     real_T RateLimiterVariableTs_InitialCondition_j;
-    real_T DiscreteTimeIntegratorVariableTs_InitialCondition;
-    real_T RateLimiterVariableTs_InitialCondition_b;
-    real_T RateLimiterVariableTs2_InitialCondition;
     real_T RateLimiterVariableTs_InitialCondition_l;
     real_T DiscreteDerivativeVariableTs1_InitialCondition;
     real_T RateLimiterVariableTs_InitialCondition_a;
     real_T DiscreteDerivativeVariableTs_InitialCondition_e;
     real_T RateLimiterVariableTs1_InitialCondition;
-    real_T RateLimiterVariableTs_InitialCondition_d;
+    real_T RateLimiterVariableTs_InitialCondition_dj;
     real_T DiscreteTimeIntegratorVariableTs_LowerLimit;
-    real_T ScheduledGain_Table[7];
+    real_T ScheduledGain_Table[3];
+    real_T ScheduledGain_Table_n[7];
+    real_T ScheduledGain_Table_a[7];
     real_T ScheduledGain2_Table[7];
     real_T ScheduledGain_Table_e[6];
     real_T ScheduledGain1_Table[5];
     real_T ScheduledGain3_Table[6];
-    real_T ScheduledGain_Table_a[7];
-    real_T ScheduledGain_Table_ak[3];
     real_T ScheduledGain_Table_j[8];
     real_T ScheduledGain3_Table_b[5];
     real_T ScheduledGain2_Table_j[8];
@@ -339,13 +339,13 @@ class FmgcOuterLoops final
     real_T DiscreteTimeIntegratorVariableTs_UpperLimit;
     real_T Subsystem_Value;
     real_T Subsystem_Value_e;
-    real_T CompareToConstant5_const;
+    real_T CompareToConstant1_const;
     real_T CompareToConstant2_const;
     real_T CompareToConstant_const;
-    real_T CompareToConstant1_const;
+    real_T CompareToConstant5_const;
     real_T CompareToConstant4_const;
-    real_T CompareToConstant_const_f;
-    real_T CompareToConstant1_const_a;
+    real_T CompareToConstant_const_i;
+    real_T CompareToConstant1_const_l;
     real_T CompareToConstant5_const_k;
     real_T CompareToConstant7_const;
     real_T CompareToConstant_const_n;
@@ -363,17 +363,17 @@ class FmgcOuterLoops final
     real_T CompareToConstant_const_o;
     real_T CompareToConstant4_const_kg;
     real_T RateLimiterVariableTs_lo;
-    real_T RateLimiterVariableTs_lo_f;
-    real_T RateLimiterVariableTs_lo_m;
     real_T RateLimiterVariableTs2_lo;
+    real_T RateLimiterVariableTs_lo_j;
+    real_T RateLimiterVariableTs_lo_f;
     real_T RateLimiterVariableTs_lo_d;
     real_T RateLimiterVariableTs_lo_k;
     real_T RateLimiterVariableTs1_lo;
     real_T RateLimiterVariableTs_lo_h;
     real_T RateLimiterVariableTs_up;
-    real_T RateLimiterVariableTs_up_m;
-    real_T RateLimiterVariableTs_up_k;
     real_T RateLimiterVariableTs2_up;
+    real_T RateLimiterVariableTs_up_a;
+    real_T RateLimiterVariableTs_up_m;
     real_T RateLimiterVariableTs_up_h;
     real_T RateLimiterVariableTs_up_l;
     real_T RateLimiterVariableTs1_up;
@@ -388,10 +388,10 @@ class FmgcOuterLoops final
     real_T Gain_Gain_e;
     real_T Gain5_Gain;
     real_T Constant1_Value;
+    real_T Gain2_Gain;
     real_T Gain_Gain_p;
     real_T Saturation_UpperSat;
     real_T Saturation_LowerSat;
-    real_T Gain2_Gain;
     real_T Gain1_Gain_e;
     real_T Gain1_Gain_k;
     real_T Gain_Gain_j;
@@ -402,9 +402,9 @@ class FmgcOuterLoops final
     real_T Constant_Value;
     real_T Saturation_UpperSat_e;
     real_T Saturation_LowerSat_e;
-    real_T Gain4_Gain;
     real_T Gain1_Gain_c;
     real_T Gain2_Gain_n;
+    real_T Gain4_Gain;
     real_T Saturation1_UpperSat;
     real_T Saturation1_LowerSat;
     real_T Constant3_Value_c;
@@ -490,38 +490,18 @@ class FmgcOuterLoops final
     real_T Switch1_Threshold_e3;
     real_T Constant1_Value_mr;
     real_T Gain5_Gain_j;
-    real_T Constant_Value_j4;
     real_T tau_Value;
     real_T zeta_Value;
-    real_T Constant3_Value_l;
-    real_T Gain_Gain_i;
-    real_T Gain_Gain_k;
-    real_T Gain1_Gain_m;
-    real_T tau_Value_h;
-    real_T zeta_Value_d;
-    real_T Constant3_Value_h;
-    real_T Constant3_Value_a;
-    real_T Constant3_Value_oh;
-    real_T Gain2_Gain_b;
     real_T Constant3_Value_iv;
+    real_T Constant3_Value_oh;
     real_T Gain1_Gain_ek;
     real_T Saturation_UpperSat_f;
     real_T Saturation_LowerSat_eg;
     real_T Gain_Gain_o;
-    real_T Constant3_Value_n;
-    real_T Gain3_Gain_o;
-    real_T Constant2_Value_a;
-    real_T Constant3_Value_m;
-    real_T Gain_Gain_j4;
-    real_T Saturation_UpperSat_g;
-    real_T Saturation_LowerSat_o;
-    real_T Constant3_Value_d;
-    real_T Gain_Gain_o0;
-    real_T Gain1_Gain_or;
-    real_T Gain_Gain_c;
-    real_T Gain_Gain_lv;
-    real_T Gain_Gain_on;
-    real_T Constant3_Value_lz;
+    real_T Constant3_Value_h;
+    real_T Constant3_Value_a;
+    real_T Gain2_Gain_b;
+    real_T Constant3_Value_l;
     real_T Constant3_Value_k;
     real_T Gain1_Gain_iy;
     real_T Saturation_UpperSat_n;
@@ -531,7 +511,7 @@ class FmgcOuterLoops final
     real_T Saturation1_LowerSat_by;
     real_T Gain6_Gain_p;
     real_T Constant3_Value_e;
-    real_T Constant3_Value_mt;
+    real_T Constant3_Value_m;
     real_T Constant3_Value_g;
     real_T Gain1_Gain_ke;
     real_T Gain_Gain_m;
@@ -547,6 +527,26 @@ class FmgcOuterLoops final
     real_T Gain_Gain_ll;
     real_T Saturation_UpperSat_b;
     real_T Saturation_LowerSat_ie;
+    real_T Constant_Value_j4;
+    real_T Constant3_Value_ls;
+    real_T Gain_Gain_i;
+    real_T Gain1_Gain_m;
+    real_T Gain_Gain_k;
+    real_T Constant3_Value_d;
+    real_T Gain_Gain_o0;
+    real_T Gain1_Gain_or;
+    real_T Gain_Gain_c;
+    real_T tau_Value_n;
+    real_T zeta_Value_d;
+    real_T Gain3_Gain_o;
+    real_T Constant3_Value_n;
+    real_T Constant3_Value_m1;
+    real_T Gain_Gain_j4;
+    real_T Constant2_Value_a;
+    real_T Saturation_UpperSat_g;
+    real_T Saturation_LowerSat_o;
+    real_T Gain_Gain_lv;
+    real_T Gain_Gain_on;
     real_T Gain1_Gain_p;
     real_T Saturation_UpperSat_c;
     real_T Saturation_LowerSat_n;
@@ -556,7 +556,6 @@ class FmgcOuterLoops final
     real_T Saturation_UpperSat_km;
     real_T Saturation_LowerSat_c;
     real_T Gain_Gain_jz;
-    real_T Constant_Value_d4;
     real_T fpmtoms_Gain;
     real_T kntoms_Gain_d;
     real_T Saturation_UpperSat_d;
@@ -583,8 +582,8 @@ class FmgcOuterLoops final
     real_T ug_Gain;
     real_T Gain1_Gain_b5;
     real_T Gain_Gain_b;
-    real_T Constant3_Value_lq;
     real_T Constant4_Value;
+    real_T Constant3_Value_lq;
     real_T Gain1_Gain_ac;
     real_T Gain_Gain_py;
     real_T Switch_Threshold_c;
@@ -616,13 +615,14 @@ class FmgcOuterLoops final
     real_T ug_Gain_b;
     real_T Gain1_Gain_mf;
     real_T Gain_Gain_a;
-    real_T Constant1_Value_l2;
     real_T Constant2_Value_g;
+    real_T Constant1_Value_l2;
     real_T Gain1_Gain_p5;
     real_T Gain_Gain_kc;
     real_T Switch_Threshold_bv;
     real_T Gain1_Gain_bj;
     real_T Gain_Gain_gkv;
+    real_T Constant_Value_d4;
     real_T Gain_Gain_bl;
     real_T Saturation_UpperSat_i;
     real_T Saturation_LowerSat_i1;
@@ -926,7 +926,7 @@ class FmgcOuterLoops final
     boolean_T Delay_InitialCondition;
     boolean_T Delay_InitialCondition_l;
     uint8_T ManualSwitch_CurrentSetting;
-    uint8_T ManualSwitch_CurrentSetting_o;
+    uint8_T ManualSwitch_CurrentSetting_f;
   };
 
   void init();
@@ -962,7 +962,11 @@ class FmgcOuterLoops final
             boolean_T *rty_out_flare_law_condition_Flare, real_T *rty_out_flare_law_H_dot_radio_fpm, real_T
             *rty_out_flare_law_H_dot_c_fpm, real_T *rty_out_flare_law_delta_Theta_H_dot_deg, real_T
             *rty_out_flare_law_delta_Theta_bz_deg, real_T *rty_out_flare_law_delta_Theta_bx_deg, real_T
-            *rty_out_flare_law_delta_Theta_beta_c_deg);
+            *rty_out_flare_law_delta_Theta_beta_c_deg, boolean_T *rty_out_alt_star_debug_active, real_T
+            *rty_out_alt_star_debug_dh_offset_ft, real_T *rty_out_alt_star_debug_k, real_T
+            *rty_out_alt_star_debug_max_h_dot_ft_min, real_T *rty_out_alt_star_debug_H_dot_c_ft_min, real_T
+            *rty_out_alt_star_debug_AP_theta_c_raw, real_T *rty_out_alt_star_debug_AP_theta_c_prot, real_T
+            *rty_out_alt_star_debug_FD_theta_c_raw, real_T *rty_out_alt_star_debug_FD_theta_c_prot);
   void reset();
   FmgcOuterLoops();
   ~FmgcOuterLoops();

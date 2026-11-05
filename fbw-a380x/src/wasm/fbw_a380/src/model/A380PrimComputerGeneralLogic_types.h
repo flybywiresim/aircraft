@@ -8,7 +8,7 @@ struct base_arinc_429
 {
   uint32_T SSM;
   real32_T Data;
-};
+} __attribute__((aligned(8)));
 
 #endif
 
@@ -214,19 +214,21 @@ struct base_elac_ir_computation_data
   real_T n_z_g;
   real_T theta_dot_deg_s;
   real_T phi_dot_deg_s;
+  real_T V_gnd_kts;
+  real_T V_zbi_ft_min;
 };
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_prim_sim_input_
-#define DEFINED_TYPEDEF_FOR_base_prim_sim_input_
+#ifndef DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+#define DEFINED_TYPEDEF_FOR_base_lgciu_bus_
 
-struct base_prim_sim_input
+struct base_lgciu_bus
 {
-  real32_T spd_mach;
-  real32_T hdg_trk;
-  real32_T alt;
-  real32_T vs_fpa;
+  base_arinc_429 discrete_word_1;
+  base_arinc_429 discrete_word_2;
+  base_arinc_429 discrete_word_3;
+  base_arinc_429 discrete_word_4;
 };
 
 #endif
@@ -266,15 +268,15 @@ struct base_sec_out_bus
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_lgciu_bus_
-#define DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+#ifndef DEFINED_TYPEDEF_FOR_base_prim_sim_input_
+#define DEFINED_TYPEDEF_FOR_base_prim_sim_input_
 
-struct base_lgciu_bus
+struct base_prim_sim_input
 {
-  base_arinc_429 discrete_word_1;
-  base_arinc_429 discrete_word_2;
-  base_arinc_429 discrete_word_3;
-  base_arinc_429 discrete_word_4;
+  real32_T spd_mach;
+  real32_T hdg_trk;
+  real32_T alt;
+  real32_T vs_fpa;
 };
 
 #endif
@@ -749,6 +751,7 @@ struct base_prim_flight_envelope_outputs
   real_T gamma_a_deg;
   real_T gamma_t_deg;
   boolean_T pitch_pitch_warning_active;
+  boolean_T bank_bank_warning_active;
   boolean_T low_energy_warning_active;
 };
 
@@ -842,30 +845,43 @@ struct base_prim_surface_status
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_a380_lateral_efcs_law_
-#define DEFINED_TYPEDEF_FOR_a380_lateral_efcs_law_
+#ifndef DEFINED_TYPEDEF_FOR_a380_efcs_law_
+#define DEFINED_TYPEDEF_FOR_a380_efcs_law_
 
-enum class a380_lateral_efcs_law
+enum class a380_efcs_law
   : int32_T {
-  NormalLaw = 0,
-  DirectLaw,
-  None
+  None = 0,
+  NormalLaw,
+  AlternateLaw1A,
+  AlternateLaw1B,
+  AlternateLaw1C,
+  AlternateLaw2A,
+  AlternateLaw2B,
+  DirectLaw
 };
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_a380_pitch_efcs_law_
-#define DEFINED_TYPEDEF_FOR_a380_pitch_efcs_law_
+#ifndef DEFINED_TYPEDEF_FOR_a380_pitch_law_
+#define DEFINED_TYPEDEF_FOR_a380_pitch_law_
 
-enum class a380_pitch_efcs_law
+enum class a380_pitch_law
   : int32_T {
-  NormalLaw = 0,
-  AlternateLaw1A,
-  AlternateLaw1B,
-  AlternateLaw1C,
-  AlternateLaw2,
-  DirectLaw,
-  None
+  None = 0,
+  NzLaw,
+  DirectLaw
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_a380_lateral_law_
+#define DEFINED_TYPEDEF_FOR_a380_lateral_law_
+
+enum class a380_lateral_law
+  : int32_T {
+  None = 0,
+  YStarLaw,
+  DirectLaw
 };
 
 #endif
@@ -878,12 +894,14 @@ struct base_prim_fctl_logic_outputs
   base_prim_surface_status surface_statuses;
   base_prim_lateral_surface_positions lateral_surface_positions;
   base_prim_pitch_surface_positions pitch_surface_positions;
-  a380_lateral_efcs_law lateral_law_capability;
-  a380_lateral_efcs_law active_lateral_law;
-  a380_pitch_efcs_law pitch_law_capability;
-  a380_pitch_efcs_law active_pitch_law;
+  a380_efcs_law law_capability;
+  a380_efcs_law active_law;
+  a380_pitch_law active_pitch_law;
+  a380_lateral_law active_lateral_law;
   boolean_T abnormal_condition_law_active;
+  boolean_T flare_law_override_active;
   boolean_T is_master_prim;
+  uint8_T prim_capability_score;
   boolean_T elevator_1_avail;
   boolean_T elevator_1_engaged;
   boolean_T elevator_2_avail;
@@ -1270,6 +1288,24 @@ struct ap_raw_laws_flare
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_debug_alt_star_
+#define DEFINED_TYPEDEF_FOR_debug_alt_star_
+
+struct debug_alt_star
+{
+  boolean_T active;
+  real_T dh_offset_ft;
+  real_T k;
+  real_T max_h_dot_ft_min;
+  real_T H_dot_c_ft_min;
+  real_T AP_theta_c_raw;
+  real_T AP_theta_c_prot;
+  real_T FD_theta_c_raw;
+  real_T FD_theta_c_prot;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_ap_raw_output_
 #define DEFINED_TYPEDEF_FOR_ap_raw_output_
 
@@ -1280,6 +1316,7 @@ struct ap_raw_output
   ap_raw_output_command flight_director;
   ap_raw_output_command autopilot;
   ap_raw_laws_flare flare_law;
+  debug_alt_star alt_star_debug;
 };
 
 #endif

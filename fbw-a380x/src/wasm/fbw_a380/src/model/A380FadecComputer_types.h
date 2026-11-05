@@ -8,7 +8,7 @@ struct base_arinc_429
 {
   uint32_T SSM;
   real32_T Data;
-};
+} __attribute__((aligned(8)));
 
 #endif
 
