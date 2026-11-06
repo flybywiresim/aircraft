@@ -561,16 +561,27 @@ FcdcBus Fcdc::getBusOutputs() {
   setSpoilerPosition(output.spoilerRight8Pos, busInputs.secs[2].right_spoiler_2_position_deg);
 
   output.fcdcFgDiscreteWord1.setSsm(ssm);
+  output.fcdcFgDiscreteWord1.setBit(11, bitFromValueOr(busInputs.prims[masterPrimIndex].fg.discrete_word_1, 11, false));   // AP 1 Engaged
+  output.fcdcFgDiscreteWord1.setBit(12, bitFromValueOr(busInputs.prims[masterPrimIndex].fg.discrete_word_1, 12, false));   // AP 2 Engaged
+  output.fcdcFgDiscreteWord1.setBit(13, bitFromValueOr(busInputs.prims[masterPrimIndex].fg.discrete_word_1, 13, false) ||  // FD Engaged
+                                            bitFromValueOr(busInputs.prims[masterPrimIndex].fg.discrete_word_1, 14, false));
+  output.fcdcFgDiscreteWord1.setBit(14, bitFromValueOr(busInputs.prims[masterPrimIndex].fg.ats_discrete_word, 11, false));  // A/THR Engaged
+  output.fcdcFgDiscreteWord1.setBit(15, bitFromValueOr(busInputs.prims[masterPrimIndex].fg.ats_discrete_word, 12, false));  // A/THR Active
+  output.fcdcFgDiscreteWord1.setBit(17, bitFromValueOr(busInputs.prims[masterPrimIndex].fg.discrete_word_2, 28, false));  // LAND mode armed
+  output.fcdcFgDiscreteWord1.setBit(18,
+                                    bitFromValueOr(busInputs.prims[masterPrimIndex].fg.discrete_word_1, 23, false));  // LAND mode active
+  output.fcdcFgDiscreteWord1.setBit(19, bitFromValueOr(busInputs.prims[masterPrimIndex].fg.discrete_word_3, 16, false));  // GA Active
+  output.fcdcFgDiscreteWord1.setBit(20, false);                                                                           // BTV Active
   output.fcdcFgDiscreteWord1.setBit(24, land2Capacity);
   output.fcdcFgDiscreteWord1.setBit(25, land3FailPassiveCapacity);
   output.fcdcFgDiscreteWord1.setBit(26, land3FailOperationalCapacity);
 
   output.fcdcFgDiscreteWord2.setSsm(ssm);
-  output.fcdcFgDiscreteWord2.setBit(11, false);
-  output.fcdcFgDiscreteWord2.setBit(12, false);
-  output.fcdcFgDiscreteWord2.setBit(13, false);
-  output.fcdcFgDiscreteWord2.setBit(14, false);
-  output.fcdcFgDiscreteWord2.setBit(15, false);
+  output.fcdcFgDiscreteWord2.setBit(11, bitFromValueOr(busInputs.prims[masterPrimIndex].fg.discrete_word_1, 15, false));    // AP 1 Inop
+  output.fcdcFgDiscreteWord2.setBit(12, bitFromValueOr(busInputs.prims[masterPrimIndex].fg.discrete_word_1, 16, false));    // AP 2 Inop
+  output.fcdcFgDiscreteWord2.setBit(13, bitFromValueOr(busInputs.prims[masterPrimIndex].fg.discrete_word_1, 17, false));    // FD 1 Inop
+  output.fcdcFgDiscreteWord2.setBit(14, bitFromValueOr(busInputs.prims[masterPrimIndex].fg.discrete_word_1, 18, false));    // FD 2 Inop
+  output.fcdcFgDiscreteWord2.setBit(15, bitFromValueOr(busInputs.prims[masterPrimIndex].fg.ats_discrete_word, 13, false));  // A/THR Inop
   output.fcdcFgDiscreteWord2.setBit(20, bitFromValueOr(busInputs.prims[masterPrimIndex].fg.ats_discrete_word, 14, false));  // A/THR Limited
   output.fcdcFgDiscreteWord2.setBit(24, land2Inop);
   output.fcdcFgDiscreteWord2.setBit(25, land3FailPassiveInop);
