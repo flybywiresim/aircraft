@@ -127,7 +127,8 @@ export class MfdAtccomDAtisReceived extends DisplayComponent<MfdAtccomDAtisRecei
 
     if (this.atisIndex != undefined) {
       const atisReport = this.datalink.atisReports(this.atisData.icao);
-      this.messageArray.set(this.processAtisToArray(atisReport[0].Reports[0].report, this.numberOfPages));
+      const latest = atisReport[0]?.Reports[0]?.report ?? this.atisData.fallbackMetar ?? 'NO REPORT AVAILABLE';
+      this.messageArray.set(this.processAtisToArray(latest, this.numberOfPages));
 
       if (atisReport[1] !== undefined) {
         this.previousMessageArray.set(

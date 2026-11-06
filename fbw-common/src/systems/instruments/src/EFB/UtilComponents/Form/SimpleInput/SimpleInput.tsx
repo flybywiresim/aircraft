@@ -75,7 +75,8 @@ export const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
 
     if (props.wind) {
       originalValue = originalValue.toUpperCase();
-      const regex = /^(?:H|HD|TL|T|[-+])?\d{0,2}(?:\/\d{2})?$|^\d{1,5}$|^\d{3}\/\d{0,2}$/;
+      const regex =
+        /^(?:H|HD|TL|T|[-+])?\d{0,2}(?:\/\d{2})?$|^\d{1,5}$|^(?:\d{3}|V(?:R(?:B)?)?)(?:\/\d{0,2}(?:G\d{0,2})?)?$/;
       if (
         !regex.test(originalValue) ||
         (!isNaN(Number(originalValue.slice(0, 3))) && Number(originalValue.slice(0, 3)) > 360)

@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// Copyright (c) 2023-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { FC, useContext, useEffect, useState } from 'react';
@@ -25,13 +25,8 @@ import { useAppDispatch, useAppSelector } from '../../Store/store';
 import { clearLandingValues, initialState, setLandingValues } from '../../Store/features/performance';
 import { AircraftContext } from '../../AircraftContext';
 import { fetchRawMetarBySource } from '../../Service/WeatherService';
-import {
-  isValidIcao,
-  isWindMagnitudeAndDirection,
-  isWindMagnitudeOnly,
-  WIND_MAGNITUDE_AND_DIR_REGEX,
-  WIND_MAGNITUDE_ONLY_REGEX,
-} from '../Data/Utils';
+import { isValidIcao, isWindMagnitudeOnly, WIND_MAGNITUDE_ONLY_REGEX } from '../Data/Utils';
+import { getConservativeWindComponents, parseDirectionalWindEntry } from '../Data/WindComponents';
 import { getAirportMagVar, getRunways } from '../Data/Runways';
 
 interface OutputDisplayProps {
@@ -65,9 +60,15 @@ const Label: FC<LabelProps> = ({ text, className, children }) => (
 export const LandingWidget = () => {
   const dispatch = useAppDispatch();
 
-  const calculators = useContext(AircraftContext).performanceCalculators;
+  const {
+    performanceCalculators: calculators,
+    landingWeightLimits,
+    landingReverseThrustDefault,
+    performanceCgLimits,
+  } = useContext(AircraftContext);
 
   const [totalWeight] = useSimVar('TOTAL WEIGHT', 'Pounds', 1000);
+  const [aircraftCg] = useSimVar('L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC', 'number', 1000);
   const [autoFillSource, setAutoFillSource] = useState<'METAR' | 'OFP'>('OFP');
 
   const { usingMetric } = Units;
@@ -84,10 +85,13 @@ export const LandingWidget = () => {
     slope,
     windDirection,
     windMagnitude,
+    windGust,
+    windVariable,
     windEntry,
     temperature,
     pressure,
     weight,
+    cg,
     overweightProcedure,
     approachSpeed,
     flaps,
@@ -97,11 +101,18 @@ export const LandingWidget = () => {
     maxAutobrakeLandingDist,
     mediumAutobrakeLandingDist,
     lowAutobrakeLandingDist,
+    factoredLandingDist,
     runwayVisualizationLabels,
     displayedRunwayLength,
   } = useAppSelector((state) => state.performance.landing);
 
-  const { arrivingAirport, arrivingMetar, arrivingRunway } = useAppSelector((state) => state.simbrief.data);
+  const {
+    arrivingAirport,
+    arrivingMetar,
+    arrivingRunway,
+    weights: ofpWeights,
+    units: ofpUnits,
+  } = useAppSelector((state) => state.simbrief.data);
 
   useEffect(() => {
     // in case of head- or tailwind entry only, the runway heading is used to set the wind direction
@@ -112,14 +123,21 @@ export const LandingWidget = () => {
 
   const handleCalculateLanding = (): void => {
     if (!areInputsValid()) return;
+    const { headwind } = getConservativeWindComponents(
+      runwayHeading,
+      windDirection,
+      windMagnitude,
+      windGust,
+      windVariable ?? false,
+    );
     const landingDistances = calculators.landing.calculateLandingDistances(
       weight ?? 0,
       flaps ?? LandingFlapsConfig.Full,
       runwayCondition,
       approachSpeed ?? 0,
-      windDirection ?? 0,
-      windMagnitude ?? 0,
-      runwayHeading ?? 0,
+      runwayHeading,
+      headwind,
+      runwayHeading,
       reverseThrust,
       elevation ?? 0,
       temperature ?? 0,
@@ -127,6 +145,7 @@ export const LandingWidget = () => {
       overweightProcedure,
       pressure ?? 0,
       autoland,
+      cg,
     );
 
     dispatch(
@@ -134,6 +153,7 @@ export const LandingWidget = () => {
         maxAutobrakeLandingDist: Math.round(landingDistances.maxAutobrakeDist),
         mediumAutobrakeLandingDist: Math.round(landingDistances.mediumAutobrakeDist),
         lowAutobrakeLandingDist: Math.round(landingDistances.lowAutobrakeDist),
+        factoredLandingDist: landingDistances.factoredLandingDist,
         runwayVisualizationLabels: [
           {
             label: 'LOW',
@@ -162,6 +182,7 @@ export const LandingWidget = () => {
         maxAutobrakeLandingDist: 0,
         mediumAutobrakeLandingDist: 0,
         lowAutobrakeLandingDist: 0,
+        factoredLandingDist: undefined,
         runwayVisualizationLabels: [],
       }),
     );
@@ -187,13 +208,17 @@ export const LandingWidget = () => {
 
     try {
       const magvar = await getAirportMagVar(icao);
-      const windDirection = MathUtils.normalise360(parsedMetar.wind.degrees - magvar);
-      const windEntry = `${windDirection.toFixed(0).padStart(3, '0')}/${parsedMetar.wind.speed_kts.toFixed(0).padStart(2, '0')}`;
+      const windVariable = parsedMetar.wind.degrees_from === 0 && parsedMetar.wind.degrees_to === 359;
+      const windDirection = windVariable ? undefined : MathUtils.normalise360(parsedMetar.wind.degrees - magvar);
+      const windGust = parsedMetar.wind.gust_kts;
+      const windEntry = `${windVariable ? 'VRB' : windDirection.toFixed(0).padStart(3, '0')}/${parsedMetar.wind.speed_kts.toFixed(0).padStart(2, '0')}${windGust > parsedMetar.wind.speed_kts ? `G${windGust.toFixed(0)}` : ''}`;
 
       dispatch(
         setLandingValues({
           windDirection,
           windMagnitude: parsedMetar.wind.speed_kts,
+          windGust,
+          windVariable,
           windEntry,
           temperature: parsedMetar.temperature.celsius,
           pressure: parsedMetar.barometer.mb,
@@ -208,7 +233,11 @@ export const LandingWidget = () => {
     try {
       const parsedMetar: MetarParserType = parseMetar(arrivingMetar);
 
-      const weightKgs = Math.round(Units.poundToKilogram(totalWeight));
+      const ofpLandingWeight = parseInt(ofpWeights.estLandingWeight);
+      const weightKgs =
+        Number.isFinite(ofpLandingWeight) && ofpLandingWeight > 0
+          ? Math.round(ofpUnits === 'lbs' ? Units.poundToKilogram(ofpLandingWeight) : ofpLandingWeight)
+          : Math.round(Units.poundToKilogram(totalWeight));
 
       if (!isValidIcao(arrivingAirport)) {
         toast.error('OFP airport is invalid');
@@ -218,12 +247,19 @@ export const LandingWidget = () => {
       const values: Partial<typeof initialState.landing> = {
         icao: arrivingAirport,
         weight: weightKgs,
+        ...(performanceCgLimits && Number.isFinite(aircraftCg) && aircraftCg > 0 ? { cg: aircraftCg } : {}),
         windDirection,
         windMagnitude: parsedMetar.wind.speed_kts,
+        windGust: parsedMetar.wind.gust_kts,
+        windVariable: parsedMetar.wind.degrees_from === 0 && parsedMetar.wind.degrees_to === 359,
         windEntry: undefined,
         temperature: parsedMetar.temperature.celsius,
         pressure: parsedMetar.barometer.mb,
+        reverseThrust: weight === undefined ? landingReverseThrustDefault ?? reverseThrust : reverseThrust,
       };
+      if (calculators.landing?.getEstimatedVapp) {
+        values.approachSpeed = calculators.landing.getEstimatedVapp(weightKgs, flaps, 0, values.cg ?? cg);
+      }
 
       try {
         values.availableRunways = await getRunways(arrivingAirport);
@@ -232,9 +268,13 @@ export const LandingWidget = () => {
         const runwayIndex = values.availableRunways.findIndex((r) => r.ident === arrivingRunway);
         if (runwayIndex >= 0) {
           const newRunway = values.availableRunways[runwayIndex];
-          const windDirection = Math.round(MathUtils.normalise360(parsedMetar.wind.degrees - magvar));
-
-          values.windEntry = `${windDirection.toFixed(0).padStart(3, '0')}/${parsedMetar.wind.speed_kts}`;
+          const variable = parsedMetar.wind.degrees_from === 0 && parsedMetar.wind.degrees_to === 359;
+          const windDirection = variable
+            ? undefined
+            : Math.round(MathUtils.normalise360(parsedMetar.wind.degrees - magvar));
+          const gust = parsedMetar.wind.gust_kts;
+          values.windDirection = windDirection;
+          values.windEntry = `${variable ? 'VRB' : windDirection.toFixed(0).padStart(3, '0')}/${parsedMetar.wind.speed_kts.toFixed(0).padStart(2, '0')}${gust > parsedMetar.wind.speed_kts ? `G${gust.toFixed(0)}` : ''}`;
           values.selectedRunwayIndex = runwayIndex;
           values.runwayHeading = newRunway.magneticBearing;
           values.runwayLength = newRunway.length;
@@ -328,7 +368,15 @@ export const LandingWidget = () => {
     clearResult();
 
     if (input === '0') {
-      dispatch(setLandingValues({ windMagnitude: 0, windDirection: runwayHeading, windEntry: input }));
+      dispatch(
+        setLandingValues({
+          windMagnitude: 0,
+          windDirection: runwayHeading,
+          windGust: undefined,
+          windVariable: false,
+          windEntry: input,
+        }),
+      );
       return;
     }
 
@@ -339,30 +387,59 @@ export const LandingWidget = () => {
         case 'TL':
         case 'T':
         case '-':
-          dispatch(setLandingValues({ windMagnitude: -windMagnitude, windDirection: runwayHeading, windEntry: input }));
+          dispatch(
+            setLandingValues({
+              windMagnitude: -windMagnitude,
+              windDirection: runwayHeading,
+              windGust: undefined,
+              windVariable: false,
+              windEntry: input,
+            }),
+          );
           return;
         case 'HD':
         case 'H':
         case '+':
         default:
-          dispatch(setLandingValues({ windMagnitude, windDirection: runwayHeading, windEntry: input }));
+          dispatch(
+            setLandingValues({
+              windMagnitude,
+              windDirection: runwayHeading,
+              windGust: undefined,
+              windVariable: false,
+              windEntry: input,
+            }),
+          );
           return;
       }
-    } else if (isWindMagnitudeAndDirection(input)) {
-      const directionMagnitudeMatch = input.match(WIND_MAGNITUDE_AND_DIR_REGEX);
-      dispatch(
-        setLandingValues({
-          windDirection: parseInt(directionMagnitudeMatch[1]),
-          windMagnitude: parseFloat(directionMagnitudeMatch[2]),
-          windEntry: input,
-        }),
-      );
-      return;
+    } else {
+      const directional = parseDirectionalWindEntry(input);
+      if (directional) {
+        dispatch(
+          setLandingValues({
+            windDirection: directional.direction,
+            windMagnitude: directional.speed,
+            windGust: directional.gust,
+            windVariable: directional.variable,
+            windEntry: input,
+          }),
+        );
+        return;
+      }
     }
-    dispatch(setLandingValues({ windMagnitude: undefined, windDirection: undefined, windEntry: input }));
+    dispatch(
+      setLandingValues({
+        windMagnitude: undefined,
+        windDirection: undefined,
+        windGust: undefined,
+        windVariable: false,
+        windEntry: input,
+      }),
+    );
   };
 
   const handleWeightChange = (value: string): void => {
+    clearResult();
     let weight: number | undefined = parseInt(value);
 
     if (Number.isNaN(weight)) {
@@ -372,6 +449,12 @@ export const LandingWidget = () => {
     }
 
     dispatch(setLandingValues({ weight }));
+  };
+
+  const handleCgChange = (value: string): void => {
+    clearResult();
+    const parsed = parseFloat(value);
+    dispatch(setLandingValues({ cg: Number.isFinite(parsed) ? parsed : undefined }));
   };
 
   const handleRunwayHeadingChange = (value: string): void => {
@@ -505,7 +588,7 @@ export const LandingWidget = () => {
   };
 
   const areInputsValid = (): boolean =>
-    windDirection !== undefined &&
+    (windDirection !== undefined || windVariable === true) &&
     windMagnitude !== undefined &&
     weight !== undefined &&
     runwayHeading !== undefined &&
@@ -514,7 +597,10 @@ export const LandingWidget = () => {
     slope !== undefined &&
     temperature !== undefined &&
     pressure !== undefined &&
-    runwayLength !== undefined;
+    runwayLength !== undefined &&
+    (!landingWeightLimits || (weight >= landingWeightLimits.minKg && weight <= landingWeightLimits.maxKg)) &&
+    (!performanceCgLimits ||
+      (cg !== undefined && cg >= performanceCgLimits.minPercentMac && cg <= performanceCgLimits.maxPercentMac));
 
   const handleAutoFill = () => {
     clearResult();
@@ -805,8 +891,16 @@ export const LandingWidget = () => {
                         Units.kilogramToPound,
                       )}
                       placeholder={weightUnit}
-                      min={weightUnit === 'kg' ? 41000 : 90389}
-                      max={weightUnit === 'kg' ? 100000 : 220462}
+                      min={
+                        weightUnit === 'kg'
+                          ? landingWeightLimits?.minKg ?? 41_000
+                          : Units.kilogramToPound(landingWeightLimits?.minKg ?? 41_000)
+                      }
+                      max={
+                        weightUnit === 'kg'
+                          ? landingWeightLimits?.maxKg ?? 100_000
+                          : Units.kilogramToPound(landingWeightLimits?.maxKg ?? 100_000)
+                      }
                       decimalPrecision={0}
                       onChange={handleWeightChange}
                       number
@@ -822,6 +916,20 @@ export const LandingWidget = () => {
                     />
                   </div>
                 </Label>
+                {performanceCgLimits && (
+                  <Label text="CG (% MAC)">
+                    <SimpleInput
+                      className="w-64"
+                      value={cg}
+                      placeholder="% MAC"
+                      min={performanceCgLimits.minPercentMac}
+                      max={performanceCgLimits.maxPercentMac}
+                      decimalPrecision={1}
+                      onChange={handleCgChange}
+                      number
+                    />
+                  </Label>
+                )}
                 <Label text={t('Performance.Landing.OverweightProcedure')}>
                   <SelectInput
                     className="w-64"
@@ -936,6 +1044,16 @@ export const LandingWidget = () => {
               error={lowAutobrakeLandingDist > (displayedRunwayLength ?? 0)}
             />
           </div>
+          {factoredLandingDist !== undefined && (
+            <div className="mt-3 flex justify-between border-t border-theme-accent pt-3 text-theme-text">
+              <span>Factored landing distance</span>
+              <strong>
+                {distanceUnit === 'ft'
+                  ? `${Math.round(Units.metreToFoot(factoredLandingDist))} ft`
+                  : `${factoredLandingDist} m`}
+              </strong>
+            </div>
+          )}
         </div>
       </div>
       <div className="mt-4">

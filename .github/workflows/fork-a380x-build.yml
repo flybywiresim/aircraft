@@ -1,0 +1,168 @@
+name: Fork A380X build
+run-name: A380X ${{ github.ref_name }} @ ${{ github.sha }}
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fork-a380x-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    if: github.repository == 'dancebunny98/aircraft'
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - run: ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
+      - run: ./scripts/dev-env/run.sh pnpm exec eslint fbw-a380x/src/systems/shared/src/performance/a380x_*.ts
+      - run: ./scripts/dev-env/run.sh pnpm exec eslint fbw-a380x/src/systems/instruments/src/EFB/index.tsx fbw-a380x/src/systems/instruments/src/MFD/pages/FMS/MfdFmsPerf.tsx fbw-common/src/systems/instruments/src/EFB/AircraftContext.ts fbw-common/src/systems/instruments/src/EFB/Performance/Widgets/TakeoffWidget.tsx
+      - run: ./scripts/dev-env/run.sh pnpm exec eslint fbw-a380x/src/systems/instruments/src/ND/WeatherRadar.tsx fbw-a380x/src/systems/instruments/src/ND/instrument.tsx fbw-a380x/src/systems/instruments/src/MFD/pages/SURV/MfdSurvControls.tsx fbw-common/src/systems/instruments/src/ND/ND.tsx
+      - run: ./scripts/dev-env/run.sh pnpm exec eslint fbw-a380x/src/systems/instruments/src/MFD/pages/ATCCOM/MfdAtccomRequest.tsx fbw-a380x/src/systems/instruments/src/MFD/pages/common/DataEntryFormats.tsx fbw-a380x/src/systems/instruments/src/MFD/ATCCOM/AtcDatalinkSystem.ts fbw-a380x/src/systems/instruments/src/SDv2/AtcMailbox.tsx
+
+  test-js:
+    if: github.repository == 'dancebunny98/aircraft'
+    name: Tests (JS)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - run: ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
+      - run: ./scripts/dev-env/run.sh pnpm exec vitest run fbw-a380x
+
+  test-rust:
+    if: github.repository == 'dancebunny98/aircraft'
+    name: Tests (Rust)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - run: ./scripts/dev-env/run.sh scripts/test-rust.sh
+
+  build:
+    if: github.repository == 'dancebunny98/aircraft'
+    name: Build A380X package
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    env:
+      FBW_PRODUCTION_BUILD: 1
+      FBW_TYPECHECK: 1
+      AIRCRAFT_PROJECT_PREFIX: a380x
+      AIRCRAFT_VARIANT: a380-842
+    steps:
+      - name: Free build space
+        uses: AdityaGarg8/remove-unwanted-software@v4.1
+        with:
+          remove-android: 'true'
+          remove-dotnet: 'true'
+          remove-haskell: 'true'
+          remove-codeql: 'true'
+          remove-large-packages: 'true'
+          remove-cached-tools: 'true'
+
+      - name: Checkout source and assets
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          submodules: recursive
+
+      - name: Configure build
+        env:
+          NAVIGRAPH_CLIENT_ID: ${{ secrets.NAVIGRAPH_CLIENT_ID_A380X }}
+          NAVIGRAPH_CLIENT_SECRET: ${{ secrets.NAVIGRAPH_CLIENT_SECRET_A380X }}
+        run: |
+          printf '%s\n' \
+            'FBW_PRODUCTION_BUILD=1' \
+            'FBW_TYPECHECK=1' \
+            'AIRCRAFT_PROJECT_PREFIX=a380x' \
+            'AIRCRAFT_VARIANT=a380-842' \
+            'VITE_BUILD=false' \
+            "CLIENT_ID=$NAVIGRAPH_CLIENT_ID" \
+            "CLIENT_SECRET=$NAVIGRAPH_CLIENT_SECRET" \
+            'CHARTFOX_SECRET=' \
+            'SENTRY_DSN=' > fbw-a380x/.env
+          printf '%s\n' 'VITE_BUILD=false' > .env
+          if [ -z "$NAVIGRAPH_CLIENT_ID" ] || [ -z "$NAVIGRAPH_CLIENT_SECRET" ]; then
+            echo '::warning::Navigraph login requires NAVIGRAPH_CLIENT_ID_A380X and NAVIGRAPH_CLIENT_SECRET_A380X repository secrets.'
+          fi
+
+      - name: Install dependencies
+        run: ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
+
+      - name: Test A380X performance estimates
+        run: ./scripts/dev-env/run.sh pnpm exec vitest run fbw-a380x/src/systems/shared/src/performance/a380x_performance.spec.ts
+
+      - name: Build A380X
+        run: ./scripts/dev-env/run.sh ./scripts/build.sh -r "a380x" --no-tty -j 4
+
+      - name: Verify installable package and instruments
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const root = 'fbw-a380x/out/flybywire-aircraft-a380-842';
+          const manifest = JSON.parse(fs.readFileSync(path.join(root, 'manifest.json')));
+          const layout = JSON.parse(fs.readFileSync(path.join(root, 'layout.json')));
+          const entries = layout.content.filter(({ path: name }) => /html_ui\/Pages\/VCockpit\/Instruments\/A380X\/EFB\//i.test(name));
+          const files = entries.map(({ path: name }) => name);
+          if (!manifest.package_version || !files.some((name) => /\.js$/i.test(name)) || !files.some((name) => /\.html$/i.test(name))) {
+            throw new Error('A380X EFB or package metadata is missing');
+          }
+          for (const entry of entries) {
+            const file = path.join(root, entry.path);
+            if (!fs.existsSync(file) || fs.statSync(file).size !== entry.size) {
+              throw new Error(`Missing or mismatched EFB file: ${entry.path}`);
+            }
+          }
+          const efbScript = files.find((name) => /\/efb\.js$/i.test(name));
+          if (!efbScript) throw new Error('A380X EFB JavaScript is missing');
+          const ndFiles = layout.content.filter(({ path: name }) => /html_ui\/Pages\/VCockpit\/Instruments\/A380X\/ND\//i.test(name));
+          const ndNames = ndFiles.map(({ path: name }) => name);
+          if (!ndNames.some((name) => /\.js$/i.test(name)) || !ndNames.some((name) => /\.html$/i.test(name))) {
+            throw new Error('A380X ND instrument is missing');
+          }
+          for (const entry of ndFiles) {
+            const file = path.join(root, entry.path);
+            if (!fs.existsSync(file) || fs.statSync(file).size !== entry.size) {
+              throw new Error(`Missing or mismatched ND file: ${entry.path}`);
+            }
+          }
+          const hudFiles = layout.content.filter(({ path: name }) => /html_ui\/Pages\/VCockpit\/Instruments\/A380X\/HUD\//i.test(name));
+          const hudNames = hudFiles.map(({ path: name }) => name);
+          if (!hudNames.some((name) => /\.js$/i.test(name)) || !hudNames.some((name) => /\.html$/i.test(name))) {
+            throw new Error('A380X HUD instrument is missing');
+          }
+          for (const entry of hudFiles) {
+            const file = path.join(root, entry.path);
+            if (!fs.existsSync(file) || fs.statSync(file).size !== entry.size) {
+              throw new Error(`Missing or mismatched HUD file: ${entry.path}`);
+            }
+          }
+          const script = fs.readFileSync(path.join(root, efbScript), 'utf8');
+          const unresolved = [...new Set(script.match(/process\.env\.[A-Z][A-Z0-9_]*/g) ?? [])].filter(
+            (name) => name !== 'process.env.NODE_DEBUG',
+          );
+          if (unresolved.length) throw new Error(`Unresolved EFB environment variables: ${unresolved.join(', ')}`);
+          console.log(`Verified A380X package ${manifest.package_version} with ${entries.length} EFB files`);
+          NODE
+
+      - name: Upload aircraft package
+        uses: actions/upload-artifact@v4
+        with:
+          name: flybywire-aircraft-a380-842
+          path: fbw-a380x/out/flybywire-aircraft-a380-842/
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
