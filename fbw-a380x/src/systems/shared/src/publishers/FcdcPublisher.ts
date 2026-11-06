@@ -520,6 +520,9 @@ export type FcdcBusBaseEvents = {
    *       15 | Reactive Windshear Fault
    *       16 | Triple Click demand
    *       17 | Triple Click demand (BTV)
+   *       18 | Spare
+   *       19 | CLB Demand Active
+   *       19 | MCT Demand Active
    */
   fcdc_fg_discrete_word_3: number;
   /**
