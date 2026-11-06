@@ -1,4 +1,7 @@
-use crate::simulation::{InitContext, SimulationElement, SimulatorWriter, UpdateContext};
+use crate::failures::{Failure, FailureType};
+use crate::simulation::{
+    InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
+};
 
 use super::{
     ElectricalElement, ElectricalElementIdentifier, ElectricalElementIdentifierProvider,
@@ -19,6 +22,7 @@ pub struct EmergencyGenerator {
     generated_power: Power,
     demand: Power,
     min_rpm_to_supply_power: AngularVelocity,
+    failure: Failure,
 }
 impl EmergencyGenerator {
     const MIN_POWER_TO_DECLARE_SUPPLYING_WATT: f64 = 100.;
@@ -36,6 +40,7 @@ impl EmergencyGenerator {
             generated_power: Power::new::<watt>(0.),
             demand: Power::new::<watt>(0.),
             min_rpm_to_supply_power,
+            failure: Failure::new(FailureType::EmergencyGenerator),
         }
     }
 
@@ -55,15 +60,16 @@ impl EmergencyGenerator {
     }
 
     fn should_provide_output(&self) -> bool {
-        self.supplying
+        self.supplying && !self.failure.is_active()
     }
 
     fn update_generated_power(&mut self, gcu: &impl EmergencyGeneratorControlUnit) {
-        self.generated_power = if gcu.motor_speed() > self.min_rpm_to_supply_power {
-            self.demand.min(gcu.max_allowed_power())
-        } else {
-            Power::default()
-        };
+        self.generated_power =
+            if !self.failure.is_active() && gcu.motor_speed() > self.min_rpm_to_supply_power {
+                self.demand.min(gcu.max_allowed_power())
+            } else {
+                Power::default()
+            };
     }
 }
 provide_frequency!(EmergencyGenerator, (390.0..=410.0));
@@ -96,6 +102,12 @@ impl EmergencyGeneratorPower for EmergencyGenerator {
     }
 }
 impl SimulationElement for EmergencyGenerator {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.failure.accept(visitor);
+
+        visitor.visit(self);
+    }
+
     fn process_power_consumption_report<T: PowerConsumptionReport>(
         &mut self,
         _: &UpdateContext,
@@ -294,6 +306,22 @@ mod emergency_generator_tests {
         test_bed.run_with_delta(Duration::from_secs(100));
 
         assert!(test_bed.emer_gen_is_powered());
+    }
+
+    #[test]
+    fn when_failed_has_no_output() {
+        let mut test_bed = EmergencyGeneratorTestBed::new();
+
+        test_bed.command(|a| a.attempt_emer_gen_start());
+        test_bed.run_with_delta(Duration::from_secs(100));
+
+        test_bed.fail(FailureType::EmergencyGenerator);
+        test_bed.run_with_delta(Duration::from_secs(1));
+
+        assert!(!test_bed.emer_gen_is_powered());
+        assert!(!test_bed.query(|a| a
+            .generator_output_within_normal_parameters_after_processing_power_consumption_report(
+            )));
     }
 
     #[test]
