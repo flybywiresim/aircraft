@@ -126,4 +126,6 @@ export interface ReadonlyFlightPlan<P extends FlightPlanPerformanceData = Flight
   get performanceData(): P;
 
   propagateWindsAt(atIndex: number, result: PropagatedWindEntry[], maxNumEntries: number): PropagatedWindEntry[];
+
+  isDepartureProcedureActive(): boolean;
 }

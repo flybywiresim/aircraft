@@ -4,11 +4,11 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { FlightPlanIndex, FlightPlanManager } from '@fmgc/flightplanning/FlightPlanManager';
-import { FpmConfigs } from '@fmgc/flightplanning/FpmConfig';
+import { FpmConfig } from '@fmgc/flightplanning/FpmConfig';
 import { FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { Airway, AltitudeConstraint, Fix, MagVar, MathUtils, NXDataStore, Waypoint } from '@flybywiresim/fbw-sdk';
 import { Coordinates, Degrees } from 'msfs-geo';
-import { BitFlags, ConsumerValue, EventBus, SimVarValueType } from '@microsoft/msfs-sdk';
+import { Accessible, BitFlags, EventBus, SimVarValueType, Value } from '@microsoft/msfs-sdk';
 import { FixInfoEntry } from '@fmgc/flightplanning/plans/FixInfo';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/legs/FlightPlanLegDefinition';
@@ -31,10 +31,9 @@ import {
   createVectorFromMagnitudeAndDirection,
 } from './data/wind';
 import { FlightPlan } from './plans/FlightPlan';
-import { FlightPhaseManagerEvents } from '../flightphase';
 import { HistoryWind } from '../wind/HistoryWind';
-import { FmgcFlightPhase } from '../../../shared/src/flightphase';
 import { FlightPlanOperationEvents } from '../events/FlightPlanOperationEvents';
+import { AircraftConfig } from './AircraftConfigTypes';
 
 export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanPerformanceData>
   implements FlightPlanInterface<P>
@@ -43,29 +42,30 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 
   private readonly historyWinds = new HistoryWind(this.bus);
 
-  private readonly flightPhase = ConsumerValue.create(
-    this.bus.getSubscriber<FlightPhaseManagerEvents>().on('fmgc_flight_phase'),
-    FmgcFlightPhase.Preflight,
-  );
+  public readonly syncClientID = MathUtils.randomInt32();
 
-  public syncClientID = MathUtils.randomInt32();
+  public readonly batchStack: FlightPlanBatch[] = [];
 
-  public batchStack: FlightPlanBatch[] = [];
+  public readonly useApproachRnpArNaming: Accessible<boolean> = Value.create(false);
+
+  private readonly fpmConfig: FpmConfig;
 
   constructor(
     private readonly bus: EventBus,
     private readonly performanceDataInit: P,
-    private readonly config = FpmConfigs.A320_HONEYWELL_H4,
+    private readonly aircraftConfig: AircraftConfig,
     master = false,
   ) {
+    this.fpmConfig = this.aircraftConfig.fpmConfig;
     this.flightPlanManager = new FlightPlanManager<P>(
       this,
       this.bus,
       this.performanceDataInit,
       this.syncClientID,
       master,
-      this.config,
+      this.fpmConfig,
     );
+    this.useApproachRnpArNaming = Value.create(this.aircraftConfig.fmSymbolConfig.rnpArNaming);
   }
 
   createFlightPlans() {
@@ -221,7 +221,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     // If CI and flight number are set in the active but not in the SEC before we swap, we keep the active plan values.
     // The same is true for the taxi fuel, but only on the A380
     if (
-      this.config.PERSIST_TAXI_FUEL_ON_SEC_SWAP &&
+      this.fpmConfig.PERSIST_TAXI_FUEL_ON_SEC_SWAP &&
       oldTaxiFuel !== null &&
       this.active.performanceData.pilotTaxiFuel.get() === null
     ) {
@@ -345,7 +345,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       const active = this.flightPlanManager.has(FlightPlanIndex.Active)
         ? this.flightPlanManager.get(FlightPlanIndex.Active)
         : null;
-      if (this.config.DRAFT_ON_WIND_EDIT && active && active.hasDraftWindEntries()) {
+      if (this.fpmConfig.DRAFT_ON_WIND_EDIT && active && active.hasDraftWindEntries()) {
         active.insertDraftWindEntries();
         this.bus.getPublisher<FlightPlanOperationEvents>().pub('fms_draft_winds_inserted', null, false, false);
       }
@@ -495,12 +495,12 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     planIndex = FlightPlanIndex.Active,
     alternate = false,
   ): Promise<boolean> {
-    if (!this.config.ALLOW_REVISIONS_ON_TMPY && planIndex === FlightPlanIndex.Temporary) {
+    if (!this.fpmConfig.ALLOW_REVISIONS_ON_TMPY && planIndex === FlightPlanIndex.Temporary) {
       throw new Error('[FMS/FPS] Cannot delete element in temporary flight plan');
     }
 
     let finalIndex: number = planIndex;
-    if (this.config.TMPY_ON_DELETE_WAYPOINT) {
+    if (this.fpmConfig.TMPY_ON_DELETE_WAYPOINT) {
       finalIndex = this.prepareDestructiveModification(planIndex);
     }
 
@@ -513,7 +513,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 
   async insertWaypointBefore(atIndex: number, waypoint: Fix, planIndex = FlightPlanIndex.Active, alternate = false) {
     let finalIndex: number = planIndex;
-    if (this.config.TMPY_ON_INSERT_WAYPOINT) {
+    if (this.fpmConfig.TMPY_ON_INSERT_WAYPOINT) {
       finalIndex = this.prepareDestructiveModification(planIndex);
     }
 
@@ -665,7 +665,9 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     planIndex = FlightPlanIndex.Active,
     alternate?: boolean,
   ): Promise<void> {
-    const finalIndex = this.config.TMPY_ON_CONSTRAINT_EDIT ? this.prepareDestructiveModification(planIndex) : planIndex;
+    const finalIndex = this.fpmConfig.TMPY_ON_CONSTRAINT_EDIT
+      ? this.prepareDestructiveModification(planIndex)
+      : planIndex;
 
     const plan = alternate
       ? this.flightPlanManager.get(finalIndex).alternateFlightPlan
@@ -681,7 +683,9 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     planIndex = FlightPlanIndex.Active,
     alternate = false,
   ): Promise<void> {
-    const finalIndex = this.config.TMPY_ON_CONSTRAINT_EDIT ? this.prepareDestructiveModification(planIndex) : planIndex;
+    const finalIndex = this.fpmConfig.TMPY_ON_CONSTRAINT_EDIT
+      ? this.prepareDestructiveModification(planIndex)
+      : planIndex;
 
     const plan = alternate
       ? this.flightPlanManager.get(finalIndex).alternateFlightPlan
@@ -691,7 +695,9 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
   }
 
   async addOrUpdateCruiseStep(atIndex: number, toAltitude: number, planIndex = FlightPlanIndex.Active): Promise<void> {
-    const finalIndex = this.config.TMPY_ON_CONSTRAINT_EDIT ? this.prepareDestructiveModification(planIndex) : planIndex;
+    const finalIndex = this.fpmConfig.TMPY_ON_CONSTRAINT_EDIT
+      ? this.prepareDestructiveModification(planIndex)
+      : planIndex;
 
     const plan = this.flightPlanManager.get(finalIndex);
 
@@ -699,7 +705,9 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
   }
 
   async removeCruiseStep(atIndex: number, planIndex: FlightPlanIndex = FlightPlanIndex.Active): Promise<void> {
-    const finalIndex = this.config.TMPY_ON_CONSTRAINT_EDIT ? this.prepareDestructiveModification(planIndex) : planIndex;
+    const finalIndex = this.fpmConfig.TMPY_ON_CONSTRAINT_EDIT
+      ? this.prepareDestructiveModification(planIndex)
+      : planIndex;
 
     const plan = this.flightPlanManager.get(finalIndex);
 
@@ -723,7 +731,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 
   async setOverfly(atIndex: number, overfly: boolean, planIndex = FlightPlanIndex.Active, alternate = false) {
     let finalIndex: number = planIndex;
-    if (this.config.TMPY_ON_OVERFLY) {
+    if (this.fpmConfig.TMPY_ON_OVERFLY) {
       finalIndex = this.prepareDestructiveModification(planIndex);
     }
 
@@ -736,7 +744,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 
   async toggleOverfly(atIndex: number, planIndex = FlightPlanIndex.Active, alternate = false) {
     let finalIndex: number = planIndex;
-    if (this.config.TMPY_ON_OVERFLY) {
+    if (this.fpmConfig.TMPY_ON_OVERFLY) {
       finalIndex = this.prepareDestructiveModification(planIndex);
     }
 
@@ -748,7 +756,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
   }
 
   async setFixInfoEntry(index: 1 | 2 | 3 | 4, fixInfo: FixInfoEntry | null, planIndex = FlightPlanIndex.Active) {
-    if (!this.config.ALLOW_NON_ACTIVE_FIX_INFOS && planIndex !== FlightPlanIndex.Active) {
+    if (!this.fpmConfig.ALLOW_NON_ACTIVE_FIX_INFOS && planIndex !== FlightPlanIndex.Active) {
       throw new Error('FIX INFO can only be modified on the active flight plan');
     }
 
@@ -762,7 +770,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     callback: (fixInfo: FixInfoEntry) => FixInfoEntry,
     planIndex = FlightPlanIndex.Active,
   ) {
-    if (!this.config.ALLOW_NON_ACTIVE_FIX_INFOS && planIndex !== FlightPlanIndex.Active) {
+    if (!this.fpmConfig.ALLOW_NON_ACTIVE_FIX_INFOS && planIndex !== FlightPlanIndex.Active) {
       throw new Error('FIX INFO can only be modified on the active flight plan');
     }
 
@@ -772,7 +780,9 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
   }
 
   async setPilotEntryClimbSpeedLimitSpeed(value: number, planIndex = FlightPlanIndex.Active, alternate = false) {
-    const finalIndex = this.config.TMPY_ON_CONSTRAINT_EDIT ? this.prepareDestructiveModification(planIndex) : planIndex;
+    const finalIndex = this.fpmConfig.TMPY_ON_CONSTRAINT_EDIT
+      ? this.prepareDestructiveModification(planIndex)
+      : planIndex;
 
     const plan = this.flightPlanManager.get(finalIndex);
 
@@ -793,7 +803,9 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
   }
 
   async setPilotEntryClimbSpeedLimitAltitude(value: number, planIndex = FlightPlanIndex.Active, alternate = false) {
-    const finalIndex = this.config.TMPY_ON_CONSTRAINT_EDIT ? this.prepareDestructiveModification(planIndex) : planIndex;
+    const finalIndex = this.fpmConfig.TMPY_ON_CONSTRAINT_EDIT
+      ? this.prepareDestructiveModification(planIndex)
+      : planIndex;
 
     const plan = this.flightPlanManager.get(finalIndex);
 
@@ -814,7 +826,9 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
   }
 
   async deleteClimbSpeedLimit(planIndex = FlightPlanIndex.Active, alternate = false) {
-    const finalIndex = this.config.TMPY_ON_CONSTRAINT_EDIT ? this.prepareDestructiveModification(planIndex) : planIndex;
+    const finalIndex = this.fpmConfig.TMPY_ON_CONSTRAINT_EDIT
+      ? this.prepareDestructiveModification(planIndex)
+      : planIndex;
 
     const plan = this.flightPlanManager.get(finalIndex);
 
@@ -830,7 +844,9 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
   }
 
   async setPilotEntryDescentSpeedLimitSpeed(value: number, planIndex = FlightPlanIndex.Active, alternate = false) {
-    const finalIndex = this.config.TMPY_ON_CONSTRAINT_EDIT ? this.prepareDestructiveModification(planIndex) : planIndex;
+    const finalIndex = this.fpmConfig.TMPY_ON_CONSTRAINT_EDIT
+      ? this.prepareDestructiveModification(planIndex)
+      : planIndex;
 
     const plan = this.flightPlanManager.get(finalIndex);
 
@@ -851,7 +867,9 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
   }
 
   async setPilotEntryDescentSpeedLimitAltitude(value: number, planIndex = FlightPlanIndex.Active, alternate = false) {
-    const finalIndex = this.config.TMPY_ON_CONSTRAINT_EDIT ? this.prepareDestructiveModification(planIndex) : planIndex;
+    const finalIndex = this.fpmConfig.TMPY_ON_CONSTRAINT_EDIT
+      ? this.prepareDestructiveModification(planIndex)
+      : planIndex;
 
     const plan = this.flightPlanManager.get(finalIndex);
 
@@ -872,7 +890,9 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
   }
 
   async deleteDescentSpeedLimit(planIndex = FlightPlanIndex.Active, alternate = false) {
-    const finalIndex = this.config.TMPY_ON_CONSTRAINT_EDIT ? this.prepareDestructiveModification(planIndex) : planIndex;
+    const finalIndex = this.fpmConfig.TMPY_ON_CONSTRAINT_EDIT
+      ? this.prepareDestructiveModification(planIndex)
+      : planIndex;
 
     const plan = this.flightPlanManager.get(finalIndex);
 
@@ -1011,7 +1031,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 
   async deleteAllClimbWindEntries() {
     this.deleteClimbWindEntries(FlightPlanIndex.Active);
-    for (let i = 1; i <= this.config.NUM_SECONDARY_FLIGHT_PLANS; i++) {
+    for (let i = 1; i <= this.fpmConfig.NUM_SECONDARY_FLIGHT_PLANS; i++) {
       const sec = this.secondary(i);
       if (sec.isActiveOrCopiedFromActive()) {
         this.deleteClimbWindEntries(sec.index);
@@ -1119,7 +1139,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
       const fp = this.active;
       await this.deleteAllClimbWindEntries();
       const historyWinds = this.historyWinds
-        .getRecordedWinds(fp.performanceData.cruiseFlightLevel.get(), !this.config.SORT_CLIMB_WIND_DESCENDING)
+        .getRecordedWinds(fp.performanceData.cruiseFlightLevel.get(), !this.fpmConfig.SORT_CLIMB_WIND_DESCENDING)
         .filter((entry) => entry.vector.direction !== undefined && entry.vector.magnitude !== undefined);
       if (historyWinds.length > 0) {
         const entries: FlightPlanWindEntry[] = historyWinds.map((entry) => {

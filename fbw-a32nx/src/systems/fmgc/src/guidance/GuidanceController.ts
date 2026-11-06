@@ -3,15 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import {
-  EfisSide,
-  EfisNdMode,
-  ApproachUtils,
-  SimVarString,
-  ApproachType,
-  LegType,
-  MagVar,
-} from '@flybywiresim/fbw-sdk';
+import { EfisSide, EfisNdMode, SimVarString, LegType, MagVar } from '@flybywiresim/fbw-sdk';
 
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { PseudoWaypoint } from '@fmgc/guidance/PseudoWaypoint';
@@ -34,7 +26,7 @@ import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { FMLeg } from '@fmgc/guidance/lnav/legs/FM';
-import { AircraftConfig, FMSymbolsConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
+import { AircraftConfig } from '@fmgc/flightplanning/AircraftConfigTypes';
 import { LnavDriver } from './lnav/LnavDriver';
 import { VnavDriver } from './vnav/VnavDriver';
 import { XFLeg } from './lnav/legs/XF';
@@ -88,8 +80,6 @@ export class GuidanceController {
   pseudoWaypoints: PseudoWaypoints;
 
   efisVectors: EfisVectors;
-
-  symbolConfig: FMSymbolsConfig;
 
   get activeGeometry(): Geometry | null {
     return this.getGeometryForFlightPlan(FlightPlanIndex.Active);
@@ -166,9 +156,6 @@ export class GuidanceController {
     this.bus.getSubscriber<FlightPhaseManagerEvents>().on('fmgc_flight_phase'),
     FmgcFlightPhase.Preflight,
   );
-
-  private readonly approachIdentSize: number;
-
   private activeLegSecondsToGo: number | null;
 
   public getActiveLegSecondsToGo(): number | null {
@@ -191,8 +178,6 @@ export class GuidanceController {
     if (this.acConfig.lnavConfig.EMIT_END_OF_VD_MARKER && (state?.mode !== ndMode || state?.range !== ndRange)) {
       this.pseudoWaypoints.acceptEfisParameters();
     }
-
-    this.updateEfisApproachMessage();
   }
 
   private updateMapPartlyDisplayed() {
@@ -220,45 +205,6 @@ export class GuidanceController {
     SimVar.SetSimVarValue('L:A32NX_EFIS_L_TO_WPT_IDENT_1', 'string', efisVars[1].toString());
     SimVar.SetSimVarValue('L:A32NX_EFIS_R_TO_WPT_IDENT_0', 'string', efisVars[0].toString());
     SimVar.SetSimVarValue('L:A32NX_EFIS_R_TO_WPT_IDENT_1', 'string', efisVars[1].toString());
-  }
-
-  private updateEfisApproachMessage() {
-    let apprMsg = '';
-
-    const phase = this.flightPhase.get();
-
-    if (this.symbolConfig.publishDepartureIdent && phase < FmgcFlightPhase.Cruise) {
-      if (this.flightPlanService.active.isDepartureProcedureActive) {
-        apprMsg = this.flightPlanService.active.originDeparture.ident.padEnd(this.approachIdentSize);
-      }
-    } else {
-      const runway = this.flightPlanService.active.destinationRunway;
-      if (runway) {
-        const distanceToDestination = this.getAlongTrackDistanceToDestination() ?? -1;
-
-        if (phase > FmgcFlightPhase.Cruise || (phase === FmgcFlightPhase.Cruise && distanceToDestination < 250)) {
-          const appr = this.flightPlanService.active.approach;
-          // Nothing is shown on the ND for runway-by-itself approaches
-          apprMsg =
-            appr && appr.type !== ApproachType.Unknown
-              ? ApproachUtils.longApproachName(appr) +
-                (appr.authorisationRequired && this.symbolConfig.showRnpArLabel ? '(RNP)' : '').padEnd(
-                  this.approachIdentSize,
-                )
-              : '';
-        }
-      }
-    }
-
-    if (apprMsg !== this.approachMessage) {
-      this.approachMessage = apprMsg;
-      const apprMsgVars = SimVarString.pack(apprMsg, this.approachIdentSize);
-      // setting the simvar as a number greater than about 16 million causes precision error > 1... but this works..
-      SimVar.SetSimVarValue('L:A32NX_EFIS_L_APPR_MSG_0', 'string', apprMsgVars[0].toString());
-      SimVar.SetSimVarValue('L:A32NX_EFIS_L_APPR_MSG_1', 'string', apprMsgVars[1].toString());
-      SimVar.SetSimVarValue('L:A32NX_EFIS_R_APPR_MSG_0', 'string', apprMsgVars[0].toString());
-      SimVar.SetSimVarValue('L:A32NX_EFIS_R_APPR_MSG_1', 'string', apprMsgVars[1].toString());
-    }
   }
 
   private updateEfisData() {
@@ -337,8 +283,6 @@ export class GuidanceController {
     );
     this.pseudoWaypoints = new PseudoWaypoints(flightPlanService, this, this.atmosphericConditions, this.acConfig);
     this.efisVectors = new EfisVectors(this.bus, this.flightPlanService, this, efisInterfaces);
-    this.symbolConfig = acConfig.fmSymbolConfig;
-    this.approachIdentSize = this.symbolConfig.showRnpArLabel ? 14 : 9;
     this.bus
       .getSubscriber<FlightPlanOperationEvents>()
       .on('fms_set_hold_immediate_exit')
