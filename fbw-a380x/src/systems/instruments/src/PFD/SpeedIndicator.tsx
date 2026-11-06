@@ -16,8 +16,8 @@ import {
 import {
   Arinc429ConsumerSubject,
   Arinc429LocalVarConsumerSubject,
+  Arinc429Register,
   Arinc429RegisterSubject,
-  Arinc429Word,
   Arinc429WordData,
   ArincEventBus,
 } from '@flybywiresim/fbw-sdk';
@@ -157,7 +157,7 @@ class VAlphaProtBar extends DisplayComponent<{
 
   private VAprotIndicator = FSComponent.createRef<SVGPathElement>();
 
-  private airSpeed = new Arinc429Word(0);
+  private airSpeed: Arinc429WordData = Arinc429Register.empty();
 
   private vAlphaProt = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_v_alpha_prot'));
 
@@ -480,11 +480,11 @@ class VMaxBar extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private VMaxIndicator = FSComponent.createRef<SVGPathElement>();
 
-  private airSpeed = new Arinc429Word(0);
+  private airSpeed: Arinc429WordData = Arinc429Register.empty();
 
   private readonly vMax = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_v_max'));
 
-  private staticPressure = new Arinc429Word(0);
+  private staticPressure: Arinc429WordData = Arinc429Register.empty();
 
   private setVMaxBarPath() {
     const vMax = this.vMax.get().isNormalOperation() ? this.vMax.get().value : this.computeFallbackVMax();
@@ -553,7 +553,7 @@ class VStallWarnBar extends DisplayComponent<{
 
   private VStallWarnIndicator = FSComponent.createRef<SVGPathElement>();
 
-  private airSpeed = new Arinc429Word(0);
+  private airSpeed: Arinc429WordData = Arinc429Register.empty();
 
   private readonly vStallWarn = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_v_alpha_stall_warn'));
 
@@ -629,7 +629,7 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
 
   private onGround = Subject.create(true);
 
-  private airSpeed = new Arinc429Word(0);
+  private airSpeed: Arinc429WordData = Arinc429Register.empty();
 
   private leftMainGearCompressed: boolean;
 
@@ -851,7 +851,7 @@ class VLsBar extends DisplayComponent<{ readonly bus: ArincEventBus }> {
 
   private readonly vStallWarn = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_v_alpha_stall_warn'));
 
-  private airSpeed = new Arinc429Word(0);
+  private airSpeed: Arinc429WordData = Arinc429Register.empty();
 
   private readonly vls = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_v_ls'));
 
@@ -912,7 +912,7 @@ class VAlphaLimBar extends DisplayComponent<{
 
   private VAlimIndicator = FSComponent.createRef<SVGPathElement>();
 
-  private airSpeed = new Arinc429Word(0);
+  private airSpeed: Arinc429WordData = Arinc429Register.empty();
 
   private readonly vAlphaLim = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_v_alpha_lim'));
 
@@ -1195,7 +1195,9 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus }> {
 class SpeedMargins extends DisplayComponent<{ bus: ArincEventBus }> {
   private shouldShowMargins = false;
 
-  private currentSpeed = Subject.create(Arinc429Word.empty());
+  private currentSpeed = Arinc429ConsumerSubject.create(
+    this.props.bus.getArincSubscriber<Arinc429Values>().on('speedAr').withArinc429Precision(2),
+  );
 
   private upperSpeedMarginVisibility = Subject.create<'visible' | 'hidden'>('hidden');
 
@@ -1213,11 +1215,6 @@ class SpeedMargins extends DisplayComponent<{ bus: ArincEventBus }> {
       .on('showSpeedMargins')
       .whenChanged()
       .handle((active) => (this.shouldShowMargins = active));
-
-    sub
-      .on('speedAr')
-      .withArinc429Precision(2)
-      .handle((s) => this.currentSpeed.set(s));
 
     sub.on('upperSpeedMargin').handle(this.updateMargin(this.upperSpeedMarginVisibility, this.upperMarginTransform));
     sub.on('lowerSpeedMargin').handle(this.updateMargin(this.lowerSpeedMarginVisibility, this.lowerMarginTransform));

@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -12,10 +12,13 @@ import {
   MappedSubject,
   Subject,
   Subscribable,
+  Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
 import {
   EfisNdMode,
+  EFIS_VECTORS_GROUPS,
+  EfisVectorsEvents,
   EfisVectorsGroup,
   NdSymbol,
   NdSymbolTypeFlags,
@@ -64,6 +67,7 @@ const DEFAULT_CLIP = new Path2D(
 
 const DASHES = [15, 12];
 const NO_DASHES = [];
+const NO_VECTORS: readonly PathVector[] = [];
 
 export interface CanvasMapProps {
   bus: EventBus;
@@ -73,6 +77,8 @@ export interface CanvasMapProps {
 }
 
 export class CanvasMap extends DisplayComponent<CanvasMapProps> {
+  private readonly vectorSubscriptions: Subscription[] = [];
+
   private readonly canvasRef = FSComponent.createRef<HTMLCanvasElement>();
 
   private readonly touchContainerRef = FSComponent.createRef<HTMLDivElement>();
@@ -95,7 +101,7 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
 
   private readonly mapRecomputing = Subject.create<boolean>(false);
 
-  private readonly vectors: { [k in EfisVectorsGroup]: PathVector[] } = {
+  private readonly vectors: { [k in EfisVectorsGroup]: readonly PathVector[] } = {
     [EfisVectorsGroup.ACTIVE]: [],
     [EfisVectorsGroup.DASHED]: [],
     [EfisVectorsGroup.OFFSET]: [],
@@ -155,7 +161,7 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
   }
 
   private setupCallbacks() {
-    const sub = this.props.bus.getSubscriber<NDSimvars & FmsSymbolsData & ClockEvents>();
+    const sub = this.props.bus.getSubscriber<NDSimvars & FmsSymbolsData & EfisVectorsEvents & ClockEvents>();
 
     this.mapCenterLat.sub(() => {
       this.handleRecomputeMapParameters();
@@ -195,54 +201,14 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
       this.handleNewSymbols(data);
     });
 
-    sub.on('vectorsActive').handle((data: PathVector[]) => {
-      this.vectors[EfisVectorsGroup.ACTIVE].length = 0;
-      if (data) {
-        this.vectors[EfisVectorsGroup.ACTIVE].push(...data);
-      }
-    });
-
-    sub.on('vectorsActiveEosid').handle((data: PathVector[]) => {
-      this.vectors[EfisVectorsGroup.ACTIVE_EOSID].length = 0;
-      if (data) {
-        this.vectors[EfisVectorsGroup.ACTIVE_EOSID].push(...data);
-      }
-    });
-
-    sub.on('vectorsDashed').handle((data: PathVector[]) => {
-      this.vectors[EfisVectorsGroup.DASHED].length = 0;
-      if (data) {
-        this.vectors[EfisVectorsGroup.DASHED].push(...data);
-      }
-    });
-
-    sub.on('vectorsTemporary').handle((data: PathVector[]) => {
-      this.vectors[EfisVectorsGroup.TEMPORARY].length = 0;
-      if (data) {
-        this.vectors[EfisVectorsGroup.TEMPORARY].push(...data);
-      }
-    });
-
-    sub.on('vectorsMissed').handle((data: PathVector[]) => {
-      this.vectors[EfisVectorsGroup.MISSED].length = 0;
-      if (data) {
-        this.vectors[EfisVectorsGroup.MISSED].push(...data);
-      }
-    });
-
-    sub.on('vectorsAlternate').handle((data: PathVector[]) => {
-      this.vectors[EfisVectorsGroup.ALTERNATE].length = 0;
-      if (data) {
-        this.vectors[EfisVectorsGroup.ALTERNATE].push(...data);
-      }
-    });
-
-    sub.on('vectorsSecondary').handle((data: PathVector[]) => {
-      this.vectors[EfisVectorsGroup.SECONDARY].length = 0;
-      if (data) {
-        this.vectors[EfisVectorsGroup.SECONDARY].push(...data);
-      }
-    });
+    for (const topic of Object.keys(EFIS_VECTORS_GROUPS) as (keyof EfisVectorsEvents)[]) {
+      const group = EFIS_VECTORS_GROUPS[topic];
+      this.vectorSubscriptions.push(
+        sub.on(topic).handle((vectors) => {
+          this.vectors[group] = vectors ?? NO_VECTORS;
+        }),
+      );
+    }
 
     sub.on('traffic').handle((data: NdTraffic[]) => {
       this.handleNewTraffic(data);
@@ -256,6 +222,11 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
 
         this.lastFrameTimestamp = value;
       });
+  }
+
+  public destroy(): void {
+    this.vectorSubscriptions.forEach((subscription) => subscription.destroy());
+    super.destroy();
   }
 
   private setupEvents() {

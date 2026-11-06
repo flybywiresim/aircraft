@@ -12,14 +12,14 @@ import {
   Subscribable,
   ConsumerSubject,
   Subject,
+  Subscription,
 } from '@microsoft/msfs-sdk';
-import { MathUtils, EfisNdMode, Arinc429ConsumerSubject } from '@flybywiresim/fbw-sdk';
+import { MathUtils, EfisNdMode, EfisVectorsEvents, Arinc429ConsumerSubject } from '@flybywiresim/fbw-sdk';
 
 import { NDSimvars } from '../NDSimvarPublisher';
 import { GenericDisplayManagementEvents } from '../types/GenericDisplayManagementEvents';
 import { GenericFcuEvents } from '../types/GenericFcuEvents';
 import { GenericFlightGuidanceEvents } from '../types/GenericFlightGuidanceEvents';
-import { FmsSymbolsData } from '../FmsSymbolsPublisher';
 
 export interface TrackLineProps {
   bus: EventBus;
@@ -32,10 +32,12 @@ const TRACK_LINE_Y_POSITION = {
 };
 
 export class TrackLine extends DisplayComponent<TrackLineProps> {
+  private readonly subscriptions: Subscription[] = [];
+
   private readonly lineRef = FSComponent.createRef<SVGLineElement>();
 
   private readonly sub = this.props.bus.getSubscriber<
-    GenericDisplayManagementEvents & GenericFlightGuidanceEvents & NDSimvars & GenericFcuEvents & FmsSymbolsData
+    GenericDisplayManagementEvents & GenericFlightGuidanceEvents & NDSimvars & GenericFcuEvents & EfisVectorsEvents
   >();
 
   private readonly ndMode = ConsumerSubject.create(this.sub.on('ndMode').whenChanged(), EfisNdMode.ARC);
@@ -72,9 +74,7 @@ export class TrackLine extends DisplayComponent<TrackLineProps> {
     this.y,
   );
 
-  private readonly areActiveVectorsTransmitted = ConsumerSubject.create(this.sub.on('vectorsActive'), []).map(
-    (vectors) => vectors !== undefined && vectors !== null,
-  );
+  private readonly areActiveVectorsTransmitted = Subject.create(false);
 
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
@@ -82,10 +82,24 @@ export class TrackLine extends DisplayComponent<TrackLineProps> {
     this.headingWord.setConsumer(this.sub.on('heading'));
     this.trackWord.setConsumer(this.sub.on('track'));
 
-    this.headingWord.sub(() => this.handleLineVisibility(), true);
-    this.trackWord.sub(() => this.handleLineVisibility(), true);
-    this.ndMode.sub(() => this.handleLineVisibility(), true);
-    this.areActiveVectorsTransmitted.sub(() => this.handleLineVisibility(), true);
+    this.subscriptions.push(
+      this.sub.on('vectorsActive').handle((vectors) => this.areActiveVectorsTransmitted.set(vectors !== undefined)),
+      this.headingWord.sub(() => this.handleLineVisibility(), true),
+      this.trackWord.sub(() => this.handleLineVisibility(), true),
+      this.ndMode.sub(() => this.handleLineVisibility(), true),
+      this.areActiveVectorsTransmitted.sub(() => this.handleLineVisibility(), true),
+    );
+  }
+
+  public destroy(): void {
+    this.subscriptions.forEach((subscription) => subscription.destroy());
+    this.transform.destroy();
+    this.y.destroy();
+    this.rotate.destroy();
+    this.headingWord.destroy();
+    this.trackWord.destroy();
+    this.ndMode.destroy();
+    super.destroy();
   }
 
   private handleLineVisibility() {
