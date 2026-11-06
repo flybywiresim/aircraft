@@ -2289,24 +2289,24 @@
         </Sound>
 
         <!-- ROP/ROW warnings =====================================================================-->
-        <Sound WwiseEvent="brake_max_braking" WwiseData="true" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_AUDIO_ROP_MAX_BRAKING" Continuous="true">
-            <Range LowerBound="1"/>
+        <Sound WwiseEvent="brake_max_braking" WwiseData="true" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="true">
+            <Range LowerBound="5" UpperBound="5"/>
         </Sound>
 
-        <Sound WwiseEvent="set_max_reverse" WwiseData="true" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_AUDIO_ROW_SET_MAX_REVERSE" Continuous="true">
-            <Range LowerBound="1"/>
+        <Sound WwiseEvent="set_max_reverse" WwiseData="true" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="true">
+            <Range LowerBound="4" UpperBound="4"/>
         </Sound>
 
-        <Sound WwiseEvent="keep_max_reverse" WwiseData="true" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_AUDIO_ROP_KEEP_MAX_REVERSE" Continuous="false">
-            <Range LowerBound="1"/>
+        <Sound WwiseEvent="keep_max_reverse" WwiseData="true" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="3" UpperBound="3"/>
         </Sound>
 
-        <Sound WwiseEvent="runway_too_short" WwiseData="true" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_AUDIO_ROW_RWY_TOO_SHORT" Continuous="true">
-            <Range LowerBound="1"/>
+        <Sound WwiseEvent="runway_too_short" WwiseData="true" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="true">
+            <Range LowerBound="2" UpperBound="2"/>
         </Sound>
 
-        <Sound WwiseEvent="autobrake_off" WwiseData="true" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_AUDIO_AUTOBRAKE_OFF" Continuous="false">
-            <Range LowerBound="1"/>
+        <Sound WwiseEvent="autobrake_off" WwiseData="true" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="1" UpperBound="1"/>
         </Sound>
 
         <Sound WwiseData="true" WwiseEvent="improved_tone_caution" NodeName="PEDALS_LEFT" ViewPoint="Inside" LocalVar="A32NX_FWC_SC" Continuous="false">
@@ -2314,66 +2314,144 @@
         </Sound>
 
         <!-- FWS callouts ====================================================================================-->
-        <Sound WwiseData="true" WwiseEvent="new_5" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_FWS_AUDIO_5" Continuous="false">
-            <Range LowerBound="1"/>
+        <Sound WwiseData="true" WwiseEvent="new_5" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="46" UpperBound="46"/>
         </Sound>
-        <Sound WwiseData="true" WwiseEvent="new_10" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_FWS_AUDIO_10" Continuous="false">
-            <Range LowerBound="1"/>
+        <Sound WwiseData="true" WwiseEvent="new_10" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="41" UpperBound="41"/>
         </Sound>
-        <Sound WwiseData="true" WwiseEvent="new_20" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_FWS_AUDIO_20" Continuous="false">
-            <Range LowerBound="1"/>
+        <Sound WwiseData="true" WwiseEvent="19" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="32" UpperBound="32"/>
         </Sound>
-        <Sound WwiseData="true" WwiseEvent="new_30" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_FWS_AUDIO_30" Continuous="false">
-            <Range LowerBound="1"/>
+        <Sound WwiseData="true" WwiseEvent="18" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="33" UpperBound="33"/>
         </Sound>
-        <Sound WwiseData="true" WwiseEvent="new_40" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_FWS_AUDIO_40" Continuous="false">
-            <Range LowerBound="1"/>
+        <Sound WwiseData="true" WwiseEvent="17" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="34" UpperBound="34"/>
         </Sound>
-        <Sound WwiseData="true" WwiseEvent="new_50" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_FWS_AUDIO_50" Continuous="false">
-            <Range LowerBound="1"/>
+        <Sound WwiseData="true" WwiseEvent="16" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="35" UpperBound="35"/>
         </Sound>
-        <Sound WwiseData="true" WwiseEvent="new_100" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_FWS_AUDIO_100" Continuous="false">
-            <Range LowerBound="1"/>
+        <Sound WwiseData="true" WwiseEvent="15" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="36" UpperBound="36"/>
         </Sound>
-        <Sound WwiseData="true" WwiseEvent="new_200" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_FWS_AUDIO_200" Continuous="false">
-            <Range LowerBound="1"/>
+        <Sound WwiseData="true" WwiseEvent="14" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="37" UpperBound="37"/>
         </Sound>
-        <Sound WwiseData="true" WwiseEvent="new_300" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_FWS_AUDIO_300" Continuous="false">
-            <Range LowerBound="1"/>
+        <Sound WwiseData="true" WwiseEvent="13" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="38" UpperBound="38"/>
         </Sound>
-        <Sound WwiseData="true" WwiseEvent="new_400" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_FWS_AUDIO_400" Continuous="false">
-            <Range LowerBound="1"/>
+        <Sound WwiseData="true" WwiseEvent="12" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="39" UpperBound="39"/>
         </Sound>
-        <Sound WwiseData="true" WwiseEvent="new_500" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_FWS_AUDIO_500" Continuous="false">
-            <Range LowerBound="1"/>
+        <Sound WwiseData="true" WwiseEvent="11" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="40" UpperBound="40"/>
         </Sound>
-        <Sound WwiseData="true" WwiseEvent="new_1000" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_FWS_AUDIO_1000" Continuous="false">
-            <Range LowerBound="1"/>
+        <Sound WwiseData="true" WwiseEvent="9" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="42" UpperBound="42"/>
         </Sound>
-        <Sound WwiseData="true" WwiseEvent="new_2000" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_FWS_AUDIO_2000" Continuous="false">
-            <Range LowerBound="1"/>
+        <Sound WwiseData="true" WwiseEvent="8" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="43" UpperBound="43"/>
         </Sound>
-        <Sound WwiseData="true" WwiseEvent="new_2500" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_FWS_AUDIO_2500" Continuous="false">
-            <Range LowerBound="1"/>
+        <Sound WwiseData="true" WwiseEvent="7" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="44" UpperBound="44"/>
         </Sound>
-        <Sound WwiseData="true" WwiseEvent="new_2_500" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_FWS_AUDIO_25_00" Continuous="false">
-            <Range LowerBound="1"/>
+        <Sound WwiseData="true" WwiseEvent="6" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="45" UpperBound="45"/>
+        </Sound>
+        <Sound WwiseData="true" WwiseEvent="4" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="47" UpperBound="47"/>
+        </Sound>
+        <Sound WwiseData="true" WwiseEvent="3" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="48" UpperBound="48"/>
+        </Sound>
+        <Sound WwiseData="true" WwiseEvent="2" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="49" UpperBound="49"/>
+        </Sound>
+        <Sound WwiseData="true" WwiseEvent="1" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="50" UpperBound="50"/>
+        </Sound>
+        <Sound WwiseData="true" WwiseEvent="new_20" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="31" UpperBound="31"/>
+        </Sound>
+        <Sound WwiseData="true" WwiseEvent="new_30" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="30" UpperBound="30"/>
+        </Sound>
+        <Sound WwiseData="true" WwiseEvent="new_40" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="29" UpperBound="29"/>
+        </Sound>
+        <Sound WwiseData="true" WwiseEvent="new_50" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="28" UpperBound="28"/>
+        </Sound>
+        <Sound WwiseData="true" WwiseEvent="new_100" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="21" UpperBound="21"/>
+        </Sound>
+        <Sound WwiseData="true" WwiseEvent="1c" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="22" UpperBound="22"/>
+        </Sound>
+        <Sound WwiseData="true" WwiseEvent="hundredand" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="23" UpperBound="23"/>
+        </Sound>
+        <Sound WwiseData="true" WwiseEvent="90" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="24" UpperBound="24"/>
+        </Sound>
+        <Sound WwiseData="true" WwiseEvent="80" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="25" UpperBound="25"/>
+        </Sound>
+        <Sound WwiseData="true" WwiseEvent="70" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="26" UpperBound="26"/>
+        </Sound>
+        <Sound WwiseData="true" WwiseEvent="60" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="27" UpperBound="27"/>
+        </Sound>
+        <Sound WwiseData="true" WwiseEvent="new_200" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="19" UpperBound="19"/>
+        </Sound>
+        <Sound WwiseData="true" WwiseEvent="2c" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="20" UpperBound="20"/>
+        </Sound>
+        <Sound WwiseData="true" WwiseEvent="new_300" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="17" UpperBound="17"/>
+        </Sound>
+        <Sound WwiseData="true" WwiseEvent="3c" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="18" UpperBound="18"/>
+        </Sound>
+        <Sound WwiseData="true" WwiseEvent="new_400" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="15" UpperBound="15"/>
+        </Sound>
+        <Sound WwiseData="true" WwiseEvent="4c" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="16" UpperBound="16"/>
+        </Sound>
+        <Sound WwiseData="true" WwiseEvent="new_500" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="14" UpperBound="14"/>
+        </Sound>
+        <Sound WwiseData="true" WwiseEvent="new_1000" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="13" UpperBound="13"/>
+        </Sound>
+        <Sound WwiseData="true" WwiseEvent="new_2000" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="12" UpperBound="12"/>
+        </Sound>
+        <Sound WwiseData="true" WwiseEvent="new_2500" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="10" UpperBound="10"/>
+        </Sound>
+        <Sound WwiseData="true" WwiseEvent="new_2_500" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="11" UpperBound="11"/>
         </Sound>
         <!-- TODO this should be Continuous false once the silence is removed from the sample -->
-        <Sound WwiseData="true" WwiseEvent="new_retard" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_FWS_AUDIO_RETARD" Continuous="true">
-            <Range LowerBound="1"/>
+        <Sound WwiseData="true" WwiseEvent="new_retard" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="true">
+            <Range LowerBound="51" UpperBound="51"/>
         </Sound>
-        <Sound WwiseData="true" WwiseEvent="aural_100above" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_FWS_AUDIO_100_ABOVE" Continuous="false">
-            <Range LowerBound="1"/>
+        <Sound WwiseData="true" WwiseEvent="aural_100above" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="9" UpperBound="9"/>
         </Sound>
-        <Sound WwiseData="true" WwiseEvent="aural_minimumnew" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_FWS_AUDIO_MINIMUMS" Continuous="false">
-            <Range LowerBound="1"/>
+        <Sound WwiseData="true" WwiseEvent="aural_minimumnew" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="false">
+            <Range LowerBound="8" UpperBound="8"/>
         </Sound>
-        <Sound WwiseEvent="aural_speed" WwiseData="true" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_FWS_AUDIO_SPEED" Continuous="true">
-            <Range LowerBound="1"/>
+        <Sound WwiseEvent="aural_speed" WwiseData="true" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="true">
+            <Range LowerBound="7" UpperBound="7"/>
         </Sound>
-        <Sound WwiseEvent="aural_pitch" WwiseData="true" NodeName="SOUND_SPEAKER_LEFT" LocalVar="A32NX_FWS_AUDIO_PITCH" Continuous="true">
-            <Range LowerBound="1"/>
+        <Sound WwiseEvent="aural_pitch" WwiseData="true" NodeName="SOUND_SPEAKER_LEFT" LocalVarEX1="A32NX_FWS_AUDIO_SYNTHETIC_VOICE" Units="ENUM" Continuous="true">
+            <Range LowerBound="6" UpperBound="6"/>
         </Sound>
     </SimVarSounds>
 
