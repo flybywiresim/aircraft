@@ -169,7 +169,7 @@ FcdcBus Fcdc::getBusOutputs() {
   output.fcdcFgDiscreteWord2.setBit(25, land3FailPassiveInop);
   output.fcdcFgDiscreteWord2.setBit(26, land3FailOperationalInop);
 
-  output.fcdcFgDiscreteWord3.setSsm(ssm);  // Add FE bits here until FCDC rewrite.
+  output.fcdcFgDiscreteWord3.setSsm(ssm);  // Add FE/FG bits here until FCDC rewrite.
   output.fcdcFgDiscreteWord3.setBit(11,
                                     bitFromValueOr(busInputs.prims[masterPrimIndex].fe.discrete_word_1, 12, false));  // SPEED SPEED SPEED
   output.fcdcFgDiscreteWord3.setBit(12, bitFromValueOr(busInputs.prims[masterPrimIndex].fe.discrete_word_1, 13, false));    // PITCH PITCH
@@ -179,6 +179,10 @@ FcdcBus Fcdc::getBusOutputs() {
   output.fcdcFgDiscreteWord3.setBit(16, modeReversionTripleClickMtrig.read() || capabilityTripleClickMtrig.read());
   output.fcdcFgDiscreteWord3.setBit(17, btvTripleClickMtrig.read());
   output.fcdcFgDiscreteWord3.setBit(18, false);
+  output.fcdcFgDiscreteWord3.setBit(19,
+                                    bitFromValueOr(busInputs.prims[masterPrimIndex].fg.ats_fma_discrete_word, 26, false));  // CLB REQUEST
+  output.fcdcFgDiscreteWord3.setBit(20,
+                                    bitFromValueOr(busInputs.prims[masterPrimIndex].fg.ats_fma_discrete_word, 27, false));  // MCT REQUEST
 
   output.landingFctDiscreteWord.setSsm(ssm);
   output.landingFctDiscreteWord.setBit(11, rowLost);                    // ROW LOST

@@ -3875,6 +3875,9 @@ export class FwsCore {
 
     this.autoThrustLimited.set(this.autoThrustLimitedConfNode.read() && this.autoThrustLimitedDelayNode);
 
+    this.autoThrustLimitedClb = this.fcdc1FgDiscreteWord3.get().bitValueOr(19, false);
+    this.autoThrustLimitedMct = this.fcdc1FgDiscreteWord3.get().bitValueOr(20, false);
+
     // ENG THRUST LOCKED
     this.engineThrustLocked =
       this.ecu1MaintenanceWord.get().bitValueOr(12, false) ||
