@@ -129,10 +129,9 @@ clang++ \
   "${DIR}/src/model/A380SecComputer.cpp" \
   "${DIR}/src/model/A380FadecComputer_data.cpp" \
   "${DIR}/src/model/A380FadecComputer.cpp" \
-  "${DIR}/src/model/A380PitchNormalLaw.cpp" \
-  "${DIR}/src/model/A380PitchAlternateLaw.cpp" \
+  "${DIR}/src/model/A380PitchNzLaw.cpp" \
   "${DIR}/src/model/A380PitchDirectLaw.cpp" \
-  "${DIR}/src/model/A380LateralNormalLaw.cpp" \
+  "${DIR}/src/model/A380LateralYStarLaw.cpp" \
   "${DIR}/src/model/A380LateralDirectLaw.cpp" \
   "${DIR}/src/model/A380FcuComputer_data.cpp" \
   "${DIR}/src/model/A380FcuComputer.cpp" \
