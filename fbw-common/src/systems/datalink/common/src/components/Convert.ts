@@ -1,15 +1,29 @@
 // @ts-strict-ignore
-//  Copyright (c) 2022 FlyByWire Simulations
+//  Copyright (c) 2022-2026 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-export function wordWrap(text: string, maxLength: number) {
+/**
+ * Wraps text into lines of at most maxLength characters.
+ * @param text the text to wrap
+ * @param maxLength the maximum line length
+ * @param keepLineBreaks when true, a line break in the text starts a new line and slashes are kept,
+ * so a received telex keeps the sender's layout. Otherwise line breaks are treated as spaces.
+ */
+export function wordWrap(text: string, maxLength: number, keepLineBreaks = false) {
   const result = [];
   let line = [];
   let length = 0;
 
-  const words = text.match(/[-.:*@_A-Za-z0-9]+|\[\s+\]|\n/g);
-  for (const word of words) {
+  const words = keepLineBreaks
+    ? text.match(/[-.:*@_/A-Za-z0-9]+|\[\s+\]|\n/g)
+    : text.match(/[-.:*@_A-Za-z0-9]+|\[\s+\]|\n/g);
+  for (const word of words ?? []) {
     if (word === '\n') {
+      if (keepLineBreaks && line.length > 0) {
+        result.push(line.join(' ').toUpperCase());
+        line = [];
+        length = 0;
+      }
       continue;
     }
 
