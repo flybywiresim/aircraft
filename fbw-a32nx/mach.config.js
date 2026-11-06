@@ -39,6 +39,7 @@ module.exports = {
     msfsAvionicsInstrument('PFD'),
     msfsAvionicsInstrument('SDv2'),
     msfsAvionicsInstrument('popup'),
+    msfsAvionicsInstrument('HUD'),
     msfsAvionicsInstrument('RTPI'),
 
     reactInstrument('SD'),
