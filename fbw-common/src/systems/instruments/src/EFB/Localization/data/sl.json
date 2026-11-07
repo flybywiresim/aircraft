@@ -587,6 +587,7 @@
     "AircraftOptionsPinPrograms": {
       "AccelerationHeight": "Višina pospešitve (ft)",
       "EngineOutAccelerationHeight": "Višina pospeška ob izgubi motorja (ft)",
+      "hudXwindFpvType": "Crosswind FPV Type ",
       "IsisBaroUnit": "ISIS baro enota",
       "IsisMetricAltitude": "ISIS metrična nadmorska višina",
       "LatLonExtendedFormat": "FMGC - format zapisa točk zemljepisne dolžine/širine",

@@ -587,6 +587,7 @@
     "AircraftOptionsPinPrograms": {
       "AccelerationHeight": "Akcelerační výška (ft AGL)",
       "EngineOutAccelerationHeight": "Akcelerační výška s vysazeným motorem - EO ACC (ft AGL)",
+      "hudXwindFpvType": "Crosswind FPV Type ",
       "IsisBaroUnit": "ISIS jednotky tlaku",
       "IsisMetricAltitude": "ISIS metrická nadmořská výška",
       "LatLonExtendedFormat": "Formát FMGC Lat/Lon Waypointů",
