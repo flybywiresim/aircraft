@@ -26,8 +26,6 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
 
   0.0,
 
-  0.0,
-
   12.0,
 
   15.0,
@@ -203,6 +201,8 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
   19.0,
 
   19.0,
+
+  21.0,
 
   21.0,
 
@@ -334,9 +334,9 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
 
   -17.0,
 
-  -12.0,
-
   -1.0,
+
+  -12.0,
 
   -20.0,
 
@@ -434,9 +434,9 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
 
   17.0,
 
-  12.0,
-
   1.0,
+
+  12.0,
 
   20.0,
 
@@ -1807,6 +1807,31 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
             {
               0U,
               0.0F
+            },
+
+            {
+              0U,
+              0.0F
+            },
+
+            {
+              0U,
+              0.0F
+            },
+
+            {
+              0U,
+              0.0F
+            },
+
+            {
+              0U,
+              0.0F
+            },
+
+            {
+              0U,
+              0.0F
             }
           },
 
@@ -2042,6 +2067,31 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
 
         {
           {
+            {
+              0U,
+              0.0F
+            },
+
+            {
+              0U,
+              0.0F
+            },
+
+            {
+              0U,
+              0.0F
+            },
+
+            {
+              0U,
+              0.0F
+            },
+
+            {
+              0U,
+              0.0F
+            },
+
             {
               0U,
               0.0F
@@ -3527,20 +3577,21 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
       false,
       false,
       false,
-      false,
-      0.0,
-      false,
-      false,
-      false,
-      false,
-      false,
-      0.0,
       0.0,
       false,
       0.0,
       false,
       false,
       false,
+      false,
+      false,
+      0.0,
+      0.0,
+      false,
+      0.0,
+      false,
+      false,
+      false,
       0.0,
       false,
       false,
@@ -3552,6 +3603,8 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
       0.0,
       0.0,
       false,
+      0.0,
+      0.0,
       0.0,
       0.0
     },
@@ -4134,6 +4187,31 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
         {
           0U,
           0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
         }
       },
 
@@ -4382,13 +4460,7 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
 
   0.0,
 
-  5.0,
-
-  0.0,
-
   -25.0,
-
-  0.0,
 
   -1.0,
 
@@ -4399,6 +4471,10 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
   3.5,
 
   -11.0,
+
+  5.0,
+
+  0.0,
 
   -15.0,
 
@@ -4536,6 +4612,18 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
 
   { -4.0, -3.0, -1.0, 0.0 },
 
+
+  { 30.0, 30.0, 25.0, 20.0, 13.0, 9.5, 7.6, 6.1, 6.1 },
+
+
+  { 140.0, 165.0, 175.0, 183.0, 219.0, 254.0, 275.0, 303.0, 340.0 },
+
+
+  { 30.0, 30.0, 25.0, 25.0, 21.6, 9.5, 7.6, 6.1, 6.1 },
+
+
+  { 140.0, 165.0, 175.0, 183.0, 193.0, 254.0, 275.0, 303.0, 340.0 },
+
   0.0,
 
   0.5,
@@ -4578,19 +4666,7 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
 
   1.5,
 
-
-  { 30.0, 30.0, 25.0, 20.0, 13.0, 9.5, 7.6, 6.1, 6.1 },
-
-
-  { 140.0, 165.0, 175.0, 183.0, 219.0, 254.0, 275.0, 303.0, 340.0 },
-
   0.66666666666666663,
-
-
-  { 30.0, 30.0, 25.0, 25.0, 21.6, 9.5, 7.6, 6.1, 6.1 },
-
-
-  { 140.0, 165.0, 175.0, 183.0, 193.0, 254.0, 275.0, 303.0, 340.0 },
 
   30.0,
 
@@ -4623,6 +4699,16 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
   0.0,
 
   0.0,
+
+  5.0F,
+
+  0.0F,
+
+
+  { 340.0F, 263.0F, 222.0F, 220.0F, 196.0F, 140.0F },
+
+
+  { 0.0F, 1.0F, 2.0F, 3.0F, 4.0F, 5.0F },
 
   0.0F,
 
