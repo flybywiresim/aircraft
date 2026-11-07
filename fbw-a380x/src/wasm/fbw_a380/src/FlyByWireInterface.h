@@ -405,6 +405,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFcdcAileronRightInnerPos[2];
   std::unique_ptr<LocalVariable> idFcdcAileronRightMiddlePos[2];
   std::unique_ptr<LocalVariable> idFcdcAileronRightOuterPos[2];
+  std::unique_ptr<LocalVariable> idFcdcAileronNeutralPos[2];
   std::unique_ptr<LocalVariable> idFcdcElevatorLeftInnerPos[2];
   std::unique_ptr<LocalVariable> idFcdcElevatorLeftOuterPos[2];
   std::unique_ptr<LocalVariable> idFcdcElevatorRightInnerPos[2];
@@ -412,6 +413,8 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFcdcElevatorTrimPos[2];
   std::unique_ptr<LocalVariable> idFcdcRudderUpperPos[2];
   std::unique_ptr<LocalVariable> idFcdcRudderLowerPos[2];
+  std::unique_ptr<LocalVariable> idFcdcRudderUpperMaxTravel[2];
+  std::unique_ptr<LocalVariable> idFcdcRudderLowerMaxTravel[2];
   std::unique_ptr<LocalVariable> idFcdcRudderTrimPos[2];
   std::unique_ptr<LocalVariable> idFcdcSpoilerLeft1Pos[2];
   std::unique_ptr<LocalVariable> idFcdcSpoilerLeft2Pos[2];

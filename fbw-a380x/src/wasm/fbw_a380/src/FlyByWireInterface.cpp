@@ -556,6 +556,7 @@ void FlyByWireInterface::setupLocalVariables() {
     idFcdcAileronRightInnerPos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_AILERON_RIGHT_INNER_POS");
     idFcdcAileronRightMiddlePos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_AILERON_RIGHT_MIDDLE_POS");
     idFcdcAileronRightOuterPos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_AILERON_RIGHT_OUTER_POS");
+    idFcdcAileronNeutralPos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_AILERON_NEUTRAL_POS");
     idFcdcElevatorLeftInnerPos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_ELEVATOR_LEFT_INNER_POS");
     idFcdcElevatorLeftOuterPos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_ELEVATOR_LEFT_OUTER_POS");
     idFcdcElevatorRightInnerPos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_ELEVATOR_RIGHT_INNER_POS");
@@ -563,6 +564,8 @@ void FlyByWireInterface::setupLocalVariables() {
     idFcdcElevatorTrimPos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_ELEVATOR_TRIM_POS");
     idFcdcRudderUpperPos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_RUDDER_UPPER_POS");
     idFcdcRudderLowerPos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_RUDDER_LOWER_POS");
+    idFcdcRudderUpperMaxTravel[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_RUDDER_UPPER_MAX_TRAVEL");
+    idFcdcRudderLowerMaxTravel[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_RUDDER_LOWER_MAX_TRAVEL");
     idFcdcRudderTrimPos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_RUDDER_TRIM_POS");
     idFcdcSpoilerLeft1Pos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_LEFT_1_POS");
     idFcdcSpoilerLeft2Pos[i] = std::make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_SPOILER_LEFT_2_POS");
@@ -2351,6 +2354,7 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
   idFcdcAileronRightInnerPos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].aileronRightInnerPos.toSimVar());
   idFcdcAileronRightMiddlePos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].aileronRightMiddlePos.toSimVar());
   idFcdcAileronRightOuterPos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].aileronRightOuterPos.toSimVar());
+  idFcdcAileronNeutralPos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].aileronNeutralPos.toSimVar());
   idFcdcElevatorLeftInnerPos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].elevatorLeftInnerPos.toSimVar());
   idFcdcElevatorLeftOuterPos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].elevatorLeftOuterPos.toSimVar());
   idFcdcElevatorRightInnerPos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].elevatorRightInnerPos.toSimVar());
@@ -2358,6 +2362,8 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
   idFcdcElevatorTrimPos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].horizStabTrimPos.toSimVar());
   idFcdcRudderUpperPos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].rudderUpperPos.toSimVar());
   idFcdcRudderLowerPos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].rudderLowerPos.toSimVar());
+  idFcdcRudderUpperMaxTravel[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].rudderUpperMaxTravel.toSimVar());
+  idFcdcRudderLowerMaxTravel[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].rudderLowerMaxTravel.toSimVar());
   idFcdcRudderTrimPos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].rudderTrimPos.toSimVar());
   idFcdcSpoilerLeft1Pos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].spoilerLeft1Pos.toSimVar());
   idFcdcSpoilerLeft2Pos[fcdcIndex]->set(fcdcsBusOutputs[fcdcIndex].spoilerLeft2Pos.toSimVar());
