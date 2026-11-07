@@ -42,6 +42,7 @@ import {
 } from './FMADefinitions';
 import { FcdcBusBaseEvents } from '@shared/publishers/FcdcPublisher';
 import { FcuEfisCpBusEvents } from '../../../shared/src/publishers/EfisCpBusPublisher';
+import { EcuBusEvents } from '@shared/publishers/EcuPublisher';
 
 abstract class ShowForSecondsComponent<T extends ComponentProps> extends DisplayComponent<T> {
   private timeout: number = 0;
@@ -106,7 +107,7 @@ export class FMA extends DisplayComponent<{
   readonly isAttExcessive: Subscribable<boolean>;
 }> {
   private sub = this.props.bus.getSubscriber<
-    HUDSimvars & Arinc429Values & HudElems & DmcLogicEvents & PrimFgBusBaseEvents & FcdcBusBaseEvents
+    HUDSimvars & Arinc429Values & HudElems & DmcLogicEvents & PrimFgBusBaseEvents & FcdcBusBaseEvents & EcuBusEvents
   >();
 
   private FMA = '';
@@ -128,6 +129,11 @@ export class FMA extends DisplayComponent<{
   private primFgAtsFmaDiscreteWord = Arinc429LocalVarConsumerSubject.create(
     this.sub.on('prim_fg_ats_fma_discrete_word'),
   );
+
+  private ecu1MaintenanceWord6 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ecu_maintenance_word_6_1'));
+  private ecu2MaintenanceWord6 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ecu_maintenance_word_6_2'));
+  private ecu3MaintenanceWord6 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ecu_maintenance_word_6_3'));
+  private ecu4MaintenanceWord6 = Arinc429LocalVarConsumerSubject.create(this.sub.on('ecu_maintenance_word_6_4'));
 
   private readonly fcdcDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_1'));
 
@@ -191,6 +197,18 @@ export class FMA extends DisplayComponent<{
     this.B1Message,
   );
 
+  private readonly thrustLocked = MappedSubject.create(
+    ([ecu1MaintenanceWord6, ecu2MaintenanceWord6, ecu3MaintenanceWord6, ecu4MaintenanceWord6]) =>
+      ecu1MaintenanceWord6.bitValueOr(12, false) ||
+      ecu2MaintenanceWord6.bitValueOr(12, false) ||
+      ecu3MaintenanceWord6.bitValueOr(12, false) ||
+      ecu4MaintenanceWord6.bitValueOr(12, false),
+    this.ecu1MaintenanceWord6,
+    this.ecu2MaintenanceWord6,
+    this.ecu3MaintenanceWord6,
+    this.ecu4MaintenanceWord6,
+  );
+
   private readonly BC3Message = MappedSubject.create(
     ([
       isAttExcessive,
@@ -202,6 +220,7 @@ export class FMA extends DisplayComponent<{
       tdReached,
       disconnectApForLdg,
       btvExitMissed,
+      thrustLocked,
     ]) => {
       return computeBC3Message(
         isAttExcessive,
@@ -213,6 +232,7 @@ export class FMA extends DisplayComponent<{
         btvExitMissed,
         primFgDiscreteWord2,
         primFgDiscreteWord6,
+        thrustLocked,
       );
     },
     this.props.isAttExcessive,
@@ -224,6 +244,7 @@ export class FMA extends DisplayComponent<{
     this.tdReached,
     this.disconnectApForLdg,
     this.btvExitMissed,
+    this.thrustLocked,
   );
 
   private readonly A1A2Message = MappedSubject.create(
@@ -238,12 +259,13 @@ export class FMA extends DisplayComponent<{
   );
 
   private readonly A3Message = MappedSubject.create(
-    ([primFgAtsFmaDiscreteWord, autoBrakeActive, autoBrakeMode]) => {
-      return computeA3Message(primFgAtsFmaDiscreteWord, false, autoBrakeActive, autoBrakeMode);
+    ([primFgAtsFmaDiscreteWord, autoBrakeActive, autoBrakeMode, thrustLocked]) => {
+      return computeA3Message(primFgAtsFmaDiscreteWord, thrustLocked, autoBrakeActive, autoBrakeMode);
     },
     this.primFgAtsFmaDiscreteWord,
     this.autoBrakeActive,
     this.autoBrakeMode,
+    this.thrustLocked,
   );
 
   private readonly sharedModeActive = MappedSubject.create(
