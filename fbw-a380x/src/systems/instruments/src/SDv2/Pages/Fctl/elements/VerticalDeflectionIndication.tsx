@@ -18,6 +18,7 @@ interface VerticalDeflectionIndicationProps {
   deflectionInfoValid: Subscribable<boolean>;
   deflection: Subscribable<number>;
   showAileronDroopSymbol?: Subscribable<boolean>;
+  aileronDroopPosition?: Subscribable<number>;
   onGround: Subscribable<boolean>;
 }
 
@@ -50,6 +51,11 @@ export class VerticalDeflectionIndication extends DisplayComponent<VerticalDefle
     this.props.deflectionInfoValid,
   );
 
+  private readonly droopSymbolPosition = MappedSubject.create(
+    ([aileronDroopPosition]) => deflectionToYOffset(aileronDroopPosition) + SCALE_HEIGHT / 2,
+    SubscribableUtils.toSubscribable(this.props.aileronDroopPosition ?? 0, true),
+  );
+
   render() {
     return (
       <g transform={`translate(${this.props.x ?? 0} ${this.props.y ?? 0})`}>
@@ -59,7 +65,7 @@ export class VerticalDeflectionIndication extends DisplayComponent<VerticalDefle
           class="SW2 White"
           visibility={this.droopSymbolVisibility}
           cx={7.5}
-          cy={deflectionToYOffset(5) + SCALE_HEIGHT / 2}
+          cy={this.droopSymbolPosition}
           r={3.75}
         />
 

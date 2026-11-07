@@ -360,6 +360,10 @@ export type FcdcBusBaseEvents = {
    */
   fcdc_right_outer_aileron_position_deg: number;
   /**
+   * The neutral position deflection angle of the aileron, in degrees. Raw ARINC word.
+   */
+  fcdc_aileron_neutral_position_deg: number;
+  /**
    * The deflection angle of the left inner elevator, in degrees. Raw ARINC word.
    */
   fcdc_left_inner_elevator_position_deg: number;
@@ -387,6 +391,14 @@ export type FcdcBusBaseEvents = {
    * The deflection angle of the lower rudder, in degrees. Raw ARINC word.
    */
   fcdc_lower_rudder_position_deg: number;
+  /**
+   * The maximum deflection angle of the upper rudder, in degrees. Raw ARINC word.
+   */
+  fcdc_upper_rudder_max_position_deg: number;
+  /**
+   * The maximum deflection angle of the lower rudder, in degrees. Raw ARINC word.
+   */
+  fcdc_lower_rudder_max_position_deg: number;
   /**
    * The deflection angle of the rudder trim, in degrees. Raw ARINC word.
    */
@@ -764,6 +776,15 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         },
       ],
       [
+        'fcdc_aileron_neutral_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_AILERON_NEUTRAL_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
         'fcdc_left_inner_elevator_position_deg',
         {
           name: 'L:A32NX_FCDC_#index#_ELEVATOR_LEFT_INNER_POS',
@@ -803,6 +824,24 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_ths_position_deg',
         {
           name: 'L:A32NX_FCDC_#index#_ELEVATOR_TRIM_POS',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_upper_rudder_max_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_RUDDER_UPPER_MAX_TRAVEL',
+          type: SimVarValueType.Number,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'fcdc_lower_rudder_max_position_deg',
+        {
+          name: 'L:A32NX_FCDC_#index#_RUDDER_LOWER_MAX_TRAVEL',
           type: SimVarValueType.Number,
           indexed: true,
           defaultIndex: null,

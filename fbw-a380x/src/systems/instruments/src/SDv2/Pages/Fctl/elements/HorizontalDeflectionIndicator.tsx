@@ -17,6 +17,8 @@ interface HorizontalDeflectionIndicationProps {
   powerAvail: Subscribable<boolean>;
   deflectionInfoValid: Subscribable<boolean>;
   deflection: Subscribable<number>;
+  maxDeflectionInfoValid: Subscribable<boolean>;
+  maxDeflection: Subscribable<number>;
   position: RudderPosition;
   onGround: Subscribable<boolean>;
 }
@@ -43,15 +45,14 @@ export class HorizontalDeflectionIndication extends DisplayComponent<HorizontalD
     this.props.powerAvail,
   );
 
-  private rudderTravelLimiter = 30;
-  private rudderTravelLimXValue = deflectionToXOffset(this.rudderTravelLimiter);
+  private rudderTravelLimOffset = this.props.maxDeflection.map((maxDeflection) => deflectionToXOffset(maxDeflection));
 
   private readonly rudderTravelLimVisibility = MappedSubject.create(
-    ([onGround, deflectionInfoValid, powerAvail]) =>
-      onGround && deflectionInfoValid && powerAvail ? 'inherit' : 'hidden',
-    this.props.onGround,
+    ([deflectionInfoValid, powerAvail, maxDeflectionInfoValid]) =>
+      deflectionInfoValid && powerAvail && maxDeflectionInfoValid ? 'inherit' : 'hidden',
     this.props.deflectionInfoValid,
     this.props.powerAvail,
+    this.props.maxDeflectionInfoValid,
   );
 
   render() {
@@ -61,9 +62,16 @@ export class HorizontalDeflectionIndication extends DisplayComponent<HorizontalD
 
         <path class="Green SW2" visibility={this.maxDeflectionVisibility} d="m-1,0 v 15 M117,0 v 15" />
         <path
-          class="Green NoFill SW3 LineRound"
+          class="Green NoFill SW4 LineRound"
           visibility={this.rudderTravelLimVisibility}
-          d={`M ${58 - this.rudderTravelLimXValue + 4},0 h -5 v 12 M ${58 + this.rudderTravelLimXValue - 4},0 h 5 v 12`}
+          d={`M ${SCALE_LENGTH / 2},${this.props.position == RudderPosition.Lower ? 6 : 10} v ${this.props.position == RudderPosition.Lower ? 11 : -11} h 5`}
+          transform={this.rudderTravelLimOffset.map((offset) => `translate(${offset} 0)`)}
+        />
+        <path
+          class="Green NoFill SW4 LineRound"
+          visibility={this.rudderTravelLimVisibility}
+          d={`M ${SCALE_LENGTH / 2},${this.props.position == RudderPosition.Lower ? 6 : 10} v ${this.props.position == RudderPosition.Lower ? 11 : -11} h -5`}
+          transform={this.rudderTravelLimOffset.map((offset) => `translate(${-offset} 0)`)}
         />
 
         <path

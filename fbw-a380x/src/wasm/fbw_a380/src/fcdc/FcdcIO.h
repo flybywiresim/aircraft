@@ -51,6 +51,8 @@ struct FcdcBus {
 
   Arinc429NumericWord aileronRightOuterPos;
 
+  Arinc429NumericWord aileronNeutralPos;
+
   Arinc429NumericWord elevatorLeftInnerPos;
 
   Arinc429NumericWord elevatorLeftOuterPos;
@@ -64,6 +66,10 @@ struct FcdcBus {
   Arinc429NumericWord rudderUpperPos;
 
   Arinc429NumericWord rudderLowerPos;
+
+  Arinc429NumericWord rudderUpperMaxTravel;
+
+  Arinc429NumericWord rudderLowerMaxTravel;
 
   Arinc429NumericWord rudderTrimPos;
 

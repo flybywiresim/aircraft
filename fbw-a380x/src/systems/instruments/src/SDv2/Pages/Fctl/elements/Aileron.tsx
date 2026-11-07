@@ -1,4 +1,4 @@
-import { DisplayComponent, EventBus, FSComponent, Subject, Subscribable } from '@microsoft/msfs-sdk';
+import { DisplayComponent, EventBus, FSComponent, Subscribable } from '@microsoft/msfs-sdk';
 import {
   ActuatorIndication,
   ActuatorType,
@@ -44,7 +44,13 @@ export class Aileron extends DisplayComponent<AileronProps> {
     this.sub.on(`fcdc_${this.props.side}_${this.props.position}_aileron_position_deg`),
   );
 
-  private readonly showAileronDroopSymbol = Subject.create(true);
+  private readonly fcdcAileronNeutralPosition = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on(`fcdc_aileron_neutral_position_deg`),
+  );
+
+  private readonly showAileronDroopSymbol = this.fcdcAileronNeutralPosition.map(
+    (word) => !word.isInvalid() && Math.abs(word.value) > 0.5,
+  );
 
   private readonly deflectionInfoValid = this.fcdcAileronPosition.map((word) => !word.isInvalid());
 
@@ -128,6 +134,7 @@ export class Aileron extends DisplayComponent<AileronProps> {
           deflectionInfoValid={this.deflectionInfoValid}
           deflection={this.fcdcAileronPosition.map((aileronDeflection) => aileronDeflection.value)}
           showAileronDroopSymbol={this.showAileronDroopSymbol}
+          aileronDroopPosition={this.fcdcAileronNeutralPosition.map((word) => word.value)}
           onGround={this.props.onGround}
         />
 

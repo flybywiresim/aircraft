@@ -28,6 +28,10 @@ export class Rudder extends DisplayComponent<RudderProps> {
     this.sub.on(`fcdc_${this.props.position}_rudder_position_deg`),
   );
 
+  private readonly fcdcRudderMaxPosition = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on(`fcdc_${this.props.position}_rudder_max_position_deg`),
+  );
+
   private readonly deflectionInfoValid = this.fcdcRudderPosition.map((word) => !word.isInvalid());
 
   private readonly hydGreenAvailable = this.fcdcDiscreteWord12.map((word) => word.bitValue(28));
@@ -95,6 +99,8 @@ export class Rudder extends DisplayComponent<RudderProps> {
           powerAvail={this.powerAvail}
           deflectionInfoValid={this.deflectionInfoValid}
           deflection={this.fcdcRudderPosition.map((rudderDeflection) => -rudderDeflection.value)}
+          maxDeflectionInfoValid={this.fcdcRudderMaxPosition.map((word) => !word.isInvalid())}
+          maxDeflection={this.fcdcRudderMaxPosition.map((rudderDeflection) => -rudderDeflection.value)}
           position={this.props.position}
           onGround={this.props.onGround}
         />
