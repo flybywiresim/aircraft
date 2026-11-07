@@ -513,7 +513,11 @@ FcdcBus Fcdc::getBusOutputs() {
   setSurfacePosition2(output.aileronRightOuterPos, busInputs.prims[1].fctl.right_aileron_1_position_deg,
                       busInputs.prims[2].fctl.right_aileron_2_position_deg);
 
-  output.aileronNeutralPos.setFromData(5, Arinc429SignStatus::NormalOperation);
+  output.aileronNeutralPos.setFromData(
+      busInputs.prims[masterPrimIndex].fctl.aileron_droop_command_deg.Data,
+      busInputs.prims[masterPrimIndex].fctl.aileron_droop_command_deg.SSM == Arinc429SignStatus::NormalOperation
+          ? Arinc429SignStatus::NormalOperation
+          : Arinc429SignStatus::NoComputedData);
 
   setSurfacePosition4(output.elevatorLeftInnerPos, busInputs.prims[2].fctl.elevator_1_position_deg,
                       busInputs.prims[0].fctl.elevator_2_position_deg, busInputs.secs[2].elevator_1_position_deg,
@@ -536,9 +540,17 @@ FcdcBus Fcdc::getBusOutputs() {
   setSurfacePosition4(output.rudderLowerPos, busInputs.prims[0].fctl.rudder_2_position_deg, busInputs.prims[2].fctl.rudder_1_position_deg,
                       busInputs.secs[0].rudder_2_position_deg, busInputs.secs[2].rudder_1_position_deg);
 
-  output.rudderUpperMaxTravel.setFromData(30, Arinc429SignStatus::NormalOperation);
+  output.rudderUpperMaxTravel.setFromData(
+      busInputs.prims[masterPrimIndex].fctl.upper_rudder_travel_lim_deg.Data,
+      busInputs.prims[masterPrimIndex].fctl.upper_rudder_travel_lim_deg.SSM == Arinc429SignStatus::NormalOperation
+          ? Arinc429SignStatus::NormalOperation
+          : Arinc429SignStatus::NoComputedData);
 
-  output.rudderLowerMaxTravel.setFromData(30, Arinc429SignStatus::NormalOperation);
+  output.rudderLowerMaxTravel.setFromData(
+      busInputs.prims[masterPrimIndex].fctl.lower_rudder_travel_lim_deg.Data,
+      busInputs.prims[masterPrimIndex].fctl.lower_rudder_travel_lim_deg.SSM == Arinc429SignStatus::NormalOperation
+          ? Arinc429SignStatus::NormalOperation
+          : Arinc429SignStatus::NoComputedData);
 
   setSurfacePosition2(output.rudderTrimPos, busInputs.secs[0].rudder_trim_actual_pos_deg, busInputs.secs[2].rudder_trim_actual_pos_deg);
 
