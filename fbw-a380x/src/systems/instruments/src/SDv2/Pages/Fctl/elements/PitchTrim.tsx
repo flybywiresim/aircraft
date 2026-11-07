@@ -1,5 +1,4 @@
 import {
-  ConsumerSubject,
   DisplayComponent,
   EventBus,
   FSComponent,
@@ -9,8 +8,8 @@ import {
   SubscribableMapFunctions,
 } from '@microsoft/msfs-sdk';
 import { ActuatorIndication, ActuatorType, HydraulicPowerSource } from './ActuatorIndication';
-import { SDSimvars } from '../../../SDSimvarPublisher';
-import { MathUtils } from '@flybywiresim/fbw-sdk';
+import { Arinc429LocalVarConsumerSubject } from '@flybywiresim/fbw-sdk';
+import { FcdcBusBaseEvents } from '@shared/publishers/FcdcPublisher';
 
 interface PitchTrimProps {
   x: number;
@@ -20,50 +19,60 @@ interface PitchTrimProps {
 }
 
 export class PitchTrim extends DisplayComponent<PitchTrimProps> {
-  private readonly positionInfoValid = Subject.create(true);
+  private readonly sub = this.props.bus.getSubscriber<FcdcBusBaseEvents>();
 
-  private readonly thsPositionRadians = ConsumerSubject.create(
-    this.props.bus.getSubscriber<SDSimvars>().on(`thsDeflection`).atFrequency(10),
-    0,
-  );
+  private readonly fcdcDiscreteWord4 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_4'));
 
-  private readonly thsPosition = this.thsPositionRadians.map(
-    (thsPositionRadians) => thsPositionRadians * MathUtils.RADIANS_TO_DEGREES,
-  );
+  private readonly fcdcDiscreteWord5 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_5'));
 
-  private readonly thsPositionSplit = this.thsPosition.map((thsPosition) =>
-    Math.abs(thsPosition).toFixed(1).split('.'),
+  private readonly fcdcDiscreteWord12 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_12'));
+
+  private readonly fcdcThsDeflection = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_ths_position_deg'));
+
+  private readonly deflectionInfoValid = this.fcdcThsDeflection.map((word) => !word.isInvalid());
+
+  private readonly thsPositionSplit = this.fcdcThsDeflection.map((thsPosition) =>
+    Math.abs(-thsPosition.value).toFixed(1).split('.'),
   );
 
   private readonly thsJam = Subject.create(false);
 
-  private readonly hydGreenAvailable = ConsumerSubject.create(
-    this.props.bus.getSubscriber<SDSimvars>().on(`greenPressureSwitch`),
-    false,
+  private readonly hydGreenAvailable = this.fcdcDiscreteWord12.map((word) => word.bitValue(28));
+
+  private readonly hydYellowAvailable = this.fcdcDiscreteWord12.map((word) => word.bitValue(29));
+
+  private readonly hydInfoAvailable = this.fcdcDiscreteWord12.map((word) => word.bitValueOr(27, false));
+
+  private readonly failAvailBit1: number;
+
+  private readonly failAvailBit2: number;
+
+  private readonly powerAvail = this.fcdcDiscreteWord5.map(
+    (word) => word.bitValue(this.failAvailBit1) || word.bitValue(this.failAvailBit2),
   );
 
-  private readonly hydYellowAvailable = ConsumerSubject.create(
-    this.props.bus.getSubscriber<SDSimvars>().on(`yellowPressureSwitch`),
-    false,
-  );
+  private readonly actuator1Failed = this.fcdcDiscreteWord4.map((word) => word.bitValueOr(this.failAvailBit1, false));
 
-  private readonly hydraulicAvailable = MappedSubject.create(
-    SubscribableMapFunctions.or(),
-    this.hydGreenAvailable,
-    this.hydYellowAvailable,
-  );
+  private readonly actuator2Failed = this.fcdcDiscreteWord4.map((word) => word.bitValueOr(this.failAvailBit2, false));
 
-  private readonly pitchTrimValueClass = this.hydraulicAvailable.map((hydraulicAvailable) =>
+  private readonly pitchTrimValueClass = this.powerAvail.map((hydraulicAvailable) =>
     hydraulicAvailable ? 'Green F26' : 'Amber F26',
   );
 
   private readonly pitchTrimTitleClass = MappedSubject.create(
-    ([hydGreenAvailable, hydYellowAvailable, thsJam]) =>
-      (hydGreenAvailable || hydYellowAvailable) && !thsJam ? 'F22 MiddleAlign LS1 White' : 'F22 MiddleAlign LS1 Amber',
-    this.hydGreenAvailable,
-    this.hydYellowAvailable,
+    ([powerAvail, thsJam]) => (powerAvail && !thsJam ? 'F22 MiddleAlign LS1 White' : 'F22 MiddleAlign LS1 Amber'),
+    this.powerAvail,
     this.thsJam,
   );
+
+  constructor(props: PitchTrimProps) {
+    super(props);
+
+    const failAvailBit = 25;
+
+    this.failAvailBit1 = failAvailBit;
+    this.failAvailBit2 = failAvailBit + 1;
+  }
 
   render() {
     return (
@@ -75,11 +84,12 @@ export class PitchTrim extends DisplayComponent<PitchTrimProps> {
             LineRound: true,
             LineJoinRound: true,
             NoFill: true,
-            Green: this.hydraulicAvailable,
-            Amber: this.hydraulicAvailable.map(SubscribableMapFunctions.not()),
+            Green: this.powerAvail,
+            Amber: this.powerAvail.map(SubscribableMapFunctions.not()),
+            Hide: this.deflectionInfoValid.map(SubscribableMapFunctions.not()),
           }}
           d="m-5,98 l-21,-11 v23 l21,-11 z"
-          transform={this.thsPosition.map((thsPosition) => `translate (0 ${-thsPosition * 10})`)}
+          transform={this.fcdcThsDeflection.map((thsPosition) => `translate (0 ${thsPosition.value * 10})`)}
         />
 
         <text x={57} y={-6} class={this.pitchTrimTitleClass}>
@@ -89,7 +99,7 @@ export class PitchTrim extends DisplayComponent<PitchTrimProps> {
           TRIM
         </text>
 
-        <g visibility={this.positionInfoValid.map((positionInfoValid) => (positionInfoValid ? 'visible' : 'hidden'))}>
+        <g visibility={this.deflectionInfoValid.map((positionInfoValid) => (positionInfoValid ? 'visible' : 'hidden'))}>
           <text
             x={38}
             y={67}
@@ -109,18 +119,20 @@ export class PitchTrim extends DisplayComponent<PitchTrimProps> {
           <text
             x={82}
             y={68}
-            visibility={this.thsPosition.map((thsPosition) => (Math.abs(thsPosition) > 0.05 ? 'visible' : 'hidden'))}
+            visibility={this.fcdcThsDeflection.map((thsPosition) =>
+              Math.abs(thsPosition.value) > 0.05 ? 'inherit' : 'hidden',
+            )}
             class={this.pitchTrimValueClass}
           >
-            {this.thsPosition.map((thsPosition) => (Math.sign(thsPosition) === 1 ? 'UP' : 'DN'))}
+            {this.fcdcThsDeflection.map((thsPosition) => (Math.sign(-thsPosition.value) === 1 ? 'UP' : 'DN'))}
           </text>
         </g>
 
         <text
           x={26}
           y={68}
-          visibility={this.positionInfoValid.map((positionInfoValid) => (!positionInfoValid ? 'visible' : 'hidden'))}
-          class="Amber F26"
+          visibility={this.deflectionInfoValid.map((positionInfoValid) => (!positionInfoValid ? 'visible' : 'hidden'))}
+          class="Amber F28"
         >
           XX
         </text>
@@ -131,6 +143,8 @@ export class PitchTrim extends DisplayComponent<PitchTrimProps> {
           type={ActuatorType.Conventional}
           powerSource={HydraulicPowerSource.Green}
           powerSourceAvailable={this.hydGreenAvailable}
+          powerSourceInfoAvailable={this.hydInfoAvailable}
+          actuatorFailed={this.actuator1Failed}
         />
         <ActuatorIndication
           x={-63}
@@ -138,6 +152,8 @@ export class PitchTrim extends DisplayComponent<PitchTrimProps> {
           type={ActuatorType.Conventional}
           powerSource={HydraulicPowerSource.Yellow}
           powerSourceAvailable={this.hydYellowAvailable}
+          powerSourceInfoAvailable={this.hydInfoAvailable}
+          actuatorFailed={this.actuator2Failed}
         />
       </g>
     );
