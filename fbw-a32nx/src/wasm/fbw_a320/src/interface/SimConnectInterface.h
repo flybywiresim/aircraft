@@ -5,10 +5,10 @@
 #include <string>
 #include <vector>
 
-#include "../LocalVariable.h"
 #include "../SpoilersHandler.h"
-#include "../ThrottleAxisMapping.h"
+#include "LocalVariable.h"
 #include "SimConnectData.h"
+#include "ThrottleAxisMapping.h"
 
 #include "../model/ElacComputer_types.h"
 #include "../model/FacComputer_types.h"
