@@ -6,7 +6,10 @@ import { MathUtils } from '@flybywiresim/fbw-sdk';
 export class WindUtils {
   private static readonly VectorCache = { direction: 0, magnitude: 0 };
 
-  public static undefinedWindVector: WindVector = { direction: undefined, magnitude: undefined };
+  /**
+   * Wind vector containg undefined direction and magnitude.
+   */
+  public static readonly undefinedWindVector: WindVector = { direction: undefined, magnitude: undefined };
 
   private static readonly emptyWindVector: WindVector = { direction: 0, magnitude: 0 };
 

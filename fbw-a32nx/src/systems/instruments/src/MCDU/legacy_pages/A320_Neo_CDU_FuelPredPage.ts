@@ -3,13 +3,12 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { NXUnits } from '@flybywiresim/fbw-sdk';
+import { NXUnits, TimeFormatters } from '@flybywiresim/fbw-sdk';
 import { getZfw, getZfwcg } from '../legacy/A32NX_Core/A32NX_PayloadManager';
 import { CDUInitPage } from './A320_Neo_CDU_InitPage';
 import { NXSystemMessages } from '../messages/NXSystemMessages';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { LegacyFmsPageInterface } from '../legacy/LegacyFmsPageInterface';
-import { FmsFormatters } from '../legacy/FmsFormatters';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { Wait } from '@microsoft/msfs-sdk';
 
@@ -138,10 +137,10 @@ export class CDUFuelPredPage {
         Number.isFinite(plan.performanceData.finalHoldingTime.get()) &&
         !Number.isFinite(plan.performanceData.pilotFinalHoldingFuel.get())
       ) {
-        finalTimeCell = `/${FmsFormatters.minutesTohhmm(plan.performanceData.finalHoldingTime.get())}`;
+        finalTimeCell = `/${TimeFormatters.minutesTohhmm(plan.performanceData.finalHoldingTime.get())}`;
         finalColor = '[color]cyan';
       } else if (Number.isFinite(predictions.finalHoldingTime)) {
-        finalTimeCell = '{small}/' + FmsFormatters.minutesTohhmm(predictions.finalHoldingTime) + '{end}';
+        finalTimeCell = '{small}/' + TimeFormatters.minutesTohhmm(predictions.finalHoldingTime) + '{end}';
         finalColor = '[color]cyan';
       }
 
@@ -163,7 +162,7 @@ export class CDUFuelPredPage {
         }
 
         if (Number.isFinite(predictions.alternateTime)) {
-          altFuelTimeCell = '{small}/' + FmsFormatters.minutesTohhmm(predictions.alternateTime) + '{end}';
+          altFuelTimeCell = '{small}/' + TimeFormatters.minutesTohhmm(predictions.alternateTime) + '{end}';
           altTimeColor = '{green}';
         }
 
@@ -274,7 +273,7 @@ export class CDUFuelPredPage {
           extraTimeCell = '----{end}';
           extraTimeColor = '{white}';
         } else {
-          extraTimeCell = FmsFormatters.minutesTohhmm(predictions.extraTime) + '{end}';
+          extraTimeCell = TimeFormatters.minutesTohhmm(predictions.extraTime) + '{end}';
           extraTimeColor = '{green}';
         }
         extraCellColor = '[color]green';

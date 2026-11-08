@@ -14,6 +14,7 @@ import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { DataManager } from '@fmgc/flightplanning/DataManager';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
+import { EquitimePoint } from '@fmgc/EquitimePoint';
 
 export enum FmcOperatingModes {
   Master,
@@ -378,4 +379,24 @@ export interface FmcInterface extends FlightPhaseManagerProxyInterface, FmsDataI
 
   setApproachWindDirection(value: number | null, forPlan: number): void;
   setApproachWindSpeed(value: number | null, forPlan: number): void;
+
+  /**
+   * Formats a fms time prediction to flight time or UTC time depending on flightphase and ETT.
+   * @param secondsFromPresent the time prediction in seconds to format.
+   * @param forPlan the flightplan which the prediction is associated with.
+   * @returns the formatted prediction in HH:MM either in UTC time or flight time. --:-- if null.
+   */
+  formatEta(secondsFromPresent: number | null, forPlan?: FlightPlanIndex): string;
+
+  /**
+   * Gets the time prediction header depending on the flightphase and flightplan.
+   * @param forplan the plan to get the header.
+   * @returns the applicable header.
+   */
+  getTimePredictionHeader(forplan?: FlightPlanIndex): 'UTC' | 'TIME';
+
+  /**
+   * Get the equiTimeInterface.
+   */
+  getEquitimePoint(): EquitimePoint;
 }

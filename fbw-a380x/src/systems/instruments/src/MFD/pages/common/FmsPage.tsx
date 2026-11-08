@@ -13,6 +13,9 @@ import { AbstractMfdPageProps } from '../../MFD';
 import { dataStatusUri, flightPlanUriPage, fuelAndLoadPage, lateralRevisionHoldPage } from '../../shared/utils';
 import { ActivePageTitleBar } from './ActivePageTitleBar';
 
+/**
+ * A page contained within the FMS SubSystem.
+ */
 export abstract class FmsPage<T extends AbstractMfdPageProps = AbstractMfdPageProps> extends LifecycleComponent<T> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
   protected readonly subs = [] as Subscription[];
