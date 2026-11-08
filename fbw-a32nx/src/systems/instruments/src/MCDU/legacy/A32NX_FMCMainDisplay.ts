@@ -112,6 +112,12 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     SimVarValueType.Knots,
   );
 
+  private static readonly fcuSpdMachManagedVar = RegisteredSimVar.createBoolean(
+    'L:A32NX_FCU_AFS_DISPLAY_SPD_MACH_MANAGED',
+  );
+
+  private static readonly fcuMachModeVar = RegisteredSimVar.createBoolean('L:A32NX_FCU_AFS_DISPLAY_MACH_MODE');
+
   private static readonly fmApproachHeadWindRegisteredSimVar = RegisteredSimVar.create(
     'L:A32NX_FM_APPROACH_HEADWIND_COMPONENT',
     SimVarValueType.String,
@@ -1380,6 +1386,20 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
 
     this.speedsManagedPfd.set(vPfd);
     this.managedSpeedIsMach.set(isMach);
+    this.syncFcuManagedSpeedMachMode(isMach);
+  }
+
+  /**
+   * In managed speed, the FMGC commands the FCU SPD/MACH switchover (A320 FCOM DSC-22_30-40 SPEED/MACH SWITCHING).
+   * The switch is normally sent when the managed target changes between speed and Mach. This also corrects the FCU when
+   * it is in the other mode, e.g. after the SPD/MACH pb was pushed, which would otherwise never be switched back.
+   * In selected speed the switchover is manual, so the FCU is left alone.
+   * @param isMach whether the managed speed target is a Mach number
+   */
+  private syncFcuManagedSpeedMachMode(isMach: boolean): void {
+    if (FMCMainDisplay.fcuSpdMachManagedVar.get() && FMCMainDisplay.fcuMachModeVar.get() !== isMach) {
+      SimVar.SetSimVarValue(isMach ? 'K:AP_MANAGED_SPEED_IN_MACH_ON' : 'K:AP_MANAGED_SPEED_IN_MACH_OFF', 'number', 1);
+    }
   }
 
   private activatePreSelSpeedMach(preSel) {
