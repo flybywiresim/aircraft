@@ -1,10 +1,10 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len */
 
-import React, { FC, useContext, useState } from 'react';
+import React, { FC, useContext, useEffect, useRef, useState } from 'react';
 import {
   Units,
   MetarParserType,
@@ -15,6 +15,7 @@ import {
   TakeoffAntiIceSetting,
   LineupAngle,
   MathUtils,
+  useSimVar,
 } from '@flybywiresim/fbw-sdk-react';
 import { toast } from 'react-toastify';
 import { Calculator, CloudArrowDown, Trash } from 'react-bootstrap-icons';
@@ -32,13 +33,8 @@ import {
   setTakeoffValues,
 } from '../../Store/features/performance';
 import { AircraftContext } from '../../AircraftContext';
-import {
-  isValidIcao,
-  isWindMagnitudeAndDirection,
-  isWindMagnitudeOnly,
-  WIND_MAGNITUDE_AND_DIR_REGEX,
-  WIND_MAGNITUDE_ONLY_REGEX,
-} from '../Data/Utils';
+import { isValidIcao, isWindMagnitudeOnly, WIND_MAGNITUDE_ONLY_REGEX } from '../Data/Utils';
+import { getConservativeWindComponents, parseDirectionalWindEntry } from '../Data/WindComponents';
 import { fetchRawMetarBySource } from '../../Service/WeatherService';
 
 interface LabelProps {
@@ -56,7 +52,13 @@ const Label: FC<LabelProps> = ({ text, className, children }) => (
 export const TakeoffWidget = () => {
   const dispatch = useAppDispatch();
 
-  const calculators = useContext(AircraftContext).performanceCalculators;
+  const {
+    performanceCalculators: calculators,
+    performanceCgLimits,
+    takeoffFmsIntegration,
+    onTakeoffCalculated,
+  } = useContext(AircraftContext);
+  const [aircraftCg] = useSimVar('L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC', 'number', 1000);
 
   const [autoFillSource, setAutoFillSource] = useState<'METAR' | 'OFP'>('OFP');
 
@@ -75,6 +77,8 @@ export const TakeoffWidget = () => {
     lineupAngle,
     windDirection,
     windMagnitude,
+    windGust,
+    windVariable,
     windEntry,
     oat,
     qnh,
@@ -92,6 +96,9 @@ export const TakeoffWidget = () => {
 
   const selectedRunway =
     selectedRunwayIndex !== undefined && selectedRunwayIndex >= 0 ? availableRunways[selectedRunwayIndex] : undefined;
+
+  const importedOfp = useRef('');
+  const autoCalculatePending = useRef(false);
 
   const {
     departingAirport: ofpDepartingAirport,
@@ -173,6 +180,7 @@ export const TakeoffWidget = () => {
 
     if (perf.error === TakeoffPerfomanceError.None) {
       dispatch(setTakeoffValues({ result: perf }));
+      onTakeoffCalculated?.(perf, icao, selectedRunway?.ident);
       if (!forceToga && perf.flex === undefined) {
         toast.info(t('Performance.Takeoff.Messages.FlexNotPossible'));
       } else if (perf.params.headwind < perf.inputs.wind) {
@@ -189,16 +197,13 @@ export const TakeoffWidget = () => {
       return;
     }
 
-    const headwind =
-      windDirection === undefined
-        ? windMagnitude
-        : windMagnitude *
-          Math.cos(Math.abs(Avionics.Utils.diffAngle(runwayBearing, windDirection)) * Avionics.Utils.DEG2RAD);
-    const crosswind =
-      windDirection === undefined
-        ? 0
-        : windMagnitude *
-          Math.sin(Math.abs(Avionics.Utils.diffAngle(runwayBearing, windDirection)) * Avionics.Utils.DEG2RAD);
+    const { headwind, crosswind } = getConservativeWindComponents(
+      runwayBearing,
+      windDirection,
+      windMagnitude,
+      windGust,
+      windVariable ?? false,
+    );
 
     if (crosswind > calculators.takeoff.getCrosswindLimit(runwayCondition, oat)) {
       const replacements = {
@@ -218,6 +223,32 @@ export const TakeoffWidget = () => {
       performCalculateTakeoff(headwind);
     }
   };
+
+  useEffect(() => {
+    if (!autoCalculatePending.current || !areInputsValid()) {
+      return;
+    }
+
+    autoCalculatePending.current = false;
+    handleCalculateTakeoff();
+  }, [
+    windMagnitude,
+    windDirection,
+    windEntry,
+    weight,
+    runwayBearing,
+    elevation,
+    runwaySlope,
+    runwayLength,
+    oat,
+    qnh,
+    config,
+    antiIce,
+    packs,
+    forceToga,
+    runwayCondition,
+    cg,
+  ]);
 
   const clearResult = () => {
     if (result === undefined) {
@@ -250,13 +281,17 @@ export const TakeoffWidget = () => {
 
     try {
       const magvar = await getAirportMagVar(icao);
-      const windDirection = MathUtils.normalise360(parsedMetar.wind.degrees - magvar);
-      const windEntry = `${windDirection.toFixed(0).padStart(3, '0')}/${parsedMetar.wind.speed_kts.toFixed(0).padStart(2, '0')}`;
+      const windVariable = parsedMetar.wind.degrees_from === 0 && parsedMetar.wind.degrees_to === 359;
+      const windDirection = windVariable ? undefined : MathUtils.normalise360(parsedMetar.wind.degrees - magvar);
+      const windGust = parsedMetar.wind.gust_kts;
+      const windEntry = `${windVariable ? 'VRB' : windDirection.toFixed(0).padStart(3, '0')}/${parsedMetar.wind.speed_kts.toFixed(0).padStart(2, '0')}${windGust > parsedMetar.wind.speed_kts ? `G${windGust.toFixed(0)}` : ''}`;
 
       dispatch(
         setTakeoffValues({
           windDirection,
           windMagnitude: parsedMetar.wind.speed_kts,
+          windGust,
+          windVariable,
           windEntry,
           oat: parsedMetar.temperature.celsius,
           qnh: parsedMetar.barometer.mb,
@@ -289,7 +324,16 @@ export const TakeoffWidget = () => {
         .then((runways) => {
           dispatch(setTakeoffValues({ availableRunways: runways }));
           if (runways.length > 0) {
-            handleRunwayChange(0);
+            const firstRunway = runways[0];
+            dispatch(
+              setTakeoffValues({
+                selectedRunwayIndex: 0,
+                runwayBearing: firstRunway.magneticBearing,
+                runwayLength: firstRunway.length,
+                runwaySlope: -Math.tan(firstRunway.gradient * Avionics.Utils.DEG2RAD) * 100,
+                elevation: firstRunway.elevation,
+              }),
+            );
           } else {
             handleRunwayChange(-1);
           }
@@ -462,6 +506,12 @@ export const TakeoffWidget = () => {
     dispatch(setTakeoffValues({ takeoffCg }));
   };
 
+  const handleCgChange = (value: string): void => {
+    clearResult();
+    const parsed = parseFloat(value);
+    dispatch(setTakeoffValues({ cg: Number.isFinite(parsed) ? parsed : undefined }));
+  };
+
   const handleLineupAngle = (lineupAngle: LineupAngle): void => {
     clearResult();
 
@@ -482,7 +532,15 @@ export const TakeoffWidget = () => {
     clearResult();
 
     if (input === '0') {
-      dispatch(setTakeoffValues({ windMagnitude: 0, windDirection: undefined, windEntry: input }));
+      dispatch(
+        setTakeoffValues({
+          windMagnitude: 0,
+          windDirection: undefined,
+          windGust: undefined,
+          windVariable: false,
+          windEntry: input,
+        }),
+      );
       return;
     }
 
@@ -493,27 +551,55 @@ export const TakeoffWidget = () => {
         case 'TL':
         case 'T':
         case '-':
-          dispatch(setTakeoffValues({ windMagnitude: -windMagnitude, windDirection: undefined, windEntry: input }));
+          dispatch(
+            setTakeoffValues({
+              windMagnitude: -windMagnitude,
+              windDirection: undefined,
+              windGust: undefined,
+              windVariable: false,
+              windEntry: input,
+            }),
+          );
           return;
         case 'HD':
         case 'H':
         case '+':
         default:
-          dispatch(setTakeoffValues({ windMagnitude, windDirection: undefined, windEntry: input }));
+          dispatch(
+            setTakeoffValues({
+              windMagnitude,
+              windDirection: undefined,
+              windGust: undefined,
+              windVariable: false,
+              windEntry: input,
+            }),
+          );
           return;
       }
-    } else if (isWindMagnitudeAndDirection(input)) {
-      const directionMagnitudeMatch = input.match(WIND_MAGNITUDE_AND_DIR_REGEX);
-      dispatch(
-        setTakeoffValues({
-          windDirection: parseInt(directionMagnitudeMatch[1]),
-          windMagnitude: parseFloat(directionMagnitudeMatch[2]),
-          windEntry: input,
-        }),
-      );
-      return;
+    } else {
+      const directional = parseDirectionalWindEntry(input);
+      if (directional) {
+        dispatch(
+          setTakeoffValues({
+            windDirection: directional.direction,
+            windMagnitude: directional.speed,
+            windGust: directional.gust,
+            windVariable: directional.variable,
+            windEntry: input,
+          }),
+        );
+        return;
+      }
     }
-    dispatch(setTakeoffValues({ windMagnitude: undefined, windDirection: undefined, windEntry: input }));
+    dispatch(
+      setTakeoffValues({
+        windMagnitude: undefined,
+        windDirection: undefined,
+        windGust: undefined,
+        windVariable: false,
+        windEntry: input,
+      }),
+    );
   };
 
   const areInputsValid = (): boolean =>
@@ -524,11 +610,11 @@ export const TakeoffWidget = () => {
     runwaySlope !== undefined &&
     oat !== undefined &&
     qnh !== undefined &&
-    runwayLength !== undefined;
+    runwayLength !== undefined &&
+    (!performanceCgLimits ||
+      (cg !== undefined && cg >= performanceCgLimits.minPercentMac && cg <= performanceCgLimits.maxPercentMac));
 
   const syncValuesWithOfp = async () => {
-    const parsedMetar: MetarParserType = parseMetar(ofpDepartingMetar);
-
     const ofpTow = parseInt(ofpWeights.estTakeOffWeight);
     const weightKgs = ofpUnits === 'lbs' ? Math.round(Units.poundToKilogram(ofpTow)) : ofpTow;
 
@@ -537,6 +623,7 @@ export const TakeoffWidget = () => {
       return;
     }
     try {
+      const parsedMetar: MetarParserType = parseMetar(ofpDepartingMetar);
       const runways = await getRunways(ofpDepartingAirport);
       const magvar = await getAirportMagVar(ofpDepartingAirport);
 
@@ -544,8 +631,12 @@ export const TakeoffWidget = () => {
       if (runwayIndex >= 0) {
         const newRunway = runways[runwayIndex];
         const runwaySlope = -Math.tan(newRunway.gradient * Avionics.Utils.DEG2RAD) * 100;
-        const windDirection = Math.round(MathUtils.normalise360(parsedMetar.wind.degrees - magvar));
-        const windEntry = `${windDirection.toFixed(0).padStart(3, '0')}/${parsedMetar.wind.speed_kts}`;
+        const windVariable = parsedMetar.wind.degrees_from === 0 && parsedMetar.wind.degrees_to === 359;
+        const windDirection = windVariable
+          ? undefined
+          : Math.round(MathUtils.normalise360(parsedMetar.wind.degrees - magvar));
+        const windGust = parsedMetar.wind.gust_kts;
+        const windEntry = `${windVariable ? 'VRB' : windDirection.toFixed(0).padStart(3, '0')}/${parsedMetar.wind.speed_kts.toFixed(0).padStart(2, '0')}${windGust > parsedMetar.wind.speed_kts ? `G${windGust.toFixed(0)}` : ''}`;
 
         dispatch(
           setTakeoffValues({
@@ -557,8 +648,11 @@ export const TakeoffWidget = () => {
             runwaySlope,
             elevation: newRunway.elevation,
             weight: weightKgs,
+            ...(performanceCgLimits && Number.isFinite(aircraftCg) && aircraftCg > 0 ? { cg: aircraftCg } : {}),
             windDirection,
             windMagnitude: parsedMetar.wind.speed_kts,
+            windGust,
+            windVariable,
             windEntry,
             oat: parsedMetar.temperature.celsius,
             qnh: parsedMetar.barometer.mb,
@@ -571,6 +665,30 @@ export const TakeoffWidget = () => {
       toast.error(e);
     }
   };
+
+  useEffect(() => {
+    if (!takeoffFmsIntegration || !isValidIcao(ofpDepartingAirport) || !ofpDepartingRunway || !ofpDepartingMetar) {
+      return;
+    }
+    if (performanceCgLimits && (!Number.isFinite(aircraftCg) || aircraftCg <= 0)) {
+      return;
+    }
+    const ofpKey = [ofpDepartingAirport, ofpDepartingRunway, ofpDepartingMetar, ofpWeights.estTakeOffWeight].join('|');
+    if (importedOfp.current === ofpKey) {
+      return;
+    }
+    importedOfp.current = ofpKey;
+    autoCalculatePending.current = true;
+    clearResult();
+    syncValuesWithOfp();
+  }, [
+    takeoffFmsIntegration,
+    ofpDepartingAirport,
+    ofpDepartingRunway,
+    ofpDepartingMetar,
+    ofpWeights.estTakeOffWeight,
+    aircraftCg,
+  ]);
 
   const handleAutoFill = () => {
     clearResult();
@@ -929,6 +1047,22 @@ export const TakeoffWidget = () => {
                       />
                     </div>
                   </Label>
+                  {performanceCgLimits && (
+                    <Label text="CG (% MAC)">
+                      <div className="flex w-48 flex-row">
+                        <SimpleInput
+                          className="w-full"
+                          value={cg}
+                          placeholder="% MAC"
+                          min={performanceCgLimits.minPercentMac}
+                          max={performanceCgLimits.maxPercentMac}
+                          decimalPrecision={1}
+                          onChange={handleCgChange}
+                          number
+                        />
+                      </div>
+                    </Label>
+                  )}
                   <Label text={t('Performance.Takeoff.CoGPosition')}>
                     <SelectInput
                       className="w-48"

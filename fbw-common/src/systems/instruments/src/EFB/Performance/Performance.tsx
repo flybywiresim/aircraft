@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// Copyright (c) 2023-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useContext } from 'react';
@@ -14,7 +14,7 @@ import { AircraftContext } from '../AircraftContext';
 import { TemperatureCorrectionWidget } from './Widgets/TemperatureCorrectionWidget';
 
 export const Performance = () => {
-  const calculators = useContext(AircraftContext).performanceCalculators;
+  const { performanceCalculators: calculators, performanceDisclaimer } = useContext(AircraftContext);
 
   const tabs: PageLink[] = [
     calculators.takeoff
@@ -37,6 +37,7 @@ export const Performance = () => {
         <h1 className="font-bold">{t('Performance.Title')}</h1>
         <Navbar className="absolute right-0 top-0" tabs={tabs} basePath="/performance" />
       </div>
+      {performanceDisclaimer && <p className="mt-2 text-sm text-theme-text">{performanceDisclaimer}</p>}
       <div className="mt-4">
         <PageRedirect basePath="/performance" tabs={tabs} />
         <TabRoutes basePath="/performance" tabs={tabs} />

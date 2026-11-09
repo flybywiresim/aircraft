@@ -286,10 +286,14 @@ const PagesContainer: FC = () => {
       <MFDRoute exact path="/report_&_modify" component={Pages.Report.Report} />
       <MFDRoute path="/report/other_reports" component={Pages.Report.Other} />
       <MFDRoute path="/report/auto_&_manual_position" component={Pages.Report.PositionReport} />
+      <MFDRoute path="/report_&_modify/report/other_reports" component={Pages.Report.Other} />
+      <MFDRoute path="/report_&_modify/report/auto_&_manual_position" component={Pages.Report.PositionReport} />
       {/* Message record */}
       <MFDRoute exact path="/msg_record" component={Pages.MsgRecord.MsgRecord} />
       <MFDRoute path="/msg_record/all_msg" component={Pages.MsgRecord.AllMsg} />
       <MFDRoute path="/msg_record/monitored_msg" component={Pages.MsgRecord.MonitoredMsg} />
+      <MFDRoute path="/msg_record/msg_record/all_msg" component={Pages.MsgRecord.AllMsg} />
+      <MFDRoute path="/msg_record/msg_record/monitored_msg" component={Pages.MsgRecord.MonitoredMsg} />
       {/* ATIS */}
       <MFDRoute path="/d-atis/list" component={Pages.Atis} />
       {/* Emergency */}

@@ -587,6 +587,7 @@
     "AircraftOptionsPinPrograms": {
       "AccelerationHeight": "Výška zrýchlenia (ft)",
       "EngineOutAccelerationHeight": "Výška zrýchlenia pri poruche motora (ft)",
+      "hudXwindFpvType": "Crosswind FPV Type ",
       "IsisBaroUnit": "Jednotka ISIS Baro",
       "IsisMetricAltitude": "Metrická nadmorská výška ISIS",
       "LatLonExtendedFormat": "Formát bod cesty FMGC Lat/Lon",

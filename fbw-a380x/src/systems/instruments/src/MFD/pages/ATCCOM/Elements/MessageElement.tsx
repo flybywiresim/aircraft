@@ -24,12 +24,17 @@ export class MessageElement extends DisplayComponent<MessageElementProps> {
     this.divRef.instance.addEventListener('click', this.onClickHandler);
   }
 
+  public destroy(): void {
+    this.divRef.instance.removeEventListener('click', this.onClickHandler);
+    super.destroy();
+  }
+
   render(): VNode {
     return (
       <div ref={this.divRef} class="msg-record-msg-element mfd-label green">
         <div>
           <span class="msg-time">{this.props.msgTime}</span>
-          <span class="msg-origin-dest">FROM {this.props.msgOriginDest}</span>
+          <span class="msg-origin-dest">{this.props.msgOriginDest}</span>
           <span class="msg-status">{this.props.msgStatus}</span>
         </div>
         <div class="msg-body">{this.props.msgBody}</div>

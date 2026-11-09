@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-//  Copyright (c) 2022 FlyByWire Simulations
+//  Copyright (c) 2022-2026 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
 import { EventBus } from '@microsoft/msfs-sdk';
@@ -948,14 +948,15 @@ export class Atc {
 
           let printable = false;
 
-          if (atis.Information === '') {
+          const report = atis.Reports[0]?.report?.trim() ?? '';
+          if (!report || report === 'D-ATIS NOT AVAILABLE') {
             return AtsuStatusCodes.NoAtisReceived;
           }
 
           let resynchronizeFms = false;
 
           if (this.atisMessages.get(icao) !== undefined) {
-            if (this.atisMessages.get(icao)[1][0].Information !== atis.Information) {
+            if (this.atisMessages.get(icao)[1][0].Reports[0]?.report !== report) {
               this.atisMessages.get(icao)[1].unshift(atis);
               code = AtsuStatusCodes.NewAtisReceived;
               resynchronizeFms = true;
