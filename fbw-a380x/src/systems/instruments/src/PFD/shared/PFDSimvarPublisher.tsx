@@ -50,7 +50,6 @@ export interface PFDSimvars {
   tla2: number;
   tla3: number;
   tla4: number;
-  landingElevation: number;
   tcasState: number;
   tcasCorrective: boolean;
   tcasRedZoneL: number;

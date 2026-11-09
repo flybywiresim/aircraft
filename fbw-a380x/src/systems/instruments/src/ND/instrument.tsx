@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2024 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -24,6 +24,7 @@ import {
   BtvSimvarPublisher,
   EfisNdMode,
   EfisSide,
+  EfisVectorsPublisher,
   FcuBusPublisher,
   FcuSimVars,
   FmsOansSimvarPublisher,
@@ -202,6 +203,7 @@ class NDInstrument implements FsInstrument {
     this.backplane.addPublisher('fg', this.fgDataPublisher);
     this.backplane.addPublisher('fms-arinc', this.fmBusPublisher);
     this.backplane.addPublisher('fms-symbols', this.fmsSymbolsPublisher);
+    this.backplane.addPublisher('efis-vectors', new EfisVectorsPublisher(this.bus, this.efisSide));
     this.backplane.addPublisher('vor', this.vorBusPublisher);
     this.backplane.addPublisher('tcas', this.tcasBusPublisher);
     this.backplane.addPublisher('dmc', this.dmcPublisher);

@@ -32,6 +32,7 @@ import {
   SwitchingPanelPublisher,
   RaBusPublisher,
   LgciuBusPublisher,
+  EfisVectorsPublisher,
 } from '@flybywiresim/fbw-sdk';
 import { AudioManagementUnit } from './Misc/Communications/AudioManagementUnit';
 import { RmpAmuBusPublisher } from './Misc/Communications/RmpAmuBusPublisher';
@@ -229,6 +230,8 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('CpiomData', this.cpiomDataPublisher);
     this.backplane.addPublisher('InteractivePoints', this.interactivePointsPublisher);
     this.backplane.addPublisher('FmsSymbolsPublisher', this.fmsSymbolsPublisher);
+    // TAWS currently uses the left EFIS active path for both displays.
+    this.backplane.addPublisher('EfisVectorsPublisher', new EfisVectorsPublisher(this.bus, 'L', ['vectorsActive']));
     this.backplane.addPublisher('EgpwcPublisher', this.egpwcPublisher);
     this.backplane.addPublisher('FGDataPublisher', this.fgDataPublisher);
     this.backplane.addPublisher('MsfsMiscPublisher', this.msfsMiscPublisher);

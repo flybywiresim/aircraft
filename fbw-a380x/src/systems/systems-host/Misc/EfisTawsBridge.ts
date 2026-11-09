@@ -11,6 +11,7 @@ import {
   ClientState,
   EfisNdMode,
   EfisSide,
+  EfisVectorsEvents,
   ElevationSamplePathDto,
   FailuresConsumer,
   FcuBusPublisher,
@@ -38,8 +39,6 @@ import {
 import { ArmedLateralMode, isArmed, LateralMode } from '@shared/autopilot';
 // FIXME should not import from instruments
 import { ResetPanelSimvars } from '../../instruments/src/MsfsAvionicsCommon/providers/ResetPanelPublisher';
-// FIXME should not import from ND!!!
-import { FmsSymbolsData } from '../../instruments/src/ND/FmsSymbolsPublisher';
 import { PowerSupplyBusTypes } from './powersupply';
 // FIXME should not import from instruments
 import { EgpwcSimVars } from '../../instruments/src/MsfsAvionicsCommon/providers/EgpwcBusPublisher';
@@ -93,8 +92,8 @@ class EfisDataSync implements Instrument {
 export class EfisTawsBridge implements Instrument {
   private readonly subscriptions: Subscription[] = [];
   private readonly sub = this.bus.getSubscriber<
-    FmsSymbolsData &
-      ClockEvents &
+    ClockEvents &
+      EfisVectorsEvents &
       ResetPanelSimvars &
       PowerSupplyBusTypes &
       EgpwcSimVars &
@@ -361,7 +360,9 @@ export class EfisTawsBridge implements Instrument {
   private aircraftStatusShouldBeUpdated = true;
 
   // FIXME receive path over complete distance
-  private readonly fmsLateralPath = ConsumerSubject.create(this.sub.on('vectorsActive'), []);
+  // The systems-host publisher selects the left EFIS path for both displays.
+  // Preserve publication notifications even when the FMS reuses the same array.
+  private readonly fmsLateralPath = ConsumerSubject.create(this.sub.on('vectorsActive'), undefined, () => false);
 
   private readonly track1Word = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_true_track_1'));
   private readonly track2Word = Arinc429LocalVarConsumerSubject.create(this.sub.on('ir_true_track_2'));

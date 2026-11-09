@@ -12,7 +12,13 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 import { LowerArea } from './LowerArea';
-import { Arinc429LocalVarConsumerSubject, Arinc429Word, ArincEventBus, FailuresConsumer } from '@flybywiresim/fbw-sdk';
+import {
+  Arinc429LocalVarConsumerSubject,
+  Arinc429Register,
+  Arinc429WordData,
+  ArincEventBus,
+  FailuresConsumer,
+} from '@flybywiresim/fbw-sdk';
 
 import { AttitudeIndicatorWarnings } from '@flybywiresim/pfd';
 import { AttitudeIndicatorWarningsA380 } from './AttitudeIndicatorWarningsA380';
@@ -65,11 +71,11 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
 
   private isAttExcessive = Subject.create(false);
 
-  private pitch = new Arinc429Word(0);
+  private pitch: Arinc429WordData = Arinc429Register.empty();
 
-  private roll = new Arinc429Word(0);
+  private roll: Arinc429WordData = Arinc429Register.empty();
 
-  private ownRadioAltitude = new Arinc429Word(0);
+  private ownRadioAltitude: Arinc429WordData = Arinc429Register.empty();
 
   private filteredRadioAltitude = Subject.create(0);
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2024 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -7,12 +7,14 @@ import { ReadonlyFlightPlan } from './plans/ReadonlyFlightPlan';
 import { ReadonlyFlightPlanElement, ReadonlyFlightPlanLeg } from './legs/ReadonlyFlightPlanLeg';
 
 export class FlightPlanUtils {
+  /** Replaces the output array's contents with references to the plan's calculated path vectors. */
   public static getAllPathVectorsInFlightPlan(
     plan: ReadonlyFlightPlan,
+    out: PathVector[],
     activeLegIndex?: number,
     missedApproach = false,
-  ) {
-    const array: PathVector[] = []; // TODO optim alloc
+  ): PathVector[] {
+    let vectorCount = 0;
 
     const start = missedApproach
       ? Math.max(plan.activeLegIndex, plan.firstMissedApproachLegIndex)
@@ -30,10 +32,17 @@ export class FlightPlanUtils {
         continue;
       }
 
-      array.push(...(element.calculated?.path ?? []));
+      const path = element.calculated?.path;
+      if (path) {
+        for (let j = 0; j < path.length; j++) {
+          out[vectorCount++] = path[j];
+        }
+      }
     }
 
-    return array;
+    out.length = vectorCount;
+
+    return out;
   }
 
   private static isCourseReversal(leg: ReadonlyFlightPlanLeg): boolean {
