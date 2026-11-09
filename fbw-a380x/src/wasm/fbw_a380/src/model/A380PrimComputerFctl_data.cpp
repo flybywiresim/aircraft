@@ -306,6 +306,8 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
 
   1.0,
 
+  0.05,
+
   0.0,
 
   0.0,
@@ -527,6 +529,8 @@ A380PrimComputerFctl::Parameters_A380PrimComputerFctl_T A380PrimComputerFctl::A3
   a380_efcs_law::NormalLaw,
 
   a380_efcs_law::AlternateLaw1A,
+
+  a380_efcs_law::DirectLaw,
 
   a380_efcs_law::NormalLaw,
 

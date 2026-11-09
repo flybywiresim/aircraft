@@ -3988,24 +3988,27 @@ void A380PrimComputerFctl::step()
       A380PrimComputerFctl_B.BusAssignment_m.fctl_logic.prim_capability_score;
     nz = static_cast<int32_T>(A380PrimComputerFctl_DWork.DelayInput1_DSTATE);
     rtb_VectorConcatenate_o[0] = A380PrimComputerFctl_B.BusAssignment_m.fctl_logic.ths_automatic_mode_active;
-    rtb_VectorConcatenate_o[1] = A380PrimComputerFctl_P.Constant22_Value;
+    rtb_VectorConcatenate_o[1] = ((A380PrimComputerFctl_B.BusAssignment_m.fctl_logic.active_law ==
+      A380PrimComputerFctl_P.EnumeratedConstant5_Value) ||
+      A380PrimComputerFctl_B.BusAssignment_m.fctl_logic.flare_law_override_active);
     rtb_VectorConcatenate_o[2] = A380PrimComputerFctl_P.Constant22_Value;
     rtb_VectorConcatenate_o[3] = A380PrimComputerFctl_P.Constant22_Value;
     rtb_VectorConcatenate_o[4] = A380PrimComputerFctl_P.Constant22_Value;
     rtb_VectorConcatenate_o[5] = A380PrimComputerFctl_P.Constant22_Value;
-    rtb_VectorConcatenate_o[6] = A380PrimComputerFctl_P.Constant22_Value;
-    rtb_VectorConcatenate_o[7] = A380PrimComputerFctl_P.Constant22_Value;
-    rtb_VectorConcatenate_o[8] = A380PrimComputerFctl_P.Constant22_Value;
-    rtb_VectorConcatenate_o[9] = A380PrimComputerFctl_P.Constant22_Value;
+    rtb_VectorConcatenate_o[6] = A380PrimComputerFctl_B.BusAssignment_m.fctl_logic.left_sidestick_disabled;
+    rtb_VectorConcatenate_o[7] = A380PrimComputerFctl_B.BusAssignment_m.fctl_logic.right_sidestick_disabled;
+    rtb_VectorConcatenate_o[8] = A380PrimComputerFctl_B.BusAssignment_m.fctl_logic.left_sidestick_priority_locked;
+    rtb_VectorConcatenate_o[9] = A380PrimComputerFctl_B.BusAssignment_m.fctl_logic.right_sidestick_priority_locked;
     rtb_VectorConcatenate_o[10] = A380PrimComputerFctl_P.Constant22_Value;
     rtb_VectorConcatenate_o[11] = A380PrimComputerFctl_P.Constant22_Value;
     rtb_VectorConcatenate_o[12] = A380PrimComputerFctl_P.Constant22_Value;
     rtb_VectorConcatenate_o[13] = A380PrimComputerFctl_P.Constant22_Value;
     rtb_VectorConcatenate_o[14] = A380PrimComputerFctl_P.Constant22_Value;
     rtb_VectorConcatenate_o[15] = A380PrimComputerFctl_P.Constant22_Value;
-    rtb_VectorConcatenate_o[16] = A380PrimComputerFctl_P.Constant22_Value;
-    rtb_VectorConcatenate_o[17] = A380PrimComputerFctl_P.Constant22_Value;
-    rtb_VectorConcatenate_o[18] = A380PrimComputerFctl_P.Constant22_Value;
+    rtb_VectorConcatenate_o[16] = (A380PrimComputerFctl_B.BusAssignment_m.data.analog_inputs.speed_brake_lever_pos >=
+      A380PrimComputerFctl_P.CompareToConstant_const_nt);
+    rtb_VectorConcatenate_o[17] = A380PrimComputerFctl_B.BusAssignment_m.fctl_logic.ground_spoilers_armed;
+    rtb_VectorConcatenate_o[18] = A380PrimComputerFctl_B.BusAssignment_m.fctl_logic.ground_spoilers_out;
     A380PrimComputerFctl_MATLABFunction_g(rtb_VectorConcatenate_o, &rtb_fctl_discrete_status_word_1_Data);
     rtb_y_bk = static_cast<uint32_T>(A380PrimComputerFctl_P.EnumeratedConstant2_Value);
     if (A380PrimComputerFctl_B.BusAssignment_m.flight_envelope.speed_scale_lost) {

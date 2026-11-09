@@ -331,6 +331,7 @@ class A380PrimComputerFctl final
     real_T CompareToConstant1_const_c;
     real_T CompareToConstant_const_e;
     real_T CompareToConstant_const_b;
+    real_T CompareToConstant_const_nt;
     real_T CompareToConstant1_const_b;
     real_T CompareToConstant2_const_d;
     real_T CompareToConstant_const_d5;
@@ -442,6 +443,7 @@ class A380PrimComputerFctl final
     a380_efcs_law EnumeratedConstant4_Value;
     a380_efcs_law EnumeratedConstant_Value_j;
     a380_efcs_law EnumeratedConstant1_Value_a;
+    a380_efcs_law EnumeratedConstant5_Value;
     a380_efcs_law EnumeratedConstant4_Value_k;
     a380_efcs_law EnumeratedConstant3_Value;
     a380_lateral_law EnumeratedConstant_Value_g;

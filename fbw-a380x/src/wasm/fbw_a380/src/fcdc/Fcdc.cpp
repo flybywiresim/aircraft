@@ -116,11 +116,10 @@ FcdcBus Fcdc::getBusOutputs() {
 
   Arinc429SignStatus ssm = Arinc429SignStatus::NormalOperation;
 
-  PitchLaw systemPitchLaw = allPrimsDead
-                                ? PitchLaw::DirectLaw
-                                : getLawStatusFromBits(bitFromValue(busInputs.prims[masterPrimIndex].fctl.fctl_law_status_word, 16),
-                                                       bitFromValue(busInputs.prims[masterPrimIndex].fctl.fctl_law_status_word, 17),
-                                                       bitFromValue(busInputs.prims[masterPrimIndex].fctl.fctl_law_status_word, 18));
+  SystemLaw systemLaw = allPrimsDead ? SystemLaw::DirectLaw
+                                     : getLawStatusFromBits(bitFromValue(busInputs.prims[masterPrimIndex].fctl.fctl_law_status_word, 16),
+                                                            bitFromValue(busInputs.prims[masterPrimIndex].fctl.fctl_law_status_word, 17),
+                                                            bitFromValue(busInputs.prims[masterPrimIndex].fctl.fctl_law_status_word, 18));
 
   const auto prim1Fault = !isNo(busInputs.prims[0].fctl.fctl_law_status_word);
   const auto prim2Fault = !isNo(busInputs.prims[1].fctl.fctl_law_status_word);
@@ -131,14 +130,16 @@ FcdcBus Fcdc::getBusOutputs() {
   const auto sec3Fault = !isNo(busInputs.secs[2].fctl_law_status_word);
 
   output.efcsStatus1.setSsm(ssm);
-  output.efcsStatus1.setBit(11, systemPitchLaw == PitchLaw::NormalLaw);
-  output.efcsStatus1.setBit(12, systemPitchLaw == PitchLaw::AlternateLaw1A);
-  output.efcsStatus1.setBit(13, systemPitchLaw == PitchLaw::AlternateLaw1B);
-  output.efcsStatus1.setBit(14, systemPitchLaw == PitchLaw::AlternateLaw1C);
-  output.efcsStatus1.setBit(15, systemPitchLaw == PitchLaw::AlternateLaw2A);
-  output.efcsStatus1.setBit(16, systemPitchLaw == PitchLaw::AlternateLaw2B);
-  output.efcsStatus1.setBit(18, systemPitchLaw == PitchLaw::DirectLaw);
+  output.efcsStatus1.setBit(11, systemLaw == SystemLaw::NormalLaw);
+  output.efcsStatus1.setBit(12, systemLaw == SystemLaw::AlternateLaw1A);
+  output.efcsStatus1.setBit(13, systemLaw == SystemLaw::AlternateLaw1B);
+  output.efcsStatus1.setBit(14, systemLaw == SystemLaw::AlternateLaw1C);
+  output.efcsStatus1.setBit(15, systemLaw == SystemLaw::AlternateLaw2A);
+  output.efcsStatus1.setBit(16, systemLaw == SystemLaw::AlternateLaw2B);
+  output.efcsStatus1.setBit(18, systemLaw == SystemLaw::DirectLaw);
   output.efcsStatus1.setBit(19, false);
+  output.efcsStatus1.setBit(20,
+                            bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.discrete_status_word_1, 12, true));  // Manual Pitch Trim
   output.efcsStatus1.setBit(23, prim1Fault);
   output.efcsStatus1.setBit(24, prim2Fault);
   output.efcsStatus1.setBit(25, prim3Fault);
@@ -442,9 +443,9 @@ FcdcBus Fcdc::getBusOutputs() {
   output.efcsStatus10.setBit(15, discreteInputs.secOff[1]);
   output.efcsStatus10.setBit(16, discreteInputs.secOff[2]);
   output.efcsStatus10.setBit(18, false);
-  output.efcsStatus10.setBit(19, prim1LawCap != PitchLaw::NormalLaw);
-  output.efcsStatus10.setBit(20, prim2LawCap != PitchLaw::NormalLaw);
-  output.efcsStatus10.setBit(25, prim3LawCap != PitchLaw::NormalLaw);
+  output.efcsStatus10.setBit(19, prim1LawCap != SystemLaw::NormalLaw);
+  output.efcsStatus10.setBit(20, prim2LawCap != SystemLaw::NormalLaw);
+  output.efcsStatus10.setBit(25, prim3LawCap != SystemLaw::NormalLaw);
   output.efcsStatus10.setBit(26, false);
   output.efcsStatus10.setBit(27, false);
 
@@ -871,23 +872,23 @@ void Fcdc::updateSelfTest(double deltaTime) {
   }
 }
 
-PitchLaw Fcdc::getLawStatusFromBits(bool bit1, bool bit2, bool bit3) {
+SystemLaw Fcdc::getLawStatusFromBits(bool bit1, bool bit2, bool bit3) {
   if (!bit1 && !bit2 && bit3) {
-    return PitchLaw::NormalLaw;
+    return SystemLaw::NormalLaw;
   } else if (!bit1 && bit2 && !bit3) {
-    return PitchLaw::AlternateLaw1A;
+    return SystemLaw::AlternateLaw1A;
   } else if (!bit1 && bit2 && bit3) {
-    return PitchLaw::AlternateLaw1B;
+    return SystemLaw::AlternateLaw1B;
   } else if (bit1 && !bit2 && !bit3) {
-    return PitchLaw::AlternateLaw1C;
+    return SystemLaw::AlternateLaw1C;
   } else if (bit1 && !bit2 && bit3) {
-    return PitchLaw::AlternateLaw2A;
+    return SystemLaw::AlternateLaw2A;
   } else if (bit1 && bit2 && !bit3) {
-    return PitchLaw::AlternateLaw2B;
+    return SystemLaw::AlternateLaw2B;
   } else if (bit1 && bit2 && bit3) {
-    return PitchLaw::DirectLaw;
+    return SystemLaw::DirectLaw;
   } else {
-    return PitchLaw::None;
+    return SystemLaw::None;
   }
 }
 

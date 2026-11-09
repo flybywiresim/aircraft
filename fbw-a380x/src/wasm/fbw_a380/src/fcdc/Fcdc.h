@@ -6,13 +6,7 @@
 
 #include <tuple>
 
-enum class LateralLaw {
-  NormalLaw,
-  DirectLaw,
-  None,
-};
-
-enum class PitchLaw {
+enum class SystemLaw {
   NormalLaw,
   AlternateLaw1A,
   AlternateLaw1B,
@@ -50,7 +44,7 @@ class Fcdc {
 
   void updateBtvRowRop(double deltaTime);
 
-  PitchLaw getLawStatusFromBits(bool bit1, bool bit2, bool bit3);
+  SystemLaw getLawStatusFromBits(bool bit1, bool bit2, bool bit3);
 
   std::tuple<bool, bool, bool, bool> computeAileronStatusFromComputer(base_arinc_429& word, int offset, bool defaultValue);
 

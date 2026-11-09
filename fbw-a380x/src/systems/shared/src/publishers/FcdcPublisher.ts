@@ -19,7 +19,7 @@ export type FcdcBusBaseEvents = {
    * | 17  | Spare                             |
    * | 18  | Direct Law Active                 |
    * | 19  | BCM Active                        |
-   * | 20  | Spare                             |
+   * | 20  | Use manual pitch trim             |
    * | 21  | Spare                             |
    * | 22  | Spare                             |
    * | 23  | PRIM 1 Fault                      |
