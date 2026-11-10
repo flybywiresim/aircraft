@@ -31,10 +31,6 @@ class A380FcuComputer final
     boolean_T pY_not_empty;
   };
 
-  struct BlockIO_A380FcuComputer_T {
-    fcu_outputs BusAssignment;
-  };
-
   struct D_Work_A380FcuComputer_T {
     real32_T pValueHpa;
     real32_T pValueInhg;
@@ -51,7 +47,6 @@ class A380FcuComputer final
     boolean_T qnh_active;
     boolean_T qfe_active;
     boolean_T Runtime_MODE;
-    boolean_T EFISLogic_MODE;
     rtDW_MATLABFunction_A380FcuComputer_o_T sf_MATLABFunction_lf;
     rtDW_MATLABFunction_A380FcuComputer_o_T sf_MATLABFunction_gu;
     rtDW_MATLABFunction_A380FcuComputer_o_T sf_MATLABFunction_aj;
@@ -186,10 +181,11 @@ class A380FcuComputer final
     real_T MTrigNode5_triggerDuration;
     real_T MTrigNode6_triggerDuration;
     real_T MTrigNode7_triggerDuration;
+    SignStatusMatrix EnumeratedConstant2_Value;
     SignStatusMatrix EnumeratedConstant1_Value;
     a380_efis_filter_selection EnumeratedConstant6_Value;
     a380_efis_filter_selection EnumeratedConstant1_Value_o;
-    a380_efis_filter_selection EnumeratedConstant2_Value;
+    a380_efis_filter_selection EnumeratedConstant2_Value_a;
     a380_efis_filter_selection EnumeratedConstant6_Value_k;
     a380_efis_filter_selection EnumeratedConstant8_Value;
     a380_efis_filter_selection EnumeratedConstant9_Value;
@@ -250,7 +246,6 @@ class A380FcuComputer final
     int8_T CompareToConstant_const_e;
     uint8_T CompareToConstant_const_g;
     fcu_outputs out_Y0;
-    fcu_outputs out_Y0_l;
     base_fcu_logic_outputs Constant1_Value;
     base_fcu_discrete_outputs Constant3_Value;
     base_fcu_bus Constant2_Value;
@@ -284,7 +279,6 @@ class A380FcuComputer final
  private:
   ExternalInputs_A380FcuComputer_T A380FcuComputer_U;
   ExternalOutputs_A380FcuComputer_T A380FcuComputer_Y;
-  BlockIO_A380FcuComputer_T A380FcuComputer_B;
   D_Work_A380FcuComputer_T A380FcuComputer_DWork;
   static Parameters_A380FcuComputer_T A380FcuComputer_P;
   static void A380FcuComputer_MATLABFunction(const base_arinc_429 *rtu_u, real32_T rtu_default, real32_T *rty_y);

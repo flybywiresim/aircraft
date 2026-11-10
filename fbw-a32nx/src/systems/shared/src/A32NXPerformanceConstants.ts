@@ -1,0 +1,3 @@
+// Copyright (c) 2026 FlyByWire Simulations
+export const MAXIMUM_CERTIFIED_FLIGHT_LEVEL = 398;
+export const MAXIMUM_CERTIFIED_ALTITUDE = MAXIMUM_CERTIFIED_FLIGHT_LEVEL * 100;

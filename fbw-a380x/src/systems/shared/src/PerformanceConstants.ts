@@ -19,7 +19,9 @@ export const Mlo = 0.55; // mach, Gear operating
 export const VloGravityGearExtension = 220; // kt
 export const MloGravityGearExtension = 0.48; // mach
 
-export const maxCertifiedAlt = 43_000; // feet
+export const maxCertifiedAlt = 43_100; // feet
+/** The maximum certified flight level */
+export const maxCertifiedFlightLevel = maxCertifiedAlt / 100;
 
 export const defaultTropopauseAlt = 36_090; // feet
 

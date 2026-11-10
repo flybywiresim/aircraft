@@ -42,7 +42,7 @@ import {
   minZfw,
   minZfwCg,
 } from '@shared/PerformanceConstants';
-import { FmsPage } from '../common/FmsPage';
+import { FmsFlightPlanPage } from '../common/FmsFlightPlanPage';
 import { MfdSimvars } from '../../shared/MFDSimvarPublisher';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
@@ -55,7 +55,7 @@ import { FlightPlanChangeNotifier } from '@fmgc/flightplanning/sync/FlightPlanCh
 
 interface MfdFmsFuelLoadProps extends AbstractMfdPageProps {}
 
-export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
+export class MfdFmsFuelLoad extends FmsFlightPlanPage<MfdFmsFuelLoadProps> {
   private readonly weightUnit = NXDataStore.getSetting('CONFIG_USING_METRIC_UNIT').map((v) =>
     v ? UnitType.KILOGRAM : UnitType.POUND,
   );
@@ -427,12 +427,10 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
     const fp = hasFp ? this.props.flightPlanInterface.get(fpIndex!) : null;
     this.altnIcao.set(fp?.alternateDestinationAirport?.ident ?? 'NONE');
     this.altnEta.set('--:--');
-    if (fp) {
-      this.altnEfob.set(this.props.fmcService.master.fmgc.getAltEFOB(fpIndex!) ?? NaN, UnitType.KILOGRAM);
-    } else {
-      this.altnEfob.set(NaN);
-    }
-    this.altnEfob.set(hasFp ? this.props.fmcService.master.fmgc.getAltEFOB(fpIndex!) ?? NaN : NaN, UnitType.KILOGRAM);
+    this.altnEfob.set(
+      hasFp ? (this.props.fmcService.master.fmgc.getAltEFOB(fpIndex!) ?? NaN) * 1000 : NaN,
+      UnitType.KILOGRAM,
+    );
   }
 
   render(): VNode {
@@ -873,6 +871,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                         this.loadedFlightPlanIndex.get(),
                       )
                     }
+                    canBeCleared={false}
                     enteredByPilot={this.minimumFuelAtDestinationIsPilotEntered}
                     readonlyValue={this.minimumFuelAtDestination}
                     alignText="flex-end"

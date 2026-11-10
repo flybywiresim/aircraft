@@ -15,7 +15,8 @@ enum class PitchLaw {
   AlternateLaw1A,
   AlternateLaw1B,
   AlternateLaw1C,
-  AlternateLaw2,
+  AlternateLaw2A,
+  AlternateLaw2B,
   DirectLaw,
   None,
 };
@@ -49,9 +50,7 @@ class Fcdc {
 
   void updateBtvRowRop(double deltaTime);
 
-  PitchLaw getPitchLawStatusFromBits(bool bit1, bool bit2, bool bit3);
-
-  LateralLaw getLateralLawStatusFromBits(bool bit1, bool bit2);
+  PitchLaw getLawStatusFromBits(bool bit1, bool bit2, bool bit3);
 
   // Computer monitoring and self-test vars
 
