@@ -16,10 +16,11 @@ import { ProfilePhase, VerticalWaypointPrediction } from '@fmgc/guidance/vnav/pr
 import { FlightPlanLeg } from '@fmgc/flightplanning/legs/FlightPlanLeg';
 import { SegmentClass } from '@fmgc/flightplanning/segments/SegmentClass';
 import { CduRtaPage } from './CDU_RTA_Page';
+import { MAXIMUM_CERTIFIED_ALTITUDE } from '@shared/A32NXPerformanceConstants';
 
 export class CDUVerticalRevisionPage {
-  /** Maximum certified altitude (39800 ft) minus 100 ft */
-  private static readonly MAX_ALTITUDE_CONSTRAINT = 39700;
+  /** Maximum certified altitude minus 100 ft */
+  private static readonly MAX_ALTITUDE_CONSTRAINT = MAXIMUM_CERTIFIED_ALTITUDE - 100;
 
   /**
    * @param mcdu
