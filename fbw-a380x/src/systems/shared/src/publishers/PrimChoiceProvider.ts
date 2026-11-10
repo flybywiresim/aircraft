@@ -3,8 +3,15 @@
 import { Arinc429LocalVarConsumerSubject } from '@flybywiresim/fbw-sdk';
 import { ConsumerSubject, EventBus, MappedSubject } from '@microsoft/msfs-sdk';
 import { PrimFeBusBaseEvents, PrimFeBusEvents } from '@shared/publishers/PrimFePublisher';
-import { PrimFctlBusEvents } from '@shared/publishers/PrimFctlPublisher';
+import { PrimFctlBusEvents, PrimFctlBusBaseEvents } from '@shared/publishers/PrimFctlPublisher';
 import { PrimFgBusEvents, PrimFgBusBaseEvents } from '@shared/publishers/PrimFgPublisher';
+
+const primFctlSubjectsByKey = {
+  prim_fctl_law_status_word: ConsumerSubject.create(null, 0),
+  prim_discrete_status_word_1: ConsumerSubject.create(null, 0),
+  prim_speed_brake_command: ConsumerSubject.create(null, 0),
+  prim_ground_spoiler_command: ConsumerSubject.create(null, 0),
+} satisfies Record<keyof PrimFctlBusBaseEvents, ConsumerSubject<number>>;
 
 const primFeSubjectsByKey = {
   prim_gamma_a: ConsumerSubject.create(null, 0),
@@ -87,6 +94,10 @@ export class PrimChoiceProvider {
     this.prim3FctlLawStatusWord,
   );
 
+  private readonly primFctlSubjects = new Map(
+    Object.entries(primFctlSubjectsByKey) as [keyof PrimFctlBusBaseEvents, ConsumerSubject<number>][],
+  );
+
   private readonly primFeSubjects = new Map(
     Object.entries(primFeSubjectsByKey) as [keyof PrimFeBusBaseEvents, ConsumerSubject<number>][],
   );
@@ -98,9 +109,14 @@ export class PrimChoiceProvider {
   constructor(private readonly bus: EventBus) {}
 
   public init(): void {
-    const publisher = this.bus.getPublisher<PrimFeBusBaseEvents & PrimFgBusBaseEvents>();
+    const publisher = this.bus.getPublisher<PrimFeBusBaseEvents & PrimFgBusBaseEvents & PrimFctlBusBaseEvents>();
 
     this.selectedMasterPrim.sub((masterPrim) => {
+      for (const [key, value] of this.primFctlSubjects) {
+        // TODO check frequency
+        value.setConsumer(this.sub.on(`${key}_${masterPrim}`).atFrequency(10));
+      }
+
       for (const [key, value] of this.primFeSubjects) {
         // The FE data over AFDX seems to update only at around 10Hz (see for example Vmax when moving)
         value.setConsumer(this.sub.on(`${key}_${masterPrim}`).atFrequency(10));
@@ -111,6 +127,12 @@ export class PrimChoiceProvider {
         value.setConsumer(this.sub.on(`${key}_${masterPrim}`).atFrequency(10));
       }
     }, true);
+
+    for (const [key, value] of this.primFctlSubjects) {
+      value.sub((word) => {
+        publisher.pub(key, word);
+      }, true);
+    }
 
     for (const [key, value] of this.primFeSubjects) {
       value.sub((word) => {

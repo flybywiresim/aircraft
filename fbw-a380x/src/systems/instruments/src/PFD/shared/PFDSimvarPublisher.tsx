@@ -100,8 +100,6 @@ export interface PFDSimvars {
   slatPosLeft: number;
   trimPosition: number;
   cgPercent: number;
-  spoilersCommanded: number;
-  spoilersArmed: boolean;
   btvExitMissed: boolean;
   hydGreenSysPressurized: boolean;
   hydYellowSysPressurized: boolean;
@@ -205,8 +203,6 @@ export enum PFDVars {
   lgciuDiscreteWord1Raw = 'L:A32NX_LGCIU_1_DISCRETE_WORD_1',
   slatPosLeft = 'L:A32NX_LEFT_SLATS_ANGLE',
   trimPosition = 'ELEVATOR TRIM POSITION',
-  spoilersCommanded = 'L:A32NX_LEFT_SPOILER_1_COMMANDED_POSITION',
-  spoilersArmed = 'L:A32NX_SPOILERS_ARMED',
   btvExitMissed = 'L:A32NX_BTV_EXIT_MISSED',
   hydGreenSysPressurized = 'L:A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE_SWITCH',
   hydYellowSysPressurized = 'L:A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE_SWITCH',
@@ -310,8 +306,6 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['lgciuDiscreteWord1Raw', { name: PFDVars.lgciuDiscreteWord1Raw, type: SimVarValueType.Number }],
     ['slatPosLeft', { name: PFDVars.slatPosLeft, type: SimVarValueType.Number }],
     ['trimPosition', { name: PFDVars.trimPosition, type: SimVarValueType.Number }],
-    ['spoilersCommanded', { name: PFDVars.spoilersCommanded, type: SimVarValueType.Number }],
-    ['spoilersArmed', { name: PFDVars.spoilersArmed, type: SimVarValueType.Bool }],
     ['btvExitMissed', { name: PFDVars.btvExitMissed, type: SimVarValueType.Bool }],
     ['hydGreenSysPressurized', { name: PFDVars.hydGreenSysPressurized, type: SimVarValueType.Bool }],
     ['hydYellowSysPressurized', { name: PFDVars.hydYellowSysPressurized, type: SimVarValueType.Bool }],

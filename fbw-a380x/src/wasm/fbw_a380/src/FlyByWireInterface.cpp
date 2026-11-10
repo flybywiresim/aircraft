@@ -600,6 +600,9 @@ void FlyByWireInterface::setupLocalVariables() {
     idPrimApEngaged[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_AP_ENGAGED");
 
     idPrimFctlLawStatusWord[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_FCTL_LAW_STATUS_WORD");
+    idPrimDiscreteStatusWord1[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_DISCRETE_STATUS_WORD_1");
+    idPrimSpeedBrakeCommand[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_SPD_BRK_COMMAND");
+    idPrimGroundSpoilerCommand[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_GND_SPLR_COMMAND");
 
     idPrimGammaA[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_GAMMA_A");
     idPrimGammaT[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_GAMMA_T");
@@ -1755,6 +1758,9 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   idPrimApEngaged[primIndex]->set(primsDiscreteOutputs[primIndex].ap_engaged);
 
   idPrimFctlLawStatusWord[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fctl.fctl_law_status_word));
+  idPrimDiscreteStatusWord1[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fctl.discrete_status_word_1));
+  idPrimSpeedBrakeCommand[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fctl.speed_brake_command_deg));
+  idPrimGroundSpoilerCommand[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fctl.ground_spoiler_command_deg));
 
   idPrimGammaA[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fe.gamma_a_deg));
   idPrimGammaT[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fe.gamma_t_deg));
