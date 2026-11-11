@@ -10,6 +10,7 @@ import { ActivePageTitleBar } from '../common/ActivePageTitleBar';
 import { DropdownMenu } from '../../../MsfsAvionicsCommon/UiWidgets/DropdownMenu';
 import { MaxRequestElements, MessageFrame, MessageTable } from './Messages/Registry';
 import { DclMessage } from '@datalink/common';
+import { RequestDepDataBlock } from './Messages/Clearance/RequestDepartureClearance';
 
 interface MfdAtccomRequestProps extends AtccomMfdPageProps {}
 
@@ -20,6 +21,12 @@ export class MfdAtccomRequest extends DisplayComponent<MfdAtccomRequestProps> {
   private FanMode: string = 'A';
 
   private messageElements = ArraySubject.create<MessageFrame>();
+
+  /** The request can only be transferred to the mailbox once every element is complete */
+  private readonly transferDisabled = Subject.create(true);
+
+  /** Currently rendered request elements, destroyed before they are rendered again */
+  private renderedElements: VNode[] = [];
 
   protected onNewData() {}
 
@@ -57,12 +64,12 @@ export class MfdAtccomRequest extends DisplayComponent<MfdAtccomRequestProps> {
     }
   }
 
-  private createDclMessage(data) {
+  private createDclMessage(data: RequestDepDataBlock): DclMessage {
     const formattedMessage = new DclMessage();
     formattedMessage.Callsign = data.callsign;
     formattedMessage.Origin = data.from;
     formattedMessage.Destination = data.to;
-    formattedMessage.AcType = 'A388';
+    formattedMessage.AcType = data.actype;
     formattedMessage.Atis = data.atis;
     formattedMessage.Gate = data.gate;
     formattedMessage.Freetext = data.freetext.filter((n) => n);
@@ -72,16 +79,28 @@ export class MfdAtccomRequest extends DisplayComponent<MfdAtccomRequestProps> {
   }
 
   private transferToMailbox(): void {
-    console.log(this.messageElements.getArray());
+    if (this.transferDisabled.get() || this.elements.length === 0) {
+      return;
+    }
+
     // check for DCL message
-    if (this.elements[0].id == 'RequestDepartureClearance') {
-      // register dcl message
-      this.props.atcService.registerMessages([this.createDclMessage(this.messageElements.getArray()[0].message)]);
+    if (this.elements[0].id === 'RequestDepartureClearance') {
+      // register dcl message, the mailbox takes over from here
+      this.props.atcService.registerMessages([
+        this.createDclMessage(this.messageElements.getArray()[0].message as RequestDepDataBlock),
+      ]);
+      this.elements = [];
+      this.renderElements();
     }
   }
 
   // Convert this to use a subscription when elements is changed
   private renderElements(): void {
+    this.renderedElements.forEach((node) => FSComponent.shallowDestroy(node));
+    this.renderedElements = [];
+    // the rendered elements publish their data again when they are created
+    this.messageElements.clear();
+
     FSComponent.remove(document.getElementById('request-frame-0'));
     FSComponent.remove(document.getElementById('request-frame-1'));
     FSComponent.remove(document.getElementById('request-frame-2'));
@@ -94,25 +113,30 @@ export class MfdAtccomRequest extends DisplayComponent<MfdAtccomRequestProps> {
           <div id={`request-frame-${index}`} className="request-frame"></div>,
           document.getElementById('atccom-request-body'),
         );
-        FSComponent.render(
-          MessageTable[element.id].visualization(this.props, this.FanMode, index, this.messageElements, () =>
-            this.elementDelete(index),
-          ),
-          document.getElementById(`request-frame-${index}`),
+        const node = MessageTable[element.id].visualization(this.props, this.FanMode, index, this.messageElements, () =>
+          this.elementDelete(index),
         );
+        this.renderedElements.push(node);
+        FSComponent.render(node, document.getElementById(`request-frame-${index}`));
       }
     });
   }
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
+
+    this.messageElements.sub((_index, _type, _item, array) => {
+      this.transferDisabled.set(
+        array.length === 0 || array.length !== this.elements.length || array.some((element) => !element.readyToSend),
+      );
+    }, true);
   }
 
   render(): VNode {
     return (
       <>
         <ActivePageTitleBar
-          activePage={Subject.create('CONNECT')}
+          activePage={Subject.create(this.props.pageTitle ?? 'REQUEST')}
           offset={Subject.create('')}
           eoIsActive={Subject.create(false)}
           tmpyIsActive={Subject.create(false)}
@@ -234,7 +258,7 @@ export class MfdAtccomRequest extends DisplayComponent<MfdAtccomRequestProps> {
             <div style="position:absolute; right:0px">
               <Button
                 label="XFR<br /> TO MAILBOX"
-                disabled={Subject.create(false)}
+                disabled={this.transferDisabled}
                 onClick={() => this.transferToMailbox()}
                 buttonStyle="width: 190px; height:64px;"
               />

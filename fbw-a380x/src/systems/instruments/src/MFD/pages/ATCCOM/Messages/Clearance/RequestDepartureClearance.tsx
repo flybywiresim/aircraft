@@ -1,4 +1,4 @@
-import { DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
 import { InputField } from '../../../../../MsfsAvionicsCommon/UiWidgets/InputField';
 import {
   AircraftType,
@@ -30,7 +30,7 @@ export class RequestDepartureClearance extends DisplayComponent<MessageVisualiza
   private CreateDataBlock() {
     return {
       firstCall: true,
-      callsign: 'FBW123',
+      callsign: '',
       station: '',
       stationManual: false,
       from: '',
@@ -51,8 +51,17 @@ export class RequestDepartureClearance extends DisplayComponent<MessageVisualiza
 
   private dataBlock = this.CreateDataBlock();
 
+  private readonly subscriptions: Subscription[] = [];
+
   private CanSendData(store: RequestDepDataBlock): boolean {
-    return store.callsign !== '' && store.station !== '' && store.from !== '' && store.to !== '' && store.atis !== '';
+    return (
+      store.callsign !== '' &&
+      store.station !== '' &&
+      store.from !== '' &&
+      store.to !== '' &&
+      store.atis !== '' &&
+      store.actype !== ''
+    );
   }
 
   private updateHandler(): void {
@@ -82,36 +91,70 @@ export class RequestDepartureClearance extends DisplayComponent<MessageVisualiza
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.originAirport.sub((value) => {
-      this.dataBlock.from = value;
-      this.dataBlock.station = value;
-      this.updateHandler();
-    });
+    // pre-fill the request with the data known by the FMS
+    const fmsOrigin = this.props.atcService.fmsOrigin.get();
+    if (fmsOrigin) {
+      this.originAirport.set(fmsOrigin);
+    }
+    const fmsDestination = this.props.atcService.fmsDestination.get();
+    if (fmsDestination) {
+      this.destAirport.set(fmsDestination);
+    }
 
-    this.gate.sub((value) => {
-      this.dataBlock.gate = value;
-      this.updateHandler();
-    });
+    this.subscriptions.push(
+      this.props.atcService.fmsFlightNumber.sub((flightNumber) => {
+        this.dataBlock.callsign = flightNumber ?? '';
+        this.updateHandler();
+      }, true),
+    );
 
-    this.atisCode.sub((value) => {
-      this.dataBlock.atis = value;
-      this.updateHandler();
-    });
+    this.subscriptions.push(
+      this.originAirport.sub((value) => {
+        this.dataBlock.from = value ?? '';
+        this.dataBlock.station = value ?? '';
+        this.updateHandler();
+      }, true),
+    );
 
-    this.aircraftType.sub((value) => {
-      this.dataBlock.actype = value;
-      this.updateHandler();
-    });
+    this.subscriptions.push(
+      this.gate.sub((value) => {
+        this.dataBlock.gate = value ?? '';
+        this.updateHandler();
+      }),
+    );
 
-    this.destAirport.sub((value) => {
-      this.dataBlock.to = value;
-      this.updateHandler();
-    });
+    this.subscriptions.push(
+      this.atisCode.sub((value) => {
+        this.dataBlock.atis = value ?? '';
+        this.updateHandler();
+      }),
+    );
 
-    this.freeText.sub((value) => {
-      this.dataBlock.freetext[0] = value;
-      this.updateHandler();
-    }); // TODO: check how A380 formatting works
+    this.subscriptions.push(
+      this.aircraftType.sub((value) => {
+        this.dataBlock.actype = value ?? '';
+        this.updateHandler();
+      }),
+    );
+
+    this.subscriptions.push(
+      this.destAirport.sub((value) => {
+        this.dataBlock.to = value ?? '';
+        this.updateHandler();
+      }, true),
+    );
+
+    this.subscriptions.push(
+      this.freeText.sub((value) => {
+        this.dataBlock.freetext[0] = value ?? '';
+        this.updateHandler();
+      }), // TODO: check how A380 formatting works
+    );
+  }
+
+  destroy(): void {
+    this.subscriptions.forEach((sub) => sub.destroy());
+    super.destroy();
   }
 
   render(): VNode {
