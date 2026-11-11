@@ -75,7 +75,7 @@ export class FcdcChoiceProvider implements Instrument {
       const fcdc1Fault = fcdc1StatusWord1.isFailureWarning();
       const fcdc2Fault = fcdc2StatusWord1.isFailureWarning();
 
-      return isSide2 ? fcdc2Fault && !fcdc1Fault : !(fcdc1Fault && !fcdc2Fault);
+      return isSide2 ? fcdc2Fault && !fcdc1Fault : fcdc1Fault && !fcdc2Fault;
     },
     this.fcdc1StatusWord1,
     this.fcdc2StatusWord1,
