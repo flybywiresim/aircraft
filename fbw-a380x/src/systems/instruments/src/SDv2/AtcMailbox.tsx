@@ -26,6 +26,15 @@ import {
   AtsuMessageDirection,
 } from '@datalink/common';
 
+import {
+  MailboxAction,
+  MailboxActionLabel,
+  mailboxActions,
+  MailboxResponseId,
+  mailboxResponseText,
+  sentResponseId,
+} from './AtcMailboxActions';
+
 import './style.scss';
 
 export class MailboxMessageBlock {
@@ -45,6 +54,9 @@ export class MailboxMessageBlock {
 
 /** Time after which a successfully sent downlink message is closed automatically, in milliseconds */
 const SENT_MESSAGE_CLOSE_DELAY_MS = 5000;
+
+/** Number of soft keys on the right side of the mailbox which are used for the message actions */
+const ACTION_SOFT_KEYS = 4;
 
 /**
  * Converts a mailbox status into the text shown in the status field of the mailbox
@@ -132,17 +144,18 @@ export class AtcMailbox extends DisplayComponent<AtcMailboxProps> {
     this.visibleMessageStatus,
   );
 
-  /** SEND is only possible for a downlink message which was not transmitted yet */
-  private readonly sendDisabled = MappedSubject.create(
-    ([id, direction, status]) =>
-      id === -1 ||
-      direction !== AtsuMessageDirection.Downlink ||
-      status === MailboxStatusMessage.Sending ||
-      status === MailboxStatusMessage.Sent,
-    this.visibleMessageId,
-    this.visibleMessageDirection,
-    this.visibleMessageStatus,
+  /** Actions assigned to the soft keys on the right side, from top to bottom */
+  private readonly actionSlots = Array.from({ length: ACTION_SOFT_KEYS }, () =>
+    Subject.create<MailboxAction | null>(null),
   );
+
+  private readonly actionsBlocked = Subject.create(true);
+
+  /** Response selected or sent for the visible uplink message */
+  private readonly responseText = Subject.create<string>('');
+
+  /** True if the response is selected but not sent yet */
+  private readonly responsePending = Subject.create(false);
 
   private handleIncomingMessages(cpdlcMessages: CpdlcMessage[]): void {
     // convert messages to enhanced format
@@ -160,6 +173,10 @@ export class AtcMailbox extends DisplayComponent<AtcMailboxProps> {
     if (messageBlock !== undefined) {
       // update the content of the existing message, the status is handled by the messageStatus event
       messageBlock.messages = enhancedMessages;
+      // the selected response is now part of the message
+      if (messageBlock.response !== -1 && sentResponseId(enhancedMessages[0]) === messageBlock.response) {
+        messageBlock.response = -1;
+      }
       this.messages.setValue(uid, messageBlock);
     } else {
       // store new message in messages
@@ -233,6 +250,7 @@ export class AtcMailbox extends DisplayComponent<AtcMailboxProps> {
       this.mailboxStation.set('');
       this.visibleMessageDirection.set(null);
       this.visibleMessageStatus.set(MailboxStatusMessage.NoMessage);
+      this.updateActions(undefined, -1, MailboxStatusMessage.NoMessage);
       return;
     }
 
@@ -250,15 +268,63 @@ export class AtcMailbox extends DisplayComponent<AtcMailboxProps> {
     this.mailboxStation.set(`${message.Direction === AtsuMessageDirection.Uplink ? 'FROM' : 'TO'} ${message.Station}`);
     this.visibleMessageDirection.set(message.Direction);
     this.visibleMessageStatus.set(block.statusMessage);
+    this.updateActions(message, block.response, block.statusMessage);
   }
 
-  private sendMessage(): void {
+  private updateActions(
+    message: CpdlcMessage | undefined,
+    selectedResponse: number,
+    status: MailboxStatusMessage,
+  ): void {
+    const { actions, blocked } = mailboxActions(message, selectedResponse, status);
+    this.actionSlots.forEach((slot, index) => slot.set(actions[index] ?? null));
+    this.actionsBlocked.set(blocked);
+
+    if (message === undefined || message.Direction !== AtsuMessageDirection.Uplink) {
+      this.responseText.set('');
+      this.responsePending.set(false);
+    } else if (selectedResponse !== -1) {
+      this.responseText.set(mailboxResponseText(selectedResponse));
+      this.responsePending.set(true);
+    } else {
+      this.responseText.set(mailboxResponseText(sentResponseId(message)));
+      this.responsePending.set(false);
+    }
+  }
+
+  private onAction(slot: number): void {
+    const action = this.actionSlots[slot].get();
     const uid = this.visibleMessageId.get();
-    if (this.sendDisabled.get() || uid === -1) {
+    const block = this.messages.getValue(uid);
+    if (action === null || block === undefined || this.actionsBlocked.get()) {
       return;
     }
 
-    this.publisher.pub('downlinkTransmit', uid, true, false);
+    switch (action) {
+      case MailboxAction.Send:
+        if (block.messages[0].Direction === AtsuMessageDirection.Downlink) {
+          this.publisher.pub('downlinkTransmit', uid, true, false);
+        } else if (block.response !== -1) {
+          this.publisher.pub('uplinkResponse', { uid, responseId: block.response }, true, false);
+        }
+        break;
+      case MailboxAction.Cancel:
+        block.response = -1;
+        this.updateVisibleMessage();
+        break;
+      case MailboxAction.Close:
+        this.closeMessage(uid);
+        break;
+      default: {
+        const responseId = MailboxResponseId[action];
+        if (responseId !== undefined) {
+          block.response = responseId;
+          this.publisher.pub('readMessage', uid, true, false);
+          this.updateVisibleMessage();
+        }
+        break;
+      }
+    }
   }
 
   private closeMessage(uid: number): void {
@@ -314,7 +380,6 @@ export class AtcMailbox extends DisplayComponent<AtcMailboxProps> {
     this.subscriptions.forEach((sub) => sub.destroy());
     this.mailboxStatusText.destroy();
     this.mailboxStatusClass.destroy();
-    this.sendDisabled.destroy();
 
     super.destroy();
   }
@@ -352,20 +417,24 @@ export class AtcMailbox extends DisplayComponent<AtcMailboxProps> {
             </div>
           </div>
           <div class="atc-mailbox-center-bottom">
-            <div class="atc-mailbox-cb-1" />
+            <div class="atc-mailbox-cb-1 atc-mailbox-text atc-mailbox-response">
+              <span class={this.responsePending.map((pending) => (pending ? 'response-pending' : 'response-sent'))}>
+                {this.responseText}
+              </span>
+            </div>
             <div class="atc-mailbox-cb-2" />
           </div>
         </div>
         <div class="atc-mailbox-right-layout">
-          <Button
-            label="SEND"
-            disabled={this.sendDisabled}
-            onClick={() => this.sendMessage()}
-            buttonStyle="height: 50px; justify-content: flex-end;"
-          ></Button>
-          <Button label="STANBY" onClick={() => {}} buttonStyle="height: 50px; justify-content: flex-end;"></Button>
-          <Button label="UNABLE" onClick={() => {}} buttonStyle="height: 50px; justify-content: flex-end;"></Button>
-          <Button label="LOAD SEC3" onClick={() => {}} buttonStyle="height: 50px; justify-content: flex-end;"></Button>
+          {this.actionSlots.map((slot, index) => (
+            <Button
+              label={slot.map((action) => (action === null ? '' : MailboxActionLabel[action]))}
+              visible={slot.map((action) => action !== null)}
+              disabled={this.actionsBlocked}
+              onClick={() => this.onAction(index)}
+              buttonStyle="height: 50px; justify-content: flex-end;"
+            ></Button>
+          ))}
           <Button label="PRINT" onClick={() => {}} buttonStyle="height: 50px; justify-content: flex-end;"></Button>
         </div>
         <MouseCursor side={Subject.create('CAPT')} ref={this.mouseCursorRef} />

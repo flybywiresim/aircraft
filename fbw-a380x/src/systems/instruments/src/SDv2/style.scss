@@ -202,3 +202,17 @@ span.Amber {
 .status-alert {
   color: rgb(255, 191, 0);
 }
+
+.atc-mailbox-response {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.response-pending {
+  color: rgb(0, 255, 255);
+}
+
+.response-sent {
+  color: $display-green;
+}
