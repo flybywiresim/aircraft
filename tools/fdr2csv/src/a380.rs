@@ -11,7 +11,7 @@ use crate::{
 use serde::Serialize;
 use std::io::{prelude::*, Error};
 
-pub const INTERFACE_VERSION: u64 = 3800008;
+pub const INTERFACE_VERSION: u64 = 3800009;
 pub const INTERFACE_MIN_VERSION: u64 = 3800000;
 
 // A single FDR record

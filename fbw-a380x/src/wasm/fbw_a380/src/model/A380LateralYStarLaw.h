@@ -1,31 +1,31 @@
-#ifndef A380LateralNormalLaw_h_
-#define A380LateralNormalLaw_h_
+#ifndef A380LateralYStarLaw_h_
+#define A380LateralYStarLaw_h_
 #include "rtwtypes.h"
-#include "A380LateralNormalLaw_types.h"
+#include "A380LateralYStarLaw_types.h"
 #include <cstring>
 
-class A380LateralNormalLaw final
+class A380LateralYStarLaw final
 {
  public:
-  struct rtDW_RateLimiter_A380LateralNormalLaw_T {
+  struct rtDW_RateLimiter_A380LateralYStarLaw_T {
     real_T pY;
     boolean_T pY_not_empty;
   };
 
-  struct D_Work_A380LateralNormalLaw_T {
+  struct D_Work_A380LateralYStarLaw_T {
     real_T Delay_DSTATE;
     real_T Delay1_DSTATE;
     real_T Delay_DSTATE_o;
     real_T pY;
     boolean_T icLoad;
     boolean_T pY_not_empty;
-    rtDW_RateLimiter_A380LateralNormalLaw_T sf_RateLimiter_g;
-    rtDW_RateLimiter_A380LateralNormalLaw_T sf_RateLimiter_i;
-    rtDW_RateLimiter_A380LateralNormalLaw_T sf_RateLimiter_k;
-    rtDW_RateLimiter_A380LateralNormalLaw_T sf_RateLimiter;
+    rtDW_RateLimiter_A380LateralYStarLaw_T sf_RateLimiter_g;
+    rtDW_RateLimiter_A380LateralYStarLaw_T sf_RateLimiter_i;
+    rtDW_RateLimiter_A380LateralYStarLaw_T sf_RateLimiter_k;
+    rtDW_RateLimiter_A380LateralYStarLaw_T sf_RateLimiter;
   };
 
-  struct Parameters_A380LateralNormalLaw_T {
+  struct Parameters_A380LateralYStarLaw_T {
     real_T ScheduledGain_BreakpointsForDimension1[5];
     real_T DiscreteTimeIntegratorVariableTs_Gain;
     real_T DiscreteTimeIntegratorVariableTs_Gain_a;
@@ -95,10 +95,10 @@ class A380LateralNormalLaw final
   };
 
   void init();
-  A380LateralNormalLaw(A380LateralNormalLaw const&) = delete;
-  A380LateralNormalLaw& operator= (A380LateralNormalLaw const&) & = delete;
-  A380LateralNormalLaw(A380LateralNormalLaw &&) = delete;
-  A380LateralNormalLaw& operator= (A380LateralNormalLaw &&) = delete;
+  A380LateralYStarLaw(A380LateralYStarLaw const&) = delete;
+  A380LateralYStarLaw& operator= (A380LateralYStarLaw const&) & = delete;
+  A380LateralYStarLaw(A380LateralYStarLaw &&) = delete;
+  A380LateralYStarLaw& operator= (A380LateralYStarLaw &&) = delete;
   void step(const real_T *rtu_In_time_dt, const real_T *rtu_In_Theta_deg, const real_T *rtu_In_Phi_deg, const real_T
             *rtu_In_r_deg_s, const real_T *rtu_In_pk_deg_s, const real_T *rtu_In_beta_deg, const real_T *rtu_In_V_ias_kn,
             const real_T *rtu_In_V_tas_kn, const real_T *rtu_In_delta_xi_pos, const real_T *rtu_In_delta_zeta_pos, const
@@ -107,17 +107,17 @@ class A380LateralNormalLaw final
             *rtu_In_ap_phi_c_deg, const real_T *rtu_In_ap_beta_c_deg, const boolean_T *rtu_In_any_ap_engaged, real_T
             *rty_Out_xi_deg, real_T *rty_Out_zeta_deg);
   void reset();
-  A380LateralNormalLaw();
-  ~A380LateralNormalLaw();
+  A380LateralYStarLaw();
+  ~A380LateralYStarLaw();
  private:
-  D_Work_A380LateralNormalLaw_T A380LateralNormalLaw_DWork;
-  static Parameters_A380LateralNormalLaw_T A380LateralNormalLaw_rtP;
-  static void A380LateralNormalLaw_RateLimiter_Reset(rtDW_RateLimiter_A380LateralNormalLaw_T *localDW);
-  static void A380LateralNormalLaw_RateLimiter(real_T rtu_u, real_T rtu_up, real_T rtu_lo, const real_T *rtu_Ts, real_T
-    rtu_init, real_T *rty_Y, rtDW_RateLimiter_A380LateralNormalLaw_T *localDW);
+  D_Work_A380LateralYStarLaw_T A380LateralYStarLaw_DWork;
+  static Parameters_A380LateralYStarLaw_T A380LateralYStarLaw_rtP;
+  static void A380LateralYStarLaw_RateLimiter_Reset(rtDW_RateLimiter_A380LateralYStarLaw_T *localDW);
+  static void A380LateralYStarLaw_RateLimiter(real_T rtu_u, real_T rtu_up, real_T rtu_lo, const real_T *rtu_Ts, real_T
+    rtu_init, real_T *rty_Y, rtDW_RateLimiter_A380LateralYStarLaw_T *localDW);
 };
 
-extern A380LateralNormalLaw::Parameters_A380LateralNormalLaw_T A380LateralNormalLaw_rtP;
+extern A380LateralYStarLaw::Parameters_A380LateralYStarLaw_T A380LateralYStarLaw_rtP;
 
 #endif
 
