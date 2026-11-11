@@ -24,8 +24,6 @@ export interface PFDSimvars {
   airKnob: number;
   vsBaro: number;
   vsInert: number;
-  sideStickX: number;
-  sideStickY: number;
   v1: number;
   vr: number;
   fwcFlightPhase: number;
@@ -128,8 +126,6 @@ export enum PFDVars {
   airKnob = 'L:A32NX_AIR_DATA_SWITCHING_KNOB',
   vsBaro = 'L:A32NX_ADIRS_ADR_1_BAROMETRIC_VERTICAL_SPEED',
   vsInert = 'L:A32NX_ADIRS_IR_1_VERTICAL_SPEED',
-  sideStickX = 'L:A32NX_SIDESTICK_POSITION_X',
-  sideStickY = 'L:A32NX_SIDESTICK_POSITION_Y',
   v1 = 'L:AIRLINER_V1_SPEED',
   vr = 'L:AIRLINER_VR_SPEED',
   fwcFlightPhase = 'L:A32NX_FWC_FLIGHT_PHASE',
@@ -232,8 +228,6 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     ['airKnob', { name: PFDVars.airKnob, type: SimVarValueType.Enum }],
     ['vsBaro', { name: PFDVars.vsBaro, type: SimVarValueType.Number }],
     ['vsInert', { name: PFDVars.vsInert, type: SimVarValueType.Number }],
-    ['sideStickX', { name: PFDVars.sideStickX, type: SimVarValueType.Number }],
-    ['sideStickY', { name: PFDVars.sideStickY, type: SimVarValueType.Number }],
     ['v1', { name: PFDVars.v1, type: SimVarValueType.Knots }],
     ['vr', { name: PFDVars.vr, type: SimVarValueType.Knots }],
     ['fwcFlightPhase', { name: PFDVars.fwcFlightPhase, type: SimVarValueType.Number }],
