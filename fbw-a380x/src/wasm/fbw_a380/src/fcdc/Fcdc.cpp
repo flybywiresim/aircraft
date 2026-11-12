@@ -445,7 +445,7 @@ FcdcBus Fcdc::getBusOutputs() {
   output.efcsStatus10.setBit(18, false);
   output.efcsStatus10.setBit(19, prim1LawCap != SystemLaw::NormalLaw);
   output.efcsStatus10.setBit(20, prim2LawCap != SystemLaw::NormalLaw);
-  output.efcsStatus10.setBit(25, prim3LawCap != SystemLaw::NormalLaw);
+  output.efcsStatus10.setBit(21, prim3LawCap != SystemLaw::NormalLaw);
   output.efcsStatus10.setBit(26, false);
   output.efcsStatus10.setBit(27, false);
 
@@ -492,7 +492,7 @@ FcdcBus Fcdc::getBusOutputs() {
   setSurfacePosition4(output.foRollCommand, busInputs.prims[masterPrimIndex].fctl.right_sidestick_roll_command_deg,
                       busInputs.secs[0].right_sidestick_roll_command_deg, busInputs.secs[1].right_sidestick_roll_command_deg,
                       busInputs.secs[2].right_sidestick_roll_command_deg);
-  setSurfacePosition4(output.foRollCommand, busInputs.prims[masterPrimIndex].fctl.rudder_pedal_position_deg,
+  setSurfacePosition4(output.rudderPedalPosition, busInputs.prims[masterPrimIndex].fctl.rudder_pedal_position_deg,
                       busInputs.secs[0].rudder_pedal_position_deg, busInputs.secs[1].rudder_pedal_position_deg,
                       busInputs.secs[2].rudder_pedal_position_deg);
 
