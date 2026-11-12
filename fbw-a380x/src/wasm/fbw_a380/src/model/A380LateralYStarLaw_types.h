@@ -1,5 +1,5 @@
-#ifndef A380LateralNormalLaw_types_h_
-#define A380LateralNormalLaw_types_h_
+#ifndef A380LateralYStarLaw_types_h_
+#define A380LateralYStarLaw_types_h_
 #include "rtwtypes.h"
 #ifndef DEFINED_TYPEDEF_FOR_base_time_
 #define DEFINED_TYPEDEF_FOR_base_time_
