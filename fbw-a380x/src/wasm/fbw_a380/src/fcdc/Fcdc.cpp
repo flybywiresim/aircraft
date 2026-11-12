@@ -368,7 +368,9 @@ FcdcBus Fcdc::getBusOutputs() {
   output.efcsStatus7.setBit(20, prim2RightSpoilerHydFault && prim2RightSpoilerElecFault);
   output.efcsStatus7.setBit(21, prim1RightSpoilerHydFault && prim1RightSpoilerElecFault);
   output.efcsStatus7.setBit(26, false);
-  output.efcsStatus7.setBit(27, false);
+  output.efcsStatus7.setBit(
+      27, valueOr(busInputs.prims[masterPrimIndex].fctl.speed_brake_command_deg, 0) < 0.1 &&
+              bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.discrete_status_word_1, 27, false));  // SPD BRK Disagree
   output.efcsStatus7.setBit(28, false);
   output.efcsStatus7.setBit(29, false);
 
@@ -402,9 +404,11 @@ FcdcBus Fcdc::getBusOutputs() {
   output.efcsStatus8.setBit(19, prim3RightSpoilerHydAvail || prim3RightSpoilerElecAvail);
   output.efcsStatus8.setBit(20, prim2RightSpoilerHydAvail || prim2RightSpoilerElecAvail);
   output.efcsStatus8.setBit(21, prim1RightSpoilerHydAvail || prim1RightSpoilerElecAvail);
-  output.efcsStatus8.setBit(25, false);
-  output.efcsStatus8.setBit(26, false);
-  output.efcsStatus8.setBit(27, false);
+  output.efcsStatus8.setBit(25,
+                            bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.discrete_status_word_1, 28, false));  // GND SPLRS Armed
+  output.efcsStatus8.setBit(26, bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.discrete_status_word_1, 29, false));  // GND SPLRS Out
+  output.efcsStatus8.setBit(27,
+                            bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.discrete_status_word_1, 27, false));  // SPD BRK Command
   output.efcsStatus8.setBit(28, false);
   output.efcsStatus8.setBit(29, false);
 
@@ -442,7 +446,8 @@ FcdcBus Fcdc::getBusOutputs() {
   output.efcsStatus10.setBit(14, discreteInputs.secOff[0]);
   output.efcsStatus10.setBit(15, discreteInputs.secOff[1]);
   output.efcsStatus10.setBit(16, discreteInputs.secOff[2]);
-  output.efcsStatus10.setBit(18, false);
+  output.efcsStatus10.setBit(18, ((prim1LawCap != SystemLaw::NormalLaw) + (prim2LawCap != SystemLaw::NormalLaw) +
+                                  (prim3LawCap != SystemLaw::NormalLaw)) >= 2);  // F/CTL Redundancy lost
   output.efcsStatus10.setBit(19, prim1LawCap != SystemLaw::NormalLaw);
   output.efcsStatus10.setBit(20, prim2LawCap != SystemLaw::NormalLaw);
   output.efcsStatus10.setBit(21, prim3LawCap != SystemLaw::NormalLaw);
