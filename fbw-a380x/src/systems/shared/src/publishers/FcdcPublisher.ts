@@ -572,7 +572,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_discrete_word_1',
         {
           name: 'L:A32NX_FCDC_#index#_DISCRETE_WORD_1',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -581,7 +581,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_discrete_word_2',
         {
           name: 'L:A32NX_FCDC_#index#_DISCRETE_WORD_2',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -590,7 +590,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_discrete_word_3',
         {
           name: 'L:A32NX_FCDC_#index#_DISCRETE_WORD_3',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -599,7 +599,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_discrete_word_4',
         {
           name: 'L:A32NX_FCDC_#index#_DISCRETE_WORD_4',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -608,7 +608,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_discrete_word_5',
         {
           name: 'L:A32NX_FCDC_#index#_DISCRETE_WORD_5',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -617,7 +617,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_discrete_word_6',
         {
           name: 'L:A32NX_FCDC_#index#_DISCRETE_WORD_6',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -626,7 +626,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_discrete_word_7',
         {
           name: 'L:A32NX_FCDC_#index#_DISCRETE_WORD_7',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -635,7 +635,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_discrete_word_8',
         {
           name: 'L:A32NX_FCDC_#index#_DISCRETE_WORD_8',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -644,7 +644,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_discrete_word_9',
         {
           name: 'L:A32NX_FCDC_#index#_DISCRETE_WORD_9',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -653,7 +653,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_discrete_word_10',
         {
           name: 'L:A32NX_FCDC_#index#_DISCRETE_WORD_10',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -662,7 +662,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_discrete_word_11',
         {
           name: 'L:A32NX_FCDC_#index#_DISCRETE_WORD_11',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -671,7 +671,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_discrete_word_12',
         {
           name: 'L:A32NX_FCDC_#index#_DISCRETE_WORD_12',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -680,7 +680,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_capt_roll_command_deg',
         {
           name: 'L:A32NX_FCDC_#index#_CAPT_ROLL_COMMAND',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -689,7 +689,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_fo_roll_command_deg',
         {
           name: 'L:A32NX_FCDC_#index#_FO_ROLL_COMMAND',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -698,7 +698,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_capt_pitch_command_deg',
         {
           name: 'L:A32NX_FCDC_#index#_CAPT_PITCH_COMMAND',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -707,7 +707,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_fo_pitch_command_deg',
         {
           name: 'L:A32NX_FCDC_#index#_FO_PITCH_COMMAND',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -716,7 +716,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_rudder_pedal_position_deg',
         {
           name: 'L:A32NX_FCDC_#index#_RUDDER_PEDAL_POS',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -725,7 +725,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_left_inner_aileron_position_deg',
         {
           name: 'L:A32NX_FCDC_#index#_AILERON_LEFT_INNER_POS',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -734,7 +734,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_left_middle_aileron_position_deg',
         {
           name: 'L:A32NX_FCDC_#index#_AILERON_LEFT_MIDDLE_POS',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -743,7 +743,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_left_outer_aileron_position_deg',
         {
           name: 'L:A32NX_FCDC_#index#_AILERON_LEFT_OUTER_POS',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -752,7 +752,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_right_inner_aileron_position_deg',
         {
           name: 'L:A32NX_FCDC_#index#_AILERON_RIGHT_INNER_POS',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -761,7 +761,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_right_middle_aileron_position_deg',
         {
           name: 'L:A32NX_FCDC_#index#_AILERON_RIGHT_MIDDLE_POS',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -770,7 +770,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_right_outer_aileron_position_deg',
         {
           name: 'L:A32NX_FCDC_#index#_AILERON_RIGHT_OUTER_POS',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -779,7 +779,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_aileron_neutral_position_deg',
         {
           name: 'L:A32NX_FCDC_#index#_AILERON_NEUTRAL_POS',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -788,7 +788,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_left_inner_elevator_position_deg',
         {
           name: 'L:A32NX_FCDC_#index#_ELEVATOR_LEFT_INNER_POS',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -797,7 +797,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_left_outer_elevator_position_deg',
         {
           name: 'L:A32NX_FCDC_#index#_ELEVATOR_LEFT_OUTER_POS',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -806,7 +806,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_right_inner_elevator_position_deg',
         {
           name: 'L:A32NX_FCDC_#index#_ELEVATOR_RIGHT_INNER_POS',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -815,7 +815,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_right_outer_elevator_position_deg',
         {
           name: 'L:A32NX_FCDC_#index#_ELEVATOR_RIGHT_OUTER_POS',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -824,7 +824,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_ths_position_deg',
         {
           name: 'L:A32NX_FCDC_#index#_ELEVATOR_TRIM_POS',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -833,7 +833,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_upper_rudder_max_position_deg',
         {
           name: 'L:A32NX_FCDC_#index#_RUDDER_UPPER_MAX_TRAVEL',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -842,7 +842,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_lower_rudder_max_position_deg',
         {
           name: 'L:A32NX_FCDC_#index#_RUDDER_LOWER_MAX_TRAVEL',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -851,7 +851,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_upper_rudder_position_deg',
         {
           name: 'L:A32NX_FCDC_#index#_RUDDER_UPPER_POS',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -860,7 +860,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_lower_rudder_position_deg',
         {
           name: 'L:A32NX_FCDC_#index#_RUDDER_LOWER_POS',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -869,7 +869,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_rudder_trim_position_deg',
         {
           name: 'L:A32NX_FCDC_#index#_RUDDER_TRIM_POS',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -878,7 +878,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_left_spoiler_1_position_deg',
         {
           name: 'L:A32NX_FCDC_#index#_SPOILER_LEFT_1_POS',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -887,7 +887,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_left_spoiler_2_position_deg',
         {
           name: 'L:A32NX_FCDC_#index#_SPOILER_LEFT_2_POS',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -896,7 +896,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_left_spoiler_3_position_deg',
         {
           name: 'L:A32NX_FCDC_#index#_SPOILER_LEFT_3_POS',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -905,7 +905,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_left_spoiler_4_position_deg',
         {
           name: 'L:A32NX_FCDC_#index#_SPOILER_LEFT_4_POS',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -914,7 +914,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_left_spoiler_5_position_deg',
         {
           name: 'L:A32NX_FCDC_#index#_SPOILER_LEFT_5_POS',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -923,7 +923,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_left_spoiler_6_position_deg',
         {
           name: 'L:A32NX_FCDC_#index#_SPOILER_LEFT_6_POS',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -932,7 +932,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_left_spoiler_7_position_deg',
         {
           name: 'L:A32NX_FCDC_#index#_SPOILER_LEFT_7_POS',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -941,7 +941,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_left_spoiler_8_position_deg',
         {
           name: 'L:A32NX_FCDC_#index#_SPOILER_LEFT_8_POS',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -950,7 +950,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_right_spoiler_1_position_deg',
         {
           name: 'L:A32NX_FCDC_#index#_SPOILER_RIGHT_1_POS',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -959,7 +959,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_right_spoiler_2_position_deg',
         {
           name: 'L:A32NX_FCDC_#index#_SPOILER_RIGHT_2_POS',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -968,7 +968,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_right_spoiler_3_position_deg',
         {
           name: 'L:A32NX_FCDC_#index#_SPOILER_RIGHT_3_POS',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -977,7 +977,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_right_spoiler_4_position_deg',
         {
           name: 'L:A32NX_FCDC_#index#_SPOILER_RIGHT_4_POS',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -986,7 +986,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_right_spoiler_5_position_deg',
         {
           name: 'L:A32NX_FCDC_#index#_SPOILER_RIGHT_5_POS',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -995,7 +995,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_right_spoiler_6_position_deg',
         {
           name: 'L:A32NX_FCDC_#index#_SPOILER_RIGHT_6_POS',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -1004,7 +1004,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_right_spoiler_7_position_deg',
         {
           name: 'L:A32NX_FCDC_#index#_SPOILER_RIGHT_7_POS',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -1013,7 +1013,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_right_spoiler_8_position_deg',
         {
           name: 'L:A32NX_FCDC_#index#_SPOILER_RIGHT_8_POS',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },
@@ -1049,7 +1049,7 @@ export class FcdcBusPublisher extends SimVarPublisher<FcdcBusEvents> {
         'fcdc_landing_fct_discrete_word',
         {
           name: 'L:A32NX_FCDC_#index#_LANDING_FCT_DISCRETE_WORD',
-          type: SimVarValueType.Number,
+          type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
         },

@@ -88,7 +88,7 @@ export class Prims extends DisplayComponent<PrimSecFlapsSlatsProps> {
 
   private readonly fcdcDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_1'));
 
-  private infoAvailable = this.fcdcDiscreteWord1.map((word) => !word.isInvalid());
+  private readonly infoAvailable = this.fcdcDiscreteWord1.map((word) => !word.isInvalid());
 
   private readonly prim1Healthy = this.fcdcDiscreteWord1.map((word) => !word.bitValue(23));
   private readonly prim2Healthy = this.fcdcDiscreteWord1.map((word) => !word.bitValue(24));
@@ -131,7 +131,7 @@ export class Secs extends DisplayComponent<PrimSecFlapsSlatsProps> {
 
   private readonly fcdcDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_1'));
 
-  private infoAvailable = this.fcdcDiscreteWord1.map((word) => !word.isInvalid());
+  private readonly infoAvailable = this.fcdcDiscreteWord1.map((word) => !word.isInvalid());
 
   private readonly sec1Healthy = this.fcdcDiscreteWord1.map((word) => !word.bitValue(26));
   private readonly sec2Healthy = this.fcdcDiscreteWord1.map((word) => !word.bitValue(27));
