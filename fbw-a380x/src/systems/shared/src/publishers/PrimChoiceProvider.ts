@@ -9,6 +9,7 @@ import { PrimFgBusEvents, PrimFgBusBaseEvents } from '@shared/publishers/PrimFgP
 const primFctlSubjectsByKey = {
   prim_fctl_law_status_word: ConsumerSubject.create(null, 0),
   prim_discrete_status_word_1: ConsumerSubject.create(null, 0),
+  prim_ths_position_deg: ConsumerSubject.create(null, 0),
   prim_speed_brake_command: ConsumerSubject.create(null, 0),
   prim_ground_spoiler_command: ConsumerSubject.create(null, 0),
 } satisfies Record<keyof PrimFctlBusBaseEvents, ConsumerSubject<number>>;

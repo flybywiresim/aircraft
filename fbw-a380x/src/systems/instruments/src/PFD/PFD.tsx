@@ -32,6 +32,7 @@ import { VerticalSpeedIndicator } from './VerticalSpeedIndicator';
 import './style.scss';
 import { PitchTrimDisplay } from './PitchTrimDisplay';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
+import { PrimFctlBusBaseEvents, PrimFctlBusEvents } from '@shared/publishers/PrimFctlPublisher';
 
 export const getDisplayIndex = () => {
   const url = Array.from(document.querySelectorAll('vcockpit-panel > *'))
@@ -57,7 +58,9 @@ interface PFDProps extends ComponentProps {
 
 export class PFDComponent extends DisplayComponent<PFDProps> {
   private readonly subscriptions: Subscription[] = [];
-  private readonly sub = this.props.bus.getSubscriber<Arinc429Values & ClockEvents & PFDSimvars>();
+  private readonly sub = this.props.bus.getSubscriber<
+    Arinc429Values & ClockEvents & PFDSimvars & PrimFctlBusEvents & PrimFctlBusBaseEvents
+  >();
 
   private headingFailed = Subject.create(true);
 
@@ -79,7 +82,11 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
 
   private readonly groundSpeed = Arinc429LocalVarConsumerSubject.create(this.sub.on('groundSpeed'), 0);
 
-  private readonly spoilersArmed = ConsumerSubject.create(this.sub.on('spoilersArmed'), false);
+  private readonly primDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('prim_discrete_status_word_1'),
+  );
+
+  private readonly groundSpoilersArmed = this.primDiscreteWord1.map((word) => word.bitValueOr(28, false));
 
   private readonly thrustTla = [
     ConsumerSubject.create(this.sub.on('tla1'), 0),
@@ -102,23 +109,37 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
 
   private previousFlapHandlePosition = 0;
 
-  private readonly pitchTrimIndicatorVisible = Subject.create(false);
+  private readonly prim3ThsPosition = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_ths_position_deg_3'));
+
+  private readonly prim1ThsPosition = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_ths_position_deg_1'));
+
+  private readonly pitchTrimIndicatorCondition = Subject.create(false);
 
   private updatePitchTrimVisible(flapsRetracted = false) {
     const gs = this.groundSpeed.get().valueOr(0);
     if (this.filteredRadioAltitude.get() > 50) {
-      this.pitchTrimIndicatorVisible.set(false);
+      this.pitchTrimIndicatorCondition.set(false);
     } else if (gs < 30) {
-      this.pitchTrimIndicatorVisible.set(true);
+      this.pitchTrimIndicatorCondition.set(true);
     } else if (
       this.eitherMainLgCompressed.get() &&
       gs > 80 &&
-      (this.spoilersArmed.get() === false || flapsRetracted === true || this.atLeastThreeThrustLeversOutOfIdle.get())
+      (this.groundSpoilersArmed.get() === false ||
+        flapsRetracted === true ||
+        this.atLeastThreeThrustLeversOutOfIdle.get())
     ) {
       // FIXME add "flight crew presses pitch trim switches"
-      this.pitchTrimIndicatorVisible.set(true);
+      this.pitchTrimIndicatorCondition.set(true);
     }
   }
+
+  private readonly pitchTrimIndicatorVisible = MappedSubject.create(
+    ([pitchTrimIndicatorCondition, prim3ThsPosition, prim1ThsPosition]) =>
+      pitchTrimIndicatorCondition && (prim3ThsPosition.isNormalOperation() || prim1ThsPosition.isNormalOperation()),
+    this.pitchTrimIndicatorCondition,
+    this.prim3ThsPosition,
+    this.prim1ThsPosition,
+  );
 
   constructor(props: PFDProps) {
     super(props);
@@ -199,10 +220,10 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
 
     this.subscriptions.push(
       this.groundSpeed.sub(() => this.updatePitchTrimVisible()),
-      this.spoilersArmed.sub(() => this.updatePitchTrimVisible()),
+      this.groundSpoilersArmed.sub(() => this.updatePitchTrimVisible()),
       this.atLeastThreeThrustLeversOutOfIdle.sub(() => this.updatePitchTrimVisible()),
       this.groundSpeed,
-      this.spoilersArmed,
+      this.groundSpoilersArmed,
       this.leftMainGearCompressed,
       this.rightMainGearCompressed,
       this.eitherMainLgCompressed,

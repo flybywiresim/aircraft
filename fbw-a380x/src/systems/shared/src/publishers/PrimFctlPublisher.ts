@@ -43,6 +43,10 @@ export type PrimFctlBusBaseEvents = {
    */
   prim_discrete_status_word_1: number;
   /**
+   * Actual THS position, in degrees.
+   */
+  prim_ths_position_deg: number;
+  /**
    * Commanded deflection angle for the speed brakes, in degrees.
    */
   prim_speed_brake_command: number;
@@ -91,6 +95,15 @@ export class PrimFctlBusPublisher extends SimVarPublisher<PrimFctlBusPublisherEv
         'prim_discrete_status_word_1',
         {
           name: 'L:A32NX_PRIM_#index#_DISCRETE_STATUS_WORD_1',
+          type: SimVarValueType.Enum,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'prim_ths_position_deg',
+        {
+          name: 'L:A32NX_PRIM_#index#_THS_POSITION',
           type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,

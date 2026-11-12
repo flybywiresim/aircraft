@@ -601,6 +601,7 @@ void FlyByWireInterface::setupLocalVariables() {
 
     idPrimFctlLawStatusWord[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_FCTL_LAW_STATUS_WORD");
     idPrimDiscreteStatusWord1[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_DISCRETE_STATUS_WORD_1");
+    idPrimThsPosition[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_THS_POSITION");
     idPrimSpeedBrakeCommand[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_SPD_BRK_COMMAND");
     idPrimGroundSpoilerCommand[i] = std::make_unique<LocalVariable>("A32NX_PRIM_" + idString + "_GND_SPLR_COMMAND");
 
@@ -1759,6 +1760,7 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
 
   idPrimFctlLawStatusWord[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fctl.fctl_law_status_word));
   idPrimDiscreteStatusWord1[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fctl.discrete_status_word_1));
+  idPrimThsPosition[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fctl.ths_position_deg));
   idPrimSpeedBrakeCommand[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fctl.speed_brake_command_deg));
   idPrimGroundSpoilerCommand[primIndex]->set(Arinc429Utils::toSimVar(primsBusOutputs[primIndex].fctl.ground_spoiler_command_deg));
 

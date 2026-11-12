@@ -450,6 +450,7 @@ class FlyByWireInterface {
   // PRIM bus FCTL output Lvars
   std::unique_ptr<LocalVariable> idPrimFctlLawStatusWord[3];
   std::unique_ptr<LocalVariable> idPrimDiscreteStatusWord1[3];
+  std::unique_ptr<LocalVariable> idPrimThsPosition[3];
   std::unique_ptr<LocalVariable> idPrimSpeedBrakeCommand[3];
   std::unique_ptr<LocalVariable> idPrimGroundSpoilerCommand[3];
 
