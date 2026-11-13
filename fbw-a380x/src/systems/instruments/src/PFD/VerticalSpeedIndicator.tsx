@@ -1,6 +1,7 @@
 import {
   ClockEvents,
   ComponentProps,
+  ConsumerSubject,
   DisplayComponent,
   EventBus,
   FSComponent,
@@ -30,6 +31,8 @@ interface TcasState {
 }
 
 export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndicatorProps> {
+  private readonly sub = this.props.bus.getArincSubscriber<PFDSimvars>();
+
   private yOffsetSub = Subject.create(0);
 
   private needleColour = Subject.create('Green');
@@ -54,6 +57,8 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
     tcasGreenZoneL: 0,
     tcasGreenZoneH: 0,
   };
+
+  private readonly tcasInvalid = ConsumerSubject.create(this.sub.on('tcasFail'), false);
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -178,6 +183,21 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
             /
           </text>
           <text class="FontLargest Red EndAlign" x="152.99374" y="88.870819">
+            S
+          </text>
+        </FlashOneHertz>
+
+        <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.tcasInvalid}>
+          <text class="FontMedium Amber EndAlign" x="141.5" y="100">
+            T
+          </text>
+          <text class="FontMedium Amber EndAlign" x="141.5" y="105">
+            C
+          </text>
+          <text class="FontMedium Amber EndAlign" x="141.5" y="110">
+            A
+          </text>
+          <text class="FontMedium Amber EndAlign" x="141.5" y="115">
             S
           </text>
         </FlashOneHertz>
