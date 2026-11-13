@@ -970,6 +970,23 @@ export class FwsCore {
 
   /* 27 - FLIGHT CONTROLS */
 
+  public readonly fcdc1DiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_1_1'));
+  public readonly fcdc2DiscreteWord1 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_1_2'));
+  public readonly fcdc1DiscreteWord2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_2_1'));
+  public readonly fcdc2DiscreteWord2 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_2_2'));
+  public readonly fcdc1DiscreteWord3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_3_1'));
+  public readonly fcdc2DiscreteWord3 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_3_2'));
+  public readonly fcdc1DiscreteWord4 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_4_1'));
+  public readonly fcdc2DiscreteWord4 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_4_2'));
+  public readonly fcdc1DiscreteWord5 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_5_1'));
+  public readonly fcdc2DiscreteWord5 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_5_2'));
+  public readonly fcdc1DiscreteWord7 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_7_1'));
+  public readonly fcdc2DiscreteWord7 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_7_2'));
+  public readonly fcdc1DiscreteWord8 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_8_1'));
+  public readonly fcdc2DiscreteWord8 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_8_2'));
+  public readonly fcdc1DiscreteWord10 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_10_1'));
+  public readonly fcdc2DiscreteWord10 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_10_2'));
+
   public readonly altn1LawConfirmNode = new NXLogicConfirmNode(0.3, true);
   public readonly altn2LawConfirmNode = new NXLogicConfirmNode(0.3, true);
   public readonly altnLawCondition = Subject.create(false);
@@ -4588,32 +4605,31 @@ export class FwsCore {
     this.allFuelPumpsOff.set(this.allFeedTankPumpsOff.get() && this.allEngineSwitchOff.get());
 
     /* F/CTL */
-    const fcdc1DiscreteWord1 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_1_DISCRETE_WORD_1');
-    const fcdc2DiscreteWord1 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_2_DISCRETE_WORD_1');
-    const fcdc1DiscreteWord2 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_1_DISCRETE_WORD_2');
-    const fcdc2DiscreteWord2 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_2_DISCRETE_WORD_2');
-    const fcdc1DiscreteWord3 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_1_DISCRETE_WORD_3');
-    const fcdc2DiscreteWord3 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_2_DISCRETE_WORD_3');
-    const fcdc1DiscreteWord4 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_1_DISCRETE_WORD_4');
-    const fcdc2DiscreteWord4 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_2_DISCRETE_WORD_4');
-    const fcdc1DiscreteWord5 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_1_DISCRETE_WORD_5');
-    const fcdc2DiscreteWord5 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_2_DISCRETE_WORD_5');
-    const fcdc1DiscreteWord7 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_1_DISCRETE_WORD_7');
-    const fcdc2DiscreteWord7 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_2_DISCRETE_WORD_7');
-    const fcdc1DiscreteWord8 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_1_DISCRETE_WORD_8');
-    const fcdc2DiscreteWord8 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_2_DISCRETE_WORD_8');
-
-    this.prim1Healthy.set(SimVar.GetSimVarValue('L:A32NX_PRIM_1_HEALTHY', 'bool'));
-    this.prim2Healthy.set(SimVar.GetSimVarValue('L:A32NX_PRIM_2_HEALTHY', 'bool'));
-    this.prim3Healthy.set(SimVar.GetSimVarValue('L:A32NX_PRIM_3_HEALTHY', 'bool'));
-    this.sec1Healthy.set(SimVar.GetSimVarValue('L:A32NX_SEC_1_HEALTHY', 'bool'));
-    this.sec2Healthy.set(SimVar.GetSimVarValue('L:A32NX_SEC_2_HEALTHY', 'bool'));
-    this.sec3Healthy.set(SimVar.GetSimVarValue('L:A32NX_SEC_3_HEALTHY', 'bool'));
+    this.prim1Healthy.set(
+      !(this.fcdc1DiscreteWord1.get().bitValueOr(23, false) || this.fcdc2DiscreteWord1.get().bitValueOr(23, false)),
+    );
+    this.prim2Healthy.set(
+      !(this.fcdc1DiscreteWord1.get().bitValueOr(24, false) || this.fcdc2DiscreteWord1.get().bitValueOr(24, false)),
+    );
+    this.prim3Healthy.set(
+      !(this.fcdc1DiscreteWord1.get().bitValueOr(25, false) || this.fcdc2DiscreteWord1.get().bitValueOr(25, false)),
+    );
+    this.sec1Healthy.set(
+      !(this.fcdc1DiscreteWord1.get().bitValueOr(26, false) || this.fcdc2DiscreteWord1.get().bitValueOr(26, false)),
+    );
+    this.sec2Healthy.set(
+      !(this.fcdc1DiscreteWord1.get().bitValueOr(27, false) || this.fcdc2DiscreteWord1.get().bitValueOr(27, false)),
+    );
+    this.sec3Healthy.set(
+      !(this.fcdc1DiscreteWord1.get().bitValueOr(28, false) || this.fcdc2DiscreteWord1.get().bitValueOr(28, false)),
+    );
     this.allPrimAndSecFailed.set(
       this.allPrimFailed.get() && !this.sec1Healthy.get() && !this.sec2Healthy.get() && !this.sec3Healthy.get(),
     );
 
-    this.sec1PbOff.set(!SimVar.GetSimVarValue('L:A32NX_SEC_1_PUSHBUTTON_PRESSED', SimVarValueType.Bool));
+    this.sec1PbOff.set(
+      this.fcdc1DiscreteWord10.get().bitValueOr(14, false) || this.fcdc2DiscreteWord10.get().bitValueOr(14, false),
+    );
 
     this.sec1FaultCondition.set(
       !(flightPhase112 && this.sec1PbOff.get()) && !this.sec1Healthy.get() && this.dc108PhBusPowered.get(),
@@ -4621,21 +4637,27 @@ export class FwsCore {
     this.sec1OffThenOnPulseNode.write(!this.sec1PbOff.get());
     this.sec1OffThenOnMemoryNode.write(this.sec1OffThenOnPulseNode.read(), !this.sec1FaultCondition.get());
 
-    this.sec2PbOff.set(!SimVar.GetSimVarValue('L:A32NX_SEC_2_PUSHBUTTON_PRESSED', SimVarValueType.Bool));
+    this.sec2PbOff.set(
+      this.fcdc1DiscreteWord10.get().bitValueOr(15, false) || this.fcdc2DiscreteWord10.get().bitValueOr(15, false),
+    );
     this.sec2FaultCondition.set(
       !(flightPhase112 && this.sec2PbOff.get()) && !this.sec2Healthy.get() && this.dc2BusPowered.get(),
     );
     this.sec2OffThenOnPulseNode.write(!this.sec2PbOff.get());
     this.sec2OffThenOnMemoryNode.write(this.sec2OffThenOnPulseNode.read(), !this.sec2FaultCondition.get());
 
-    this.sec3PbOff.set(!SimVar.GetSimVarValue('L:A32NX_SEC_3_PUSHBUTTON_PRESSED', SimVarValueType.Bool));
+    this.sec3PbOff.set(
+      this.fcdc1DiscreteWord10.get().bitValueOr(16, false) || this.fcdc2DiscreteWord10.get().bitValueOr(16, false),
+    );
     this.sec3FaultCondition.set(
       !(flightPhase112 && this.sec3PbOff.get()) && !this.sec3Healthy.get() && this.dc1BusPowered.get(),
     );
     this.sec3OffThenOnPulseNode.write(!this.sec3PbOff.get());
     this.sec3OffThenOnMemoryNode.write(this.sec3OffThenOnPulseNode.read(), !this.sec3FaultCondition.get());
 
-    this.prim1PbOff.set(!SimVar.GetSimVarValue('L:A32NX_PRIM_1_PUSHBUTTON_PRESSED', SimVarValueType.Bool));
+    this.prim1PbOff.set(
+      this.fcdc1DiscreteWord10.get().bitValueOr(11, false) || this.fcdc2DiscreteWord10.get().bitValueOr(11, false),
+    );
 
     this.prim1FaultCondition.set(
       !(flightPhase112 && this.prim1PbOff.get()) && !this.prim1Healthy.get() && this.dc108PhBusPowered.get(),
@@ -4643,14 +4665,18 @@ export class FwsCore {
     this.prim1OffThenOnPulseNode.write(!this.prim1PbOff.get());
     this.prim1OffThenOnMemoryNode.write(this.prim1OffThenOnPulseNode.read(), !this.prim1FaultCondition.get());
 
-    this.prim2PbOff.set(!SimVar.GetSimVarValue('L:A32NX_PRIM_2_PUSHBUTTON_PRESSED', SimVarValueType.Bool));
+    this.prim2PbOff.set(
+      this.fcdc1DiscreteWord10.get().bitValueOr(12, false) || this.fcdc2DiscreteWord10.get().bitValueOr(12, false),
+    );
     this.prim2FaultCondition.set(
       !(flightPhase112 && this.prim2PbOff.get()) && !this.prim2Healthy.get() && this.dc2BusPowered.get(),
     );
     this.prim2OffThenOnPulseNode.write(!this.prim2PbOff.get());
     this.prim2OffThenOnMemoryNode.write(this.prim2OffThenOnPulseNode.read(), !this.prim2FaultCondition.get());
 
-    this.prim3PbOff.set(!SimVar.GetSimVarValue('L:A32NX_PRIM_3_PUSHBUTTON_PRESSED', SimVarValueType.Bool));
+    this.prim3PbOff.set(
+      this.fcdc1DiscreteWord10.get().bitValueOr(13, false) || this.fcdc2DiscreteWord10.get().bitValueOr(13, false),
+    );
     this.prim3FaultCondition.set(
       !(flightPhase112 && this.prim3PbOff.get()) && !this.prim3Healthy.get() && this.dc1BusPowered.get(),
     );
@@ -4670,13 +4696,13 @@ export class FwsCore {
 
     // FCDC 1+2 FAULT computation
     const SFCDC1FT =
-      fcdc1DiscreteWord1.isFailureWarning() &&
-      fcdc1DiscreteWord2.isFailureWarning() &&
-      fcdc1DiscreteWord3.isFailureWarning();
+      this.fcdc1DiscreteWord1.get().isFailureWarning() &&
+      this.fcdc1DiscreteWord2.get().isFailureWarning() &&
+      this.fcdc1DiscreteWord3.get().isFailureWarning();
     const SFCDC2FT =
-      fcdc2DiscreteWord1.isFailureWarning() &&
-      fcdc2DiscreteWord2.isFailureWarning() &&
-      fcdc2DiscreteWord3.isFailureWarning();
+      this.fcdc2DiscreteWord1.get().isFailureWarning() &&
+      this.fcdc2DiscreteWord2.get().isFailureWarning() &&
+      this.fcdc2DiscreteWord3.get().isFailureWarning();
     const SFCDC12FT = SFCDC1FT && SFCDC2FT;
     this.fcdc12FaultCondition.set(SFCDC12FT && this.dc2BusPowered.get());
     this.fcdc1FaultCondition.set(SFCDC1FT && !SFCDC12FT);
@@ -4686,64 +4712,76 @@ export class FwsCore {
 
     // ALTN LAW 2 computation
     const altnLaw2 =
-      fcdc1DiscreteWord1.bitValueOr(15, false) ||
-      fcdc2DiscreteWord1.bitValueOr(15, false) ||
-      fcdc1DiscreteWord1.bitValueOr(16, false) ||
-      fcdc2DiscreteWord1.bitValueOr(17, false);
+      this.fcdc1DiscreteWord1.get().bitValueOr(15, false) ||
+      this.fcdc2DiscreteWord1.get().bitValueOr(15, false) ||
+      this.fcdc1DiscreteWord1.get().bitValueOr(16, false) ||
+      this.fcdc2DiscreteWord1.get().bitValueOr(16, false);
     this.altn2LawConfirm = this.altn2LawConfirmNode.write(altnLaw2 && altnLawPhasePreCondition, deltaTime);
 
     // ALTN LAW 1 computation
     const altn1Law =
-      fcdc1DiscreteWord1.bitValueOr(12, false) ||
-      fcdc2DiscreteWord1.bitValueOr(12, false) ||
-      fcdc1DiscreteWord1.bitValueOr(13, false) ||
-      fcdc2DiscreteWord1.bitValueOr(13, false) ||
-      fcdc1DiscreteWord1.bitValueOr(14, false) ||
-      fcdc2DiscreteWord1.bitValueOr(15, false);
+      this.fcdc1DiscreteWord1.get().bitValueOr(12, false) ||
+      this.fcdc2DiscreteWord1.get().bitValueOr(12, false) ||
+      this.fcdc1DiscreteWord1.get().bitValueOr(13, false) ||
+      this.fcdc2DiscreteWord1.get().bitValueOr(13, false) ||
+      this.fcdc1DiscreteWord1.get().bitValueOr(14, false) ||
+      this.fcdc2DiscreteWord1.get().bitValueOr(14, false);
     const altn1LawConfirm = this.altn1LawConfirmNode.write(altn1Law && altnLawPhasePreCondition, deltaTime);
 
     this.altnLawCondition.set(altn1LawConfirm || this.altn2LawConfirm);
     this.altn1ALawCondition.set(
-      (fcdc1DiscreteWord1.bitValueOr(12, false) || fcdc2DiscreteWord1.bitValueOr(12, false)) &&
+      (this.fcdc1DiscreteWord1.get().bitValueOr(12, false) || this.fcdc2DiscreteWord1.get().bitValueOr(12, false)) &&
         altnLawPhasePreCondition,
     );
 
     // DIRECT LAW computation
     const SPBUL =
-      (false && SFCDC12FT) || fcdc1DiscreteWord1.bitValueOr(15, false) || fcdc2DiscreteWord1.bitValueOr(15, false);
+      (false && SFCDC12FT) ||
+      this.fcdc1DiscreteWord1.get().bitValueOr(18, false) ||
+      this.fcdc2DiscreteWord1.get().bitValueOr(18, false);
     this.directLawCondition.set(SPBUL && !flightPhase112);
 
     // L+R ELEV FAULT computation
     const lhElevBlueFail =
-      (fcdc1DiscreteWord3.isNormalOperation() && !fcdc1DiscreteWord3.bitValueOr(15, false)) ||
-      (fcdc2DiscreteWord3.isNormalOperation() && !fcdc2DiscreteWord3.bitValueOr(15, false));
+      (this.fcdc1DiscreteWord3.get().isNormalOperation() && !this.fcdc1DiscreteWord3.get().bitValueOr(15, false)) ||
+      (this.fcdc2DiscreteWord3.get().isNormalOperation() && !this.fcdc2DiscreteWord3.get().bitValueOr(15, false));
     const lhElevGreenFail =
-      (fcdc1DiscreteWord3.isNormalOperation() && !fcdc1DiscreteWord3.bitValueOr(16, false)) ||
-      (fcdc2DiscreteWord3.isNormalOperation() && !fcdc2DiscreteWord3.bitValueOr(16, false));
+      (this.fcdc1DiscreteWord3.get().isNormalOperation() && !this.fcdc1DiscreteWord3.get().bitValueOr(16, false)) ||
+      (this.fcdc2DiscreteWord3.get().isNormalOperation() && !this.fcdc2DiscreteWord3.get().bitValueOr(16, false));
     const rhElevBlueFail =
-      (fcdc1DiscreteWord3.isNormalOperation() && !fcdc1DiscreteWord3.bitValueOr(17, false)) ||
-      (fcdc2DiscreteWord3.isNormalOperation() && !fcdc2DiscreteWord3.bitValueOr(17, false));
+      (this.fcdc1DiscreteWord3.get().isNormalOperation() && !this.fcdc1DiscreteWord3.get().bitValueOr(17, false)) ||
+      (this.fcdc2DiscreteWord3.get().isNormalOperation() && !this.fcdc2DiscreteWord3.get().bitValueOr(17, false));
     const rhElevGreenFail =
-      (fcdc1DiscreteWord3.isNormalOperation() && !fcdc1DiscreteWord3.bitValueOr(18, false)) ||
-      (fcdc2DiscreteWord3.isNormalOperation() && !fcdc2DiscreteWord3.bitValueOr(18, false));
+      (this.fcdc1DiscreteWord3.get().isNormalOperation() && !this.fcdc1DiscreteWord3.get().bitValueOr(18, false)) ||
+      (this.fcdc2DiscreteWord3.get().isNormalOperation() && !this.fcdc2DiscreteWord3.get().bitValueOr(18, false));
     this.lrElevFaultCondition.set(
       lhElevBlueFail && lhElevGreenFail && rhElevBlueFail && rhElevGreenFail && !flightPhase112,
     );
 
     // GND SPLRS FAULT status
-    const sec1GroundSpoilerFault = fcdc1DiscreteWord5.bitValue(14) || fcdc2DiscreteWord5.bitValue(14);
-    const sec2GroundSpoilerFault = fcdc1DiscreteWord5.bitValue(15) || fcdc2DiscreteWord5.bitValue(15);
-    const sec3GroundSpoilerFault = fcdc1DiscreteWord5.bitValue(16) || fcdc2DiscreteWord5.bitValue(16);
-    const sec1SpeedbrakeLeverFault = fcdc1DiscreteWord5.bitValue(11) || fcdc2DiscreteWord5.bitValue(11);
-    const sec2SpeedbrakeLeverFault = fcdc1DiscreteWord5.bitValue(12) || fcdc2DiscreteWord5.bitValue(12);
-    const sec3SpeedbrakeLeverFault = fcdc1DiscreteWord5.bitValue(13) || fcdc2DiscreteWord5.bitValue(13);
+    const sec1GroundSpoilerFault =
+      this.fcdc1DiscreteWord5.get().bitValue(14) || this.fcdc2DiscreteWord5.get().bitValue(14);
+    const sec2GroundSpoilerFault =
+      this.fcdc1DiscreteWord5.get().bitValue(15) || this.fcdc2DiscreteWord5.get().bitValue(15);
+    const sec3GroundSpoilerFault =
+      this.fcdc1DiscreteWord5.get().bitValue(16) || this.fcdc2DiscreteWord5.get().bitValue(16);
+    const sec1SpeedbrakeLeverFault =
+      this.fcdc1DiscreteWord5.get().bitValue(11) || this.fcdc2DiscreteWord5.get().bitValue(11);
+    const sec2SpeedbrakeLeverFault =
+      this.fcdc1DiscreteWord5.get().bitValue(12) || this.fcdc2DiscreteWord5.get().bitValue(12);
+    const sec3SpeedbrakeLeverFault =
+      this.fcdc1DiscreteWord5.get().bitValue(13) || this.fcdc2DiscreteWord5.get().bitValue(13);
     const allGroundSpoilersInop =
       (sec1GroundSpoilerFault || sec1SpeedbrakeLeverFault) &&
       (sec2GroundSpoilerFault || sec2SpeedbrakeLeverFault) &&
       (sec3GroundSpoilerFault || sec3SpeedbrakeLeverFault);
 
-    this.spoilersArmed.set(fcdc1DiscreteWord8.bitValueOr(25, false) || fcdc2DiscreteWord8.bitValueOr(25, false));
-    this.speedBrakeCommand.set(fcdc1DiscreteWord8.bitValueOr(27, false) || fcdc2DiscreteWord8.bitValueOr(27, false));
+    this.spoilersArmed.set(
+      this.fcdc1DiscreteWord8.get().bitValueOr(25, false) || this.fcdc2DiscreteWord8.get().bitValueOr(25, false),
+    );
+    this.speedBrakeCommand.set(
+      this.fcdc1DiscreteWord8.get().bitValueOr(27, false) || this.fcdc2DiscreteWord8.get().bitValueOr(27, false),
+    );
 
     // TODO: add switching between SFCC_1 and SFCC_2
     const flapsPos = Arinc429Word.fromSimVarValue('L:A32NX_SFCC_1_FLAP_ACTUAL_POSITION_WORD');
@@ -4896,7 +4934,8 @@ export class FwsCore {
     );
 
     // spd brk pos/lvr disagree
-    const spdBrkPositionDisagree = fcdc1DiscreteWord7.bitValueOr(27, false) || fcdc2DiscreteWord7.bitValueOr(27, false);
+    const spdBrkPositionDisagree =
+      this.fcdc1DiscreteWord7.get().bitValueOr(27, false) || this.fcdc2DiscreteWord7.get().bitValueOr(27, false);
     this.speedBrakeCommand5sConfirm.write(this.speedBrakeCommand.get(), deltaTime); // remove delay timer once there are more references relating to the sensitivity of SPEED BRAKES POS/LEVER DISAGREE
     this.speedBrakePosLeverDisagree.set(spdBrkPositionDisagree && this.speedBrakeCommand5sConfirm.read());
 
@@ -4937,7 +4976,7 @@ export class FwsCore {
         speedBrakeCaution3 ||
         !this.flightPhase89.get(),
     );
-    const speedBrakeDoNotUse = fcdc1DiscreteWord5.bitValue(27) || fcdc2DiscreteWord5.bitValue(27);
+    const speedBrakeDoNotUse = this.fcdc1DiscreteWord5.get().bitValue(27) || this.fcdc2DiscreteWord5.get().bitValue(27);
     this.speedBrakeCaution1Pulse.write(speedBrakeCaution1);
     this.speedBrakeCaution2Pulse.write(speedBrakeCaution2);
     const speedBrakeCaution = speedBrakeCaution1 || speedBrakeCaution2 || speedBrakeCaution3;
@@ -4970,7 +5009,7 @@ export class FwsCore {
         !this.eng3Or4TakeoffPower.get() &&
         !allGroundSpoilersInop &&
         !(this.groundSpoiler5sDelayed.read() || this.speedBrake5sDelayed.read()) &&
-        (fcdc1DiscreteWord4.isNormalOperation() || fcdc2DiscreteWord4.isNormalOperation()),
+        (this.fcdc1DiscreteWord4.get().isNormalOperation() || this.fcdc2DiscreteWord4.get().isNormalOperation()),
     );
 
     this.abnProcImpactingLdgPerfActive.set(
@@ -5142,7 +5181,7 @@ export class FwsCore {
     this.tcas1Fault.set(this.tcas1FaultCond.get() && !this.tcas2FaultCond.get());
     this.tcas2Fault.set(this.tcas2FaultCond.get() && !this.tcas1FaultCond.get());
     this.tcas1And2Fault.set(this.tcas1FaultCond.get() && this.tcas2FaultCond.get());
-    const isNormalLaw = fcdc1DiscreteWord1.bitValue(11) || fcdc2DiscreteWord1.bitValue(11);
+    const isNormalLaw = this.fcdc1DiscreteWord1.get().bitValue(11) || this.fcdc2DiscreteWord1.get().bitValue(11);
     // we need to check this since the MSFS SDK stall warning does not.
     const isCasAbove60 =
       this.adr1Cas.get().valueOr(0) > 60 || this.adr2Cas.get().valueOr(0) > 60 || this.adr3Cas.get().valueOr(0) > 60;
