@@ -364,9 +364,11 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
           <path id="AltTapeOutlineUpper" class="NormalStroke Red" d="m 117.75,38.09 h 13.10 6.73" />
           <path id="AltTapeOutlineLower" class="NormalStroke Red" d="m 117.75,123.56 h 13.10 6.73" />
           <path id="AltReadoutBackground" class="BlackFill" d="m131.35 85.308h-13.63v-8.9706h13.63z" />
-          <text id="AltFailText" class="Blink9Seconds FontLargest Red EndAlign" x="131.16769" y="83.433167">
-            ALT
-          </text>
+          <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.altFlagVisible}>
+            <text id="AltFailText" class="FontLargest Red EndAlign" x="131.16769" y="83.433167">
+              ALT
+            </text>
+          </FlashOneHertz>
         </g>
 
         <g style={{ display: this.altFlagVisible.map((v) => (v ? 'none' : 'inherit')) }}>
