@@ -343,7 +343,7 @@ impl FuelValve {
     }
 
     fn is_moving(&self) -> bool {
-        self.is_powered() && self.commanded != self.is_open()
+        self.is_powered() && !self.is_open() && !self.is_closed()
     }
 }
 impl SimulationElement for FuelValve {
