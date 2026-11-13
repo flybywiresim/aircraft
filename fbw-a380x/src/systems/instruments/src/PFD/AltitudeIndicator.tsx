@@ -355,19 +355,6 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
         this.altConstraintPipe.pause();
       }
     }, true);
-
-    const sub = this.props.bus.getSubscriber<PFDSimvars>();
-
-    sub
-      .on('tcasFail')
-      .whenChanged()
-      .handle((tcasFailed) => {
-        if (tcasFailed) {
-          this.tcasFailed.instance.style.display = 'inline';
-        } else {
-          this.tcasFailed.instance.style.display = 'none';
-        }
-      });
   }
 
   render(): VNode {
@@ -381,20 +368,7 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
             ALT
           </text>
         </g>
-        <g ref={this.tcasFailed} style="display: none">
-          <text class="Blink9Seconds FontLargest Amber EndAlign" x="141.5" y="96">
-            T
-          </text>
-          <text class="Blink9Seconds FontLargest Amber EndAlign" x="141.5" y="104">
-            C
-          </text>
-          <text class="Blink9Seconds FontLargest Amber EndAlign" x="141.5" y="112">
-            A
-          </text>
-          <text class="Blink9Seconds FontLargest Amber EndAlign" x="141.5" y="120">
-            S
-          </text>
-        </g>
+
         <g style={{ display: this.altFlagVisible.map((v) => (v ? 'none' : 'inherit')) }}>
           <path id="AltTapeOutlineUpper" class="NormalStroke White" d="m 117.75,38.09 h 13.10 6.73" />
           <path id="AltTapeOutlineLower" class="NormalStroke White" d="m 117.75,123.56 h 13.10 6.73" />
