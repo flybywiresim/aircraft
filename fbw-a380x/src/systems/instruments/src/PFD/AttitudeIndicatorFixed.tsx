@@ -112,7 +112,7 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
 
   private visibilitySub = Subject.create('hidden');
 
-  private failureVis = Subject.create('hidden');
+  private readonly attFlagVisible = Subject.create(false);
 
   private fdVisibilitySub = Subject.create('hidden');
 
@@ -125,11 +125,11 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
       this.roll = r;
       if (!this.roll.isNormalOperation()) {
         this.visibilitySub.set('display:none');
-        this.failureVis.set('display:block');
+        this.attFlagVisible.set(true);
         this.fdVisibilitySub.set('display:none');
       } else {
         this.visibilitySub.set('display:inline');
-        this.failureVis.set('display:none');
+        this.attFlagVisible.set(false);
         if (!this.props.isAttExcessive.get()) {
           this.fdVisibilitySub.set('display:inline');
         }
@@ -141,11 +141,11 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
 
       if (!this.pitch.isNormalOperation()) {
         this.visibilitySub.set('display:none');
-        this.failureVis.set('display:block');
+        this.attFlagVisible.set(true);
         this.fdVisibilitySub.set('display:none');
       } else {
         this.visibilitySub.set('display:inline');
-        this.failureVis.set('display:none');
+        this.attFlagVisible.set(false);
         if (!this.props.isAttExcessive.get()) {
           this.fdVisibilitySub.set('display:inline');
         }
@@ -164,15 +164,12 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
   render(): VNode {
     return (
       <>
-        <text
-          style={this.failureVis}
-          id="AttFailText"
-          class="Blink9Seconds FontLargest Red EndAlign"
-          x="75.893127"
-          y="83.136955"
-        >
-          ATT
-        </text>
+        <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.attFlagVisible}>
+          <text id="AttFailText" class="FontLargest Red EndAlign" x="75.893127" y="83.136955">
+            ATT
+          </text>
+        </FlashOneHertz>
+
         <g id="AttitudeSymbolsGroup" style={this.visibilitySub}>
           <SidestickIndicator bus={this.props.bus} />
           <path class="BlackFill" d="m67.647 82.083v-2.5198h2.5184v2.5198z" />
