@@ -657,13 +657,15 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
 
   private mode = Subject.create('');
 
+  private readonly shouldFlash = Subject.create(false);
+
+  private readonly stdVisible = Subject.create(false);
+
   private transAltAr = Arinc429Register.empty();
 
   private transLvlAr = Arinc429Register.empty();
 
   private fmgcFlightPhase = 0;
-
-  private stdGroup = FSComponent.createRef<SVGGElement>();
 
   private qfeGroup = FSComponent.createRef<SVGGElement>();
 
@@ -691,17 +693,17 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
 
       if (isQfe) {
         this.mode.set('QFE');
-        this.stdGroup.instance.classList.add('HiddenElement');
+        this.stdVisible.set(false);
         this.qfeGroup.instance.classList.remove('HiddenElement');
         this.qfeBorder.instance.classList.remove('HiddenElement');
       } else if (isQnh) {
         this.mode.set('QNH');
-        this.stdGroup.instance.classList.add('HiddenElement');
+        this.stdVisible.set(false);
         this.qfeGroup.instance.classList.remove('HiddenElement');
         this.qfeBorder.instance.classList.add('HiddenElement');
       } else if (isStd) {
         this.mode.set('STD');
-        this.stdGroup.instance.classList.remove('HiddenElement');
+        this.stdVisible.set(true);
         this.qfeGroup.instance.classList.add('HiddenElement');
         this.qfeBorder.instance.classList.add('HiddenElement');
       }
@@ -756,45 +758,60 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
         this.transLvlAr.isNormalOperation() &&
         100 * this.transLvlAr.value > this.props.altitude.get()
       ) {
-        this.stdGroup.instance.classList.add('BlinkInfinite');
+        this.shouldFlash.set(true);
       } else {
-        this.stdGroup.instance.classList.remove('BlinkInfinite');
+        this.shouldFlash.set(false);
       }
     } else if (
       this.fmgcFlightPhase <= FmgcFlightPhase.Cruise &&
       this.transAltAr.isNormalOperation() &&
       this.transAltAr.value < this.props.altitude.get()
     ) {
-      this.qfeGroup.instance.classList.add('BlinkInfinite');
+      this.shouldFlash.set(true);
     } else {
-      this.qfeGroup.instance.classList.remove('BlinkInfinite');
+      this.shouldFlash.set(false);
     }
   }
 
   render(): VNode {
     return (
       <>
-        <g ref={this.stdGroup} id="STDAltimeterModeGroup">
-          <path class="NormalStroke Yellow" d="m124.79 131.74h13.096v7.0556h-13.096z" />
-          <text class="FontMedium Cyan AlignLeft" x="125.75785" y="137.36">
-            STD
-          </text>
-        </g>
-        <g id="AltimeterGroup">
-          <g ref={this.qfeGroup} id="QFEGroup">
-            <path
-              ref={this.qfeBorder}
-              class="NormalStroke White"
-              d="m 116.83686,133.0668 h 13.93811 v 5.8933 h -13.93811 z"
-            />
-            <text id="AltimeterModeText" class="FontMedium White" x="118.23066" y="138.11342">
-              {this.mode}
-            </text>
-            <text id="AltimeterSettingText" class="FontMedium StartAlign Cyan" x="131" y="138.09006">
-              {this.text}
+        <FlashOneHertz
+          bus={this.props.bus}
+          flashDuration={Infinity}
+          flashing={this.shouldFlash}
+          visible={this.stdVisible}
+        >
+          <g id="STDAltimeterModeGroup">
+            <path class="NormalStroke Yellow" d="m124.79 131.74h13.096v7.0556h-13.096z" />
+            <text class="FontMedium Cyan AlignLeft" x="125.75785" y="137.36">
+              STD
             </text>
           </g>
-        </g>
+        </FlashOneHertz>
+
+        <FlashOneHertz
+          bus={this.props.bus}
+          flashDuration={Infinity}
+          flashing={this.shouldFlash}
+          visible={this.stdVisible.map(SubscribableMapFunctions.not())}
+        >
+          <g id="AltimeterGroup">
+            <g ref={this.qfeGroup} id="QFEGroup">
+              <path
+                ref={this.qfeBorder}
+                class="NormalStroke White"
+                d="m 116.83686,133.0668 h 13.93811 v 5.8933 h -13.93811 z"
+              />
+              <text id="AltimeterModeText" class="FontMedium White" x="118.23066" y="138.11342">
+                {this.mode}
+              </text>
+              <text id="AltimeterSettingText" class="FontMedium StartAlign Cyan" x="131" y="138.09006">
+                {this.text}
+              </text>
+            </g>
+          </g>
+        </FlashOneHertz>
       </>
     );
   }
