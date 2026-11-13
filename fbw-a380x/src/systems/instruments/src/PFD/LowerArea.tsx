@@ -26,6 +26,7 @@ import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { EcamLimitations, EcamMemos } from '../MsfsAvionicsCommon/EcamMessages';
 import { FwcDataEvents, SecDataEvents } from '@flybywiresim/msfs-avionics-common';
 import { SfccEvents } from '../MsfsAvionicsCommon/providers/SfccPublisher';
+import { FlashOneHertz } from '../MsfsAvionicsCommon/FlashingElementUtils';
 
 export class LowerArea extends DisplayComponent<{
   bus: ArincEventBus;
@@ -438,22 +439,38 @@ class SlatsFlapsDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
             F
           </text>
         </g>
-        <text
-          class="GreenPulse FontSmallest"
-          x={0}
-          y={190}
-          visibility={this.alphaLockEngaged.map((v) => (v ? 'inherit' : 'hidden'))}
+        <FlashOneHertz
+          bus={this.props.bus}
+          flashDuration={Infinity}
+          flashing={this.alphaLockEngaged}
+          className1={'Green'}
+          className2={'DimmedGreen'}
         >
-          A LOCK
-        </text>
-        <text
-          class="GreenPulse FontSmallest"
-          x={32.5}
-          y={210.8}
-          visibility={this.flapReliefEngaged.map((v) => (v ? 'inherit' : 'hidden'))}
+          <text
+            class="FontSmallest"
+            x={0}
+            y={190}
+            visibility={this.alphaLockEngaged.map((v) => (v ? 'inherit' : 'hidden'))}
+          >
+            A LOCK
+          </text>
+        </FlashOneHertz>
+        <FlashOneHertz
+          bus={this.props.bus}
+          flashDuration={Infinity}
+          flashing={this.flapReliefEngaged}
+          className1={'Green'}
+          className2={'DimmedGreen'}
         >
-          F RELIEF
-        </text>
+          <text
+            class="FontSmallest"
+            x={32.5}
+            y={210.8}
+            visibility={this.flapReliefEngaged.map((v) => (v ? 'inherit' : 'hidden'))}
+          >
+            F RELIEF
+          </text>
+        </FlashOneHertz>
 
         <text
           class="Amber FontSmallest"

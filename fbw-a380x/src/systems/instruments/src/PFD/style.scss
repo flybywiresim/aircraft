@@ -250,6 +250,10 @@ tspan.Green {
   fill: $display-green;
   stroke: none;
 }
+.DimmedGreen.Fill {
+  fill: scale-color($display-green, $lightness: -30%);
+  stroke: none;
+}
 
 .Amber {
   stroke: $display-amber;
@@ -260,13 +264,16 @@ tspan.Green {
   fill: $display-amber;
   stroke: none;
 }
-
 text.Amber {
   fill: $display-amber;
   stroke: none;
 }
 tspan.Amber {
   fill: $display-amber;
+  stroke: none;
+}
+.DimmedAmber.Fill {
+  fill: scale-color($display-amber, $lightness: -30%);
   stroke: none;
 }
 
@@ -285,6 +292,10 @@ text.Yellow {
 tspan.Yellow {
   fill: $display-yellow;
   stroke: none;
+}
+.DimmedYellow {
+  stroke: scale-color($display-yellow, $lightness: -30%);
+  fill: none;
 }
 
 .Red {
