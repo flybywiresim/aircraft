@@ -1058,6 +1058,7 @@ impl A380FuelQuantityManagementSystem {
 
     fn reset(&mut self) {
         self.fuel_measuring_application.reset();
+        self.fuel_transfer_application.reset();
         self.fuel_pump_target_state_words = Default::default();
         self.fuel_pump_running_words = Default::default();
         self.fuel_valve_target_state_words = Default::default();
