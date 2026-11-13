@@ -1563,64 +1563,23 @@ The PRIMs perform the flight guidance and flight envelope functions.
     | 3 | 13 | Right Jettison Nozzle Valve |
     | 3 | 14-29 | Unused |
 
+- A32NX_FQMS_VALVE_OPEN_WORD_{word}
+  - Arinc429<Discrete>
+  - FQMS fuel valve open feedback word. Bit set means the valve is fully open.
+  - {word}
+    - 1
+    - 2
+    - 3
+  - Bit mapping matches `A32NX_FQMS_VALVE_TARGET_STATE_WORD_{word}`.
 
-### A32NX_FQMS_VALVE_TARGET_STATE_WORD_1
-
-| Bit | Valve |
-| --- | --- |
-| 11 | Engine 1 Low Pressure Valve |
-| 12 | Engine 2 Low Pressure Valve |
-| 13 | Engine 3 Low Pressure Valve |
-| 14 | Engine 4 Low Pressure Valve |
-| 15 | Feed Tank 1 Forward Transfer Valve |
-| 16 | Feed Tank 2 Forward Transfer Valve |
-| 17 | Feed Tank 3 Forward Transfer Valve |
-| 18 | Feed Tank 4 Forward Transfer Valve |
-| 19 | Left Inner Forward Transfer Valve |
-| 20 | Left Mid Forward Transfer Valve |
-| 21 | Left Outer Forward Transfer Valve |
-| 22 | Right Inner Forward Transfer Valve |
-| 23 | Right Mid Forward Transfer Valve |
-| 24 | Right Outer Forward Transfer Valve |
-| 25 | Feed Tank 1 Aft Transfer Valve |
-| 26 | Feed Tank 2 Aft Transfer Valve |
-| 27 | Feed Tank 3 Aft Transfer Valve |
-| 28 | Feed Tank 4 Aft Transfer Valve |
-| 29 | Left Inner Aft Transfer Valve |
-
-### A32NX_FQMS_VALVE_TARGET_STATE_WORD_2
-
-| Bit | Valve |
-| --- | --- |
-| 11 | Left Mid Aft Transfer Valve |
-| 12 | Left Outer Aft Transfer Valve |
-| 13 | Right Inner Aft Transfer Valve |
-| 14 | Right Mid Aft Transfer Valve |
-| 15 | Right Outer Aft Transfer Valve |
-| 16 | Trim Tank Inlet Valve 1 |
-| 17 | Trim Tank Inlet Valve 2 |
-| 18 | Trim Line Isolation Valve Forward |
-| 19 | Trim Line Isolation Valve Aft |
-| 20 | Crossfeed Valve 1 |
-| 21 | Crossfeed Valve 2 |
-| 22 | Crossfeed Valve 3 |
-| 23 | Crossfeed Valve 4 |
-| 24 | APU Isolation Valve |
-| 25 | APU Low Pressure Valve |
-| 26 | Left Outer Emergency Transfer Valve |
-| 27 | Right Outer Emergency Transfer Valve |
-| 28 | Gallery Auxiliary Refuel Valve Left |
-| 29 | Gallery Auxiliary Refuel Valve Right |
-
-### A32NX_FQMS_VALVE_TARGET_STATE_WORD_3
-
-| Bit | Valve |
-| --- | --- |
-| 11 | Transfer/Defuel Valve |
-| 12 | Left Jettison Nozzle Valve |
-| 13 | Right Jettison Nozzle Valve |
-| 14-29 | Unused |
-
+- A32NX_FQMS_VALVE_CLOSED_WORD_{word}
+  - Arinc429<Discrete>
+  - FQMS fuel valve closed feedback word. Bit set means the valve is fully closed.
+  - {word}
+    - 1
+    - 2
+    - 3
+  - Bit mapping matches `A32NX_FQMS_VALVE_TARGET_STATE_WORD_{word}`.
 
 - A32NX_FQDC_{id}_{tank}_TANK_QUANTITY
   - Arinc429<Kilogram>
