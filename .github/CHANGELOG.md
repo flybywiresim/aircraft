@@ -119,6 +119,7 @@ Always start an item with "1."; GitHub will number the rendered list automatical
 1. [A32NX/FMS] Fixed FM light coming up too often - @saschl
 1. [EFB] Fixed local PDFs not displaying in EFB - @saschl
 1. [A380X/FLIGHT MODEL] Flight model fixes - @donstim (donbikes)
+1. [A32NX/FMS] Fix Vs1g for CONF 1+F and fix Vls for CONF 3 CG=>25%
 
 ## 2024.1.0
 
