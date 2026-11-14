@@ -531,12 +531,15 @@ class A1A2Cell extends ShowForSecondsComponent<A1A2CellProps> {
 
   private flexTemp = ConsumerSubject.create(this.sub.on('flexTemp'), 0);
 
+  private readonly amberFlashingBox = Subject.create(false);
+
   constructor(props: A1A2CellProps) {
     super(props, 10);
   }
 
   private setText() {
     let text: string = '';
+    let amberFlashingBox = false;
     this.isShown = true;
 
     switch (this.props.A1A2CellMessage.get()) {
@@ -614,17 +617,13 @@ class A1A2Cell extends ShowForSecondsComponent<A1A2CellProps> {
         break;
       case A1A2Messages.A_FLOOR:
         this.displayModeChangedPath(true);
-        text = `<g>
-                                <path class="NormalStroke Amber BlinkInfinite" d="m0.70556 1.8143h30.927v6.0476h-30.927z" />
-                                <text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">A.FLOOR</text>
-                            </g>`;
+        amberFlashingBox = true;
+        text = `<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">A.FLOOR</text>`;
         break;
       case A1A2Messages.TOGA_LK:
         this.displayModeChangedPath(true);
-        text = `<g>
-                                <path class="NormalStroke Amber BlinkInfinite" d="m0.70556 1.8143h30.927v6.0476h-30.927z" />
-                                <text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">TOGA LK</text>
-                            </g>`;
+        amberFlashingBox = true;
+        text = `<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">TOGA LK</text>`;
         break;
       case A1A2Messages.BTV:
         text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">BTV</text>';
@@ -657,6 +656,8 @@ class A1A2Cell extends ShowForSecondsComponent<A1A2CellProps> {
     }
 
     this.cellRef.instance.innerHTML = text;
+
+    this.amberFlashingBox.set(amberFlashingBox);
   }
 
   onAfterRender(node: VNode): void {
@@ -681,6 +682,9 @@ class A1A2Cell extends ShowForSecondsComponent<A1A2CellProps> {
           d="m3.3 1.8143h27.127v6.0476h-27.127z"
         />
         <g ref={this.cellRef} />
+        <FlashOneHertz bus={this.props.bus} flashDuration={Infinity} visible={this.amberFlashingBox}>
+          <path class="NormalStroke Amber" d="m0.70556 1.8143h30.927v6.0476h-30.927z" />
+        </FlashOneHertz>
       </>
     );
   }
