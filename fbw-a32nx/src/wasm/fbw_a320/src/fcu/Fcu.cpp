@@ -28,6 +28,13 @@ void Fcu::update(double deltaTime,
   fcuHealthy = monitoringHealthy[0] || monitoringHealthy[1];
   modelInputs.in.sim_data.computer_running = fcuHealthy;
 
+  // In managed speed the FMGC commands the SPD/MACH switchover (A320 FCOM DSC-22_30-40 SPEED/MACH SWITCHING), so the
+  // SPD/MACH pb is ignored: it only switches between speed and Mach in selected speed. Uses the managed speed indication
+  // of the previous step.
+  if (modelOutputs.discrete_outputs.afs_outputs.spd_mach_managed) {
+    modelInputs.in.discrete_inputs.afs_inputs.spd_mach_button_pressed = false;
+  }
+
   fcuComputer.setExternalInputs(&modelInputs);
   fcuComputer.step();
   modelOutputs = fcuComputer.getExternalOutputs().out;

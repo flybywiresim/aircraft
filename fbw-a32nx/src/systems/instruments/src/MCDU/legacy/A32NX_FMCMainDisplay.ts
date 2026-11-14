@@ -1392,8 +1392,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   /**
    * In managed speed, the FMGC commands the FCU SPD/MACH switchover (A320 FCOM DSC-22_30-40 SPEED/MACH SWITCHING).
    * The switch is normally sent when the managed target changes between speed and Mach. This also corrects the FCU when
-   * it is in the other mode, e.g. after the SPD/MACH pb was pushed, which would otherwise never be switched back.
-   * In selected speed the switchover is manual, so the FCU is left alone.
+   * it is in the other mode, e.g. when managed speed is engaged after the SPD/MACH pb was used in selected speed, which
+   * would otherwise never be switched back. In selected speed the switchover is manual, so the FCU is left alone.
    * @param isMach whether the managed speed target is a Mach number
    */
   private syncFcuManagedSpeedMachMode(isMach: boolean): void {
