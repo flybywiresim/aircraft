@@ -387,6 +387,11 @@ struct base_prim_fctl_out_bus
   base_arinc_429 v_alpha_lim_kn;
   base_arinc_429 v_alpha_prot_kn;
   base_arinc_429 v_alpha_stall_warn_kn;
+  base_arinc_429 aileron_droop_command_deg;
+  base_arinc_429 upper_rudder_travel_lim_deg;
+  base_arinc_429 lower_rudder_travel_lim_deg;
+  base_arinc_429 speed_brake_command_deg;
+  base_arinc_429 ground_spoiler_command_deg;
 };
 
 #endif
@@ -583,35 +588,6 @@ enum class a380_pitch_law
   None = 0,
   NzLaw,
   DirectLaw
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_prim_discrete_outputs_
-#define DEFINED_TYPEDEF_FOR_base_prim_discrete_outputs_
-
-struct base_prim_discrete_outputs
-{
-  real_T alignment_dummy;
-  boolean_T elevator_1_active_mode;
-  boolean_T elevator_2_active_mode;
-  boolean_T elevator_3_active_mode;
-  boolean_T ths_active_mode;
-  boolean_T left_aileron_1_active_mode;
-  boolean_T left_aileron_2_active_mode;
-  boolean_T right_aileron_1_active_mode;
-  boolean_T right_aileron_2_active_mode;
-  boolean_T left_spoiler_electronic_module_enable;
-  boolean_T right_spoiler_electronic_module_enable;
-  boolean_T rudder_1_hydraulic_active_mode;
-  boolean_T rudder_1_electric_active_mode;
-  boolean_T rudder_2_hydraulic_active_mode;
-  boolean_T rudder_2_electric_active_mode;
-  boolean_T prim_healthy;
-  boolean_T fcu_1_select;
-  boolean_T fcu_2_select;
-  boolean_T ap_engaged;
-  boolean_T reverser_tertiary_lock;
 };
 
 #endif
@@ -1201,6 +1177,7 @@ struct base_prim_fctl_logic_outputs
   boolean_T rudder_2_electric_mode_engaged;
   boolean_T aileron_droop_active;
   boolean_T aileron_antidroop_active;
+  real_T aileron_droop_command_deg;
   boolean_T ths_automatic_mode_active;
   real_T ths_manual_mode_c_deg_s;
   boolean_T eha_ebha_elec_mode_inhibited;
@@ -1228,6 +1205,8 @@ struct base_prim_fctl_logic_outputs
   boolean_T high_speed_prot_active;
   real_T high_speed_prot_lo_thresh_kn;
   real_T high_speed_prot_hi_thresh_kn;
+  real_T upper_rudder_travel_lim_deg;
+  real_T lower_rudder_travel_lim_deg;
 };
 
 #endif
@@ -1353,6 +1332,35 @@ struct base_prim_fg_laws_outputs
   ap_raw_output ap_fd_1;
   ap_raw_output ap_fd_2;
   real_T n_1_c_percent;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_prim_discrete_outputs_
+#define DEFINED_TYPEDEF_FOR_base_prim_discrete_outputs_
+
+struct base_prim_discrete_outputs
+{
+  real_T alignment_dummy;
+  boolean_T elevator_1_active_mode;
+  boolean_T elevator_2_active_mode;
+  boolean_T elevator_3_active_mode;
+  boolean_T ths_active_mode;
+  boolean_T left_aileron_1_active_mode;
+  boolean_T left_aileron_2_active_mode;
+  boolean_T right_aileron_1_active_mode;
+  boolean_T right_aileron_2_active_mode;
+  boolean_T left_spoiler_electronic_module_enable;
+  boolean_T right_spoiler_electronic_module_enable;
+  boolean_T rudder_1_hydraulic_active_mode;
+  boolean_T rudder_1_electric_active_mode;
+  boolean_T rudder_2_hydraulic_active_mode;
+  boolean_T rudder_2_electric_active_mode;
+  boolean_T prim_healthy;
+  boolean_T fcu_1_select;
+  boolean_T fcu_2_select;
+  boolean_T ap_engaged;
+  boolean_T reverser_tertiary_lock;
 };
 
 #endif

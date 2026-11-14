@@ -228,6 +228,11 @@ struct base_prim_fctl_out_bus
   base_arinc_429 v_alpha_lim_kn;
   base_arinc_429 v_alpha_prot_kn;
   base_arinc_429 v_alpha_stall_warn_kn;
+  base_arinc_429 aileron_droop_command_deg;
+  base_arinc_429 upper_rudder_travel_lim_deg;
+  base_arinc_429 lower_rudder_travel_lim_deg;
+  base_arinc_429 speed_brake_command_deg;
+  base_arinc_429 ground_spoiler_command_deg;
 };
 
 #endif
@@ -374,19 +379,6 @@ struct base_sec_out_bus
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_lgciu_bus_
-#define DEFINED_TYPEDEF_FOR_base_lgciu_bus_
-
-struct base_lgciu_bus
-{
-  base_arinc_429 discrete_word_1;
-  base_arinc_429 discrete_word_2;
-  base_arinc_429 discrete_word_3;
-  base_arinc_429 discrete_word_4;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_base_prim_sim_input_
 #define DEFINED_TYPEDEF_FOR_base_prim_sim_input_
 
@@ -396,6 +388,19 @@ struct base_prim_sim_input
   real32_T hdg_trk;
   real32_T alt;
   real32_T vs_fpa;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+#define DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+
+struct base_lgciu_bus
+{
+  base_arinc_429 discrete_word_1;
+  base_arinc_429 discrete_word_2;
+  base_arinc_429 discrete_word_3;
+  base_arinc_429 discrete_word_4;
 };
 
 #endif
@@ -937,6 +942,7 @@ struct base_prim_fctl_logic_outputs
   boolean_T rudder_2_electric_mode_engaged;
   boolean_T aileron_droop_active;
   boolean_T aileron_antidroop_active;
+  real_T aileron_droop_command_deg;
   boolean_T ths_automatic_mode_active;
   real_T ths_manual_mode_c_deg_s;
   boolean_T eha_ebha_elec_mode_inhibited;
@@ -964,6 +970,8 @@ struct base_prim_fctl_logic_outputs
   boolean_T high_speed_prot_active;
   real_T high_speed_prot_lo_thresh_kn;
   real_T high_speed_prot_hi_thresh_kn;
+  real_T upper_rudder_travel_lim_deg;
+  real_T lower_rudder_travel_lim_deg;
 };
 
 #endif

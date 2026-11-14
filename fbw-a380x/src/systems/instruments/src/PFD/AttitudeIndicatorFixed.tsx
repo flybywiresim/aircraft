@@ -9,14 +9,14 @@ import {
   Subscribable,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { Arinc429LocalVarConsumerSubject, Arinc429Word } from '@flybywiresim/fbw-sdk';
+import { Arinc429LocalVarConsumerSubject, Arinc429Word, MathUtils } from '@flybywiresim/fbw-sdk';
 import { FlightPathVector } from './FlightPathVector';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { SelectedFdEvents } from './shared/FdSelectionProvider';
 import { PrimFgBusBaseEvents } from '@shared/publishers/PrimFgPublisher';
 import { FlashOneHertz } from '../MsfsAvionicsCommon/FlashingElementUtils';
-import { FcdcBusEvents } from '@shared/publishers/FcdcPublisher';
+import { FcdcBusBaseEvents, FcdcBusEvents } from '@shared/publishers/FcdcPublisher';
 
 interface AttitudeIndicatorFixedUpperProps {
   readonly bus: EventBus;
@@ -361,117 +361,136 @@ class FlightDirector extends DisplayComponent<{ bus: EventBus }> {
 }
 
 class SidestickIndicator extends DisplayComponent<{ bus: EventBus }> {
-  private sideStickX = 0;
+  private readonly sub = this.props.bus.getSubscriber<FcdcBusBaseEvents & FcdcBusEvents & PFDSimvars>();
 
-  private sideStickY = 0;
+  private readonly captPitchCommand = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('fcdc_capt_pitch_command_deg'),
+  );
 
-  private leftGearcompressed = true;
+  private readonly foPitchCommand = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_fo_pitch_command_deg'));
 
-  private rightGearCompressed = true;
+  private readonly captRollCommand = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_capt_roll_command_deg'));
 
-  private crossHairRef = FSComponent.createRef<SVGPathElement>();
+  private readonly foRollCommand = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_fo_roll_command_deg'));
 
-  private onGroundForVisibility = Subject.create('visible');
+  private readonly anyCommandFw = MappedSubject.create(
+    ([captPitchCommand, foPitchCommand, captRollCommand, foRollCommand]) => {
+      return (
+        captPitchCommand.isFailureWarning() ||
+        foPitchCommand.isFailureWarning() ||
+        captRollCommand.isFailureWarning() ||
+        foRollCommand.isFailureWarning()
+      );
+    },
+    this.captPitchCommand,
+    this.foPitchCommand,
+    this.captRollCommand,
+    this.foRollCommand,
+  );
 
-  private engOneRunning = false;
+  private readonly fcdc1DiscreteWord9 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_9_1'));
 
-  private engTwoRunning = false;
+  private readonly fcdc2DiscreteWord9 = Arinc429LocalVarConsumerSubject.create(this.sub.on('fcdc_discrete_word_9_2'));
 
-  private engThreeRunning = false;
+  private readonly foStickDisabled = MappedSubject.create(
+    ([fcdc1DiscreteWord9, fcdc2DiscreteWord9]) => {
+      return fcdc1DiscreteWord9.bitValueOr(25, false) || fcdc2DiscreteWord9.bitValueOr(25, false);
+    },
+    this.fcdc1DiscreteWord9,
+    this.fcdc2DiscreteWord9,
+  );
 
-  private engFourRunning = false;
+  private readonly captStickDisabled = MappedSubject.create(
+    ([fcdc1DiscreteWord9, fcdc2DiscreteWord9]) => {
+      return fcdc1DiscreteWord9.bitValueOr(26, false) || fcdc2DiscreteWord9.bitValueOr(26, false);
+    },
+    this.fcdc1DiscreteWord9,
+    this.fcdc2DiscreteWord9,
+  );
 
-  private handleSideStickIndication() {
-    const onGround = this.leftGearcompressed || this.rightGearCompressed;
-    const oneEngineRunning = this.engOneRunning || this.engTwoRunning || this.engThreeRunning || this.engFourRunning;
+  private readonly totalPitchCommand = MappedSubject.create(
+    ([captPitchCommand, foPitchCommand, foStickDisabled, captStickDisabled]) => {
+      return (foStickDisabled ? 0 : foPitchCommand.value) + (captStickDisabled ? 0 : captPitchCommand.value);
+    },
+    this.captPitchCommand,
+    this.foPitchCommand,
+    this.foStickDisabled,
+    this.captStickDisabled,
+  );
 
-    if (onGround && oneEngineRunning) {
-      this.onGroundForVisibility.set('visible');
-      this.crossHairRef.instance.style.transform = `translate3d(${this.sideStickX}px, ${this.sideStickY}px, 0px)`;
-    } else {
-      this.onGroundForVisibility.set('hidden');
-    }
-  }
+  private readonly totalRollCommand = MappedSubject.create(
+    ([captRollCommand, foRollCommand, foStickDisabled, captStickDisabled]) => {
+      return (foStickDisabled ? 0 : foRollCommand.value) + (captStickDisabled ? 0 : captRollCommand.value);
+    },
+    this.captRollCommand,
+    this.foRollCommand,
+    this.foStickDisabled,
+    this.captStickDisabled,
+  );
 
-  onAfterRender(node: VNode): void {
-    super.onAfterRender(node);
+  private readonly xOffset = this.totalRollCommand.map((rollCommand) =>
+    MathUtils.round(Math.max(Math.min(rollCommand, 20), -20) * 1.478, 0.01),
+  );
 
-    const sub = this.props.bus.getSubscriber<PFDSimvars>();
+  private readonly yOffset = this.totalPitchCommand.map((pitchCommand) =>
+    MathUtils.round(Math.max(Math.min(pitchCommand, 16), -16) * -1.43875, 0.01),
+  );
 
-    sub
-      .on('leftMainGearCompressed')
-      .whenChanged()
-      .handle((g) => {
-        this.leftGearcompressed = g;
-        this.handleSideStickIndication();
-      });
+  private readonly transform = MappedSubject.create(
+    ([xOffset, yOffset]) => {
+      return `translate3d(${xOffset}px, ${yOffset}px, 0px)`;
+    },
+    this.xOffset,
+    this.yOffset,
+  );
 
-    sub
-      .on('rightMainGearCompressed')
-      .whenChanged()
-      .handle((g) => {
-        this.rightGearCompressed = g;
-        this.handleSideStickIndication();
-      });
+  private readonly leftGearcompressed = ConsumerSubject.create(this.sub.on('leftMainGearCompressed'), false);
 
-    sub
-      .on('sideStickX')
-      .whenChanged()
-      .handle((x) => {
-        this.sideStickX = x * 29.56;
-        this.handleSideStickIndication();
-      });
+  private readonly rightGearCompressed = ConsumerSubject.create(this.sub.on('rightMainGearCompressed'), false);
 
-    sub
-      .on('sideStickY')
-      .whenChanged()
-      .handle((y) => {
-        this.sideStickY = -y * 23.02;
-        this.handleSideStickIndication();
-      });
+  private readonly onGround = MappedSubject.create(
+    ([leftGearcompressed, rightGearCompressed]) => {
+      return leftGearcompressed || rightGearCompressed;
+    },
+    this.leftGearcompressed,
+    this.rightGearCompressed,
+  );
 
-    sub
-      .on('engOneRunning')
-      .whenChanged()
-      .handle((e) => {
-        this.engOneRunning = e;
-        this.handleSideStickIndication();
-      });
+  private readonly engOneRunning = ConsumerSubject.create(this.sub.on('engOneRunning'), false);
 
-    sub
-      .on('engTwoRunning')
-      .whenChanged()
-      .handle((e) => {
-        this.engTwoRunning = e;
-        this.handleSideStickIndication();
-      });
+  private readonly engTwoRunning = ConsumerSubject.create(this.sub.on('engTwoRunning'), false);
 
-    sub
-      .on('engThreeRunning')
-      .whenChanged()
-      .handle((e) => {
-        this.engThreeRunning = e;
-        this.handleSideStickIndication();
-      });
+  private readonly engThreeRunning = ConsumerSubject.create(this.sub.on('engThreeRunning'), false);
 
-    sub
-      .on('engFourRunning')
-      .whenChanged()
-      .handle((e) => {
-        this.engFourRunning = e;
-        this.handleSideStickIndication();
-      });
-  }
+  private readonly engFourRunning = ConsumerSubject.create(this.sub.on('engFourRunning'), false);
+
+  private readonly oneEngineRunning = MappedSubject.create(
+    ([engOneRunning, engTwoRunning, engThreeRunning, engFourRunning]) => {
+      return engOneRunning || engTwoRunning || engThreeRunning || engFourRunning;
+    },
+    this.engOneRunning,
+    this.engTwoRunning,
+    this.engThreeRunning,
+    this.engFourRunning,
+  );
+
+  private readonly visibility = MappedSubject.create(
+    ([onGround, oneEngineRunning, anyCommandFw]) =>
+      onGround && oneEngineRunning && !anyCommandFw ? 'visible' : 'hidden',
+    this.onGround,
+    this.oneEngineRunning,
+    this.anyCommandFw,
+  );
 
   render(): VNode {
     return (
-      <g id="GroundCursorGroup" class="NormalStroke White" visibility={this.onGroundForVisibility}>
+      <g id="GroundCursorGroup" class="NormalStroke White" visibility={this.visibility}>
         <path
           id="GroundCursorBorders"
           d="m92.327 103.75h6.0441v-6.0476m-58.93 0v6.0476h6.0441m46.842-45.861h6.0441v6.0476m-58.93 0v-6.0476h6.0441"
         />
         <path
-          ref={this.crossHairRef}
+          style={{ transform: this.transform }}
           id="GroundCursorCrosshair"
           d="m73.994 81.579h-4.3316v4.3341m-5.8426-4.3341h4.3316v4.3341m5.8426-5.846h-4.3316v-4.3341m-5.8426 4.3341h4.3316v-4.3341"
         />

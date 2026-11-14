@@ -17,6 +17,7 @@ import {
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import PitchTrimUtils from '@shared/PitchTrimUtils';
 import { FqmsBusEvents } from '@shared/publishers/FqmsBusPublisher';
+import { PrimFctlBusEvents } from '@shared/publishers/PrimFctlPublisher';
 
 enum PitchTrimStatus {
   AfterLanding,
@@ -31,7 +32,7 @@ const SVG_HEIGHT = 252;
 
 export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible: Subscribable<boolean> }> {
   private readonly subscriptions: Subscription[] = [];
-  private readonly sub = this.props.bus.getSubscriber<PFDSimvars & FqmsBusEvents>();
+  private readonly sub = this.props.bus.getSubscriber<PFDSimvars & FqmsBusEvents & PrimFctlBusEvents>();
 
   private readonly cgGroup = FSComponent.createRef<SVGGElement>();
 
@@ -41,6 +42,24 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
 
   private readonly arrowRef = FSComponent.createRef<SVGPolygonElement>();
 
+  private readonly prim3ThsPosition = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_ths_position_deg_3'));
+
+  private readonly prim1ThsPosition = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_ths_position_deg_1'));
+
+  private readonly thsPosition = MappedSubject.create(
+    ([prim3ThsPosition, prim1ThsPosition]) => {
+      if (prim3ThsPosition.isNormalOperation()) {
+        return MathUtils.round(-prim3ThsPosition.value, 0.001);
+      } else if (prim1ThsPosition.isNormalOperation()) {
+        return MathUtils.round(-prim1ThsPosition.value, 0.001);
+      } else {
+        return 0;
+      }
+    },
+    this.prim3ThsPosition,
+    this.prim1ThsPosition,
+  );
+
   private readonly pitchTrimVisibility = this.props.visible.map((it) => (it ? 'visible' : 'hidden'));
 
   private readonly pitchTrimVisibilitySub = this.props.visible.sub((v) => {
@@ -49,19 +68,16 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
     }
   });
 
-  private readonly trimPosition = ConsumerSubject.create(this.sub.on('trimPosition').whenChanged(), 0).map(
-    (it) => it * MathUtils.RADIANS_TO_DEGREES,
-  );
-  private readonly thsForText = this.trimPosition.map((it) =>
+  private readonly thsForText = this.thsPosition.map((it) =>
     (Math.round(PitchTrimUtils.pitchTrimToCg(it) * 10) / 10).toFixed(1),
   );
 
   // Use modulo TRIM_WHEEL_HEIGHT / 4 to wrap around, otherwise the trim indication would not be long enough.
-  private readonly rightWheelY = this.trimPosition.map(
+  private readonly rightWheelY = this.thsPosition.map(
     (it) => ((it * TRIM_POS_TO_WHEEL_GAIN) % (TRIM_WHEEL_HEIGHT / 4)) - TRIM_WHEEL_HEIGHT / 2 + SVG_HEIGHT / 2,
   );
 
-  private readonly trimAreasTransform = this.trimPosition.map(
+  private readonly trimAreasTransform = this.thsPosition.map(
     (it) => `translate(276 ${-(this.degreesToPixel(it) - 103.5) + 23})`,
   );
 
@@ -114,7 +130,7 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
         }
       }
     },
-    this.trimPosition,
+    this.thsPosition,
     this.cgPercent,
     this.fwcFlightPhase,
     this.anyEngRunning,
@@ -131,7 +147,7 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
   /** in pixels, where magenta GW CG box is */
   private readonly gwCgPositionTransform = MappedSubject.create(
     ([pitch, optimal]) => (optimal === null ? '' : `translate(0 ${(pitch - optimal) * 17.25 - 5})`),
-    this.trimPosition,
+    this.thsPosition,
     this.optimalPitchTrim,
   );
 
@@ -207,7 +223,7 @@ export class PitchTrimDisplay extends DisplayComponent<{ bus: EventBus; visible:
 
     this.subscriptions.push(
       this.pitchTrimVisibility,
-      this.trimPosition,
+      this.thsPosition,
       this.thsForText,
       this.rightWheelY,
       this.trimAreasTransform,

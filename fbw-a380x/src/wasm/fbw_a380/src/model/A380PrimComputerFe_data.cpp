@@ -1270,6 +1270,31 @@ A380PrimComputerFe::Parameters_A380PrimComputerFe_T A380PrimComputerFe::A380Prim
             {
               0U,
               0.0F
+            },
+
+            {
+              0U,
+              0.0F
+            },
+
+            {
+              0U,
+              0.0F
+            },
+
+            {
+              0U,
+              0.0F
+            },
+
+            {
+              0U,
+              0.0F
+            },
+
+            {
+              0U,
+              0.0F
             }
           },
 
@@ -1505,6 +1530,31 @@ A380PrimComputerFe::Parameters_A380PrimComputerFe_T A380PrimComputerFe::A380Prim
 
         {
           {
+            {
+              0U,
+              0.0F
+            },
+
+            {
+              0U,
+              0.0F
+            },
+
+            {
+              0U,
+              0.0F
+            },
+
+            {
+              0U,
+              0.0F
+            },
+
+            {
+              0U,
+              0.0F
+            },
+
             {
               0U,
               0.0F
@@ -2990,20 +3040,21 @@ A380PrimComputerFe::Parameters_A380PrimComputerFe_T A380PrimComputerFe::A380Prim
       false,
       false,
       false,
-      false,
-      0.0,
-      false,
-      false,
-      false,
-      false,
-      false,
-      0.0,
       0.0,
       false,
       0.0,
       false,
       false,
       false,
+      false,
+      false,
+      0.0,
+      0.0,
+      false,
+      0.0,
+      false,
+      false,
+      false,
       0.0,
       false,
       false,
@@ -3015,6 +3066,8 @@ A380PrimComputerFe::Parameters_A380PrimComputerFe_T A380PrimComputerFe::A380Prim
       0.0,
       0.0,
       false,
+      0.0,
+      0.0,
       0.0,
       0.0
     },
@@ -3309,6 +3362,31 @@ A380PrimComputerFe::Parameters_A380PrimComputerFe_T A380PrimComputerFe::A380Prim
 
     {
       {
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
         {
           0U,
           0.0F

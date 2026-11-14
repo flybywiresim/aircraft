@@ -22,6 +22,38 @@ export type PrimFctlBusBaseEvents = {
    *       21 | If this PRIM is selected as the master PRIM
    */
   prim_fctl_law_status_word: number;
+  /**
+   * Discrete status word carrying general information about the F/CTL system.
+   * Bit(s)   | Meaning
+   * -------- | --------------------------
+   *       11 | THS Automatic Mode Active
+   *       12 |
+   *       -  | Spare
+   *       16 |
+   *       17 | Left Sidestick disabled (due to priority)
+   *       18 | Right Sidestick disabled (due to priority)
+   *       19 | Left Sidestick priority locked
+   *       20 | Right Sidestick priority locked
+   *       21 |
+   *       -  | Spare
+   *       26 |
+   *       27 | Speed Brake lever extended
+   *       20 | Ground Spoilers armed
+   *       21 | Ground Spoilers out
+   */
+  prim_discrete_status_word_1: number;
+  /**
+   * Actual THS position, in degrees.
+   */
+  prim_ths_position_deg: number;
+  /**
+   * Commanded deflection angle for the speed brakes, in degrees.
+   */
+  prim_speed_brake_command: number;
+  /**
+   * Commanded deflection angle for the ground spoilers, in degrees.
+   */
+  prim_ground_spoiler_command: number;
 };
 
 type IndexedTopics = keyof PrimFctlBusBaseEvents;
@@ -54,6 +86,42 @@ export class PrimFctlBusPublisher extends SimVarPublisher<PrimFctlBusPublisherEv
         'prim_fctl_law_status_word',
         {
           name: 'L:A32NX_PRIM_#index#_FCTL_LAW_STATUS_WORD',
+          type: SimVarValueType.Enum,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'prim_discrete_status_word_1',
+        {
+          name: 'L:A32NX_PRIM_#index#_DISCRETE_STATUS_WORD_1',
+          type: SimVarValueType.Enum,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'prim_ths_position_deg',
+        {
+          name: 'L:A32NX_PRIM_#index#_THS_POSITION',
+          type: SimVarValueType.Enum,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'prim_speed_brake_command',
+        {
+          name: 'L:A32NX_PRIM_#index#_SPD_BRK_COMMAND',
+          type: SimVarValueType.Enum,
+          indexed: true,
+          defaultIndex: null,
+        },
+      ],
+      [
+        'prim_ground_spoiler_command',
+        {
+          name: 'L:A32NX_PRIM_#index#_GND_SPLR_COMMAND',
           type: SimVarValueType.Enum,
           indexed: true,
           defaultIndex: null,
