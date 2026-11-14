@@ -1,6 +1,7 @@
 import {
   ClockEvents,
   ComponentProps,
+  ConsumerSubject,
   DisplayComponent,
   EventBus,
   FSComponent,
@@ -12,6 +13,7 @@ import { Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { LagFilter } from './PFDUtils';
+import { FlashOneHertz } from '../MsfsAvionicsCommon/FlashingElementUtils';
 
 interface VerticalSpeedIndicatorProps {
   bus: ArincEventBus;
@@ -29,15 +31,15 @@ interface TcasState {
 }
 
 export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndicatorProps> {
+  private readonly sub = this.props.bus.getArincSubscriber<PFDSimvars>();
+
   private yOffsetSub = Subject.create(0);
 
   private needleColour = Subject.create('Green');
 
   private radioAlt = new Arinc429Word(0);
 
-  private vsFailed = FSComponent.createRef<SVGGElement>();
-
-  private vsNormal = FSComponent.createRef<SVGGElement>();
+  private vsFlagVisible = Subject.create(false);
 
   private lagFilter = new LagFilter(2);
 
@@ -55,6 +57,8 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
     tcasGreenZoneL: 0,
     tcasGreenZoneH: 0,
   };
+
+  private readonly tcasInvalid = ConsumerSubject.create(this.sub.on('tcasFail'), false);
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
@@ -123,11 +127,9 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
         const absVSpeed = Math.abs(filteredVS);
 
         if (!vs.isNormalOperation()) {
-          this.vsFailed.instance.style.visibility = 'visible';
-          this.vsNormal.instance.style.visibility = 'hidden';
+          this.vsFlagVisible.set(true);
         } else {
-          this.vsFailed.instance.style.visibility = 'hidden';
-          this.vsNormal.instance.style.visibility = 'visible';
+          this.vsFlagVisible.set(false);
         }
 
         const radioAltitudeValid = !this.radioAlt.isNoComputedData() && !this.radioAlt.isFailureWarning();
@@ -173,21 +175,39 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
       <g>
         <path class="TapeBackground" d="m151.84 131.72 4.1301-15.623v-70.556l-4.1301-15.623h-5.5404v101.8z" />
 
-        <g id="VSpeedFailText" ref={this.vsFailed}>
-          <text class="Blink9Seconds FontLargest Red EndAlign" x="153.13206" y="77.501472">
+        <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.vsFlagVisible}>
+          <text class="FontLargest Red EndAlign" x="153.13206" y="77.501472">
             V
           </text>
-          <text class="Blink9Seconds FontLargest Red EndAlign" x="153.13406" y="83.211388">
+          <text class="FontLargest Red EndAlign" x="153.13406" y="83.211388">
             /
           </text>
-          <text class="Blink9Seconds FontLargest Red EndAlign" x="152.99374" y="88.870819">
+          <text class="FontLargest Red EndAlign" x="152.99374" y="88.870819">
             S
           </text>
-        </g>
+        </FlashOneHertz>
+
+        <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.tcasInvalid}>
+          <text class="FontMedium Amber EndAlign" x="141.5" y="100">
+            T
+          </text>
+          <text class="FontMedium Amber EndAlign" x="141.5" y="105">
+            C
+          </text>
+          <text class="FontMedium Amber EndAlign" x="141.5" y="110">
+            A
+          </text>
+          <text class="FontMedium Amber EndAlign" x="141.5" y="115">
+            S
+          </text>
+        </FlashOneHertz>
 
         <VSpeedTcas ref={this.vspeedTcas} bus={this.props.bus} />
 
-        <g id="VerticalSpeedGroup" ref={this.vsNormal}>
+        <g
+          id="VerticalSpeedGroup"
+          visibility={this.vsFlagVisible.map((flagVisible) => (flagVisible ? 'hidden' : 'visible'))}
+        >
           <g class="Fill White">
             <path d="m149.92 54.339v-1.4615h1.9151v1.4615z" />
             <path d="m149.92 44.26v-1.4615h1.9151v1.4615z" />
