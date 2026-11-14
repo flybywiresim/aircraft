@@ -115,7 +115,7 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
 
   private readonly pitchTrimIndicatorCondition = Subject.create(false);
 
-  private updatePitchTrimVisible(flapsRetracted = false) {
+  private updatePitchTrimVisiblityCondition(flapsRetracted = false) {
     const gs = this.groundSpeed.get().valueOr(0);
     if (this.filteredRadioAltitude.get() > 50) {
       this.pitchTrimIndicatorCondition.set(false);
@@ -124,9 +124,7 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
     } else if (
       this.eitherMainLgCompressed.get() &&
       gs > 80 &&
-      (this.groundSpoilersArmed.get() === false ||
-        flapsRetracted === true ||
-        this.atLeastThreeThrustLeversOutOfIdle.get())
+      (!this.groundSpoilersArmed.get() || flapsRetracted || this.atLeastThreeThrustLeversOutOfIdle.get())
     ) {
       // FIXME add "flight crew presses pitch trim switches"
       this.pitchTrimIndicatorCondition.set(true);
@@ -202,7 +200,7 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
           this.props.instrument.deltaTime / 1000,
         );
         this.filteredRadioAltitude.set(filteredRadioAltitude);
-        this.updatePitchTrimVisible();
+        this.updatePitchTrimVisiblityCondition();
       }),
     );
 
@@ -212,16 +210,16 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
         .whenChanged()
         .handle((fh) => {
           if (this.previousFlapHandlePosition > fh) {
-            this.updatePitchTrimVisible(true);
+            this.updatePitchTrimVisiblityCondition(true);
           }
           this.previousFlapHandlePosition = fh;
         }),
     );
 
     this.subscriptions.push(
-      this.groundSpeed.sub(() => this.updatePitchTrimVisible()),
-      this.groundSpoilersArmed.sub(() => this.updatePitchTrimVisible()),
-      this.atLeastThreeThrustLeversOutOfIdle.sub(() => this.updatePitchTrimVisible()),
+      this.groundSpeed.sub(() => this.updatePitchTrimVisiblityCondition()),
+      this.groundSpoilersArmed.sub(() => this.updatePitchTrimVisiblityCondition()),
+      this.atLeastThreeThrustLeversOutOfIdle.sub(() => this.updatePitchTrimVisiblityCondition()),
       this.groundSpeed,
       this.groundSpoilersArmed,
       this.leftMainGearCompressed,
