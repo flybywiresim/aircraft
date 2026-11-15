@@ -889,6 +889,11 @@ impl A380FuelQuantityManagementSystem {
     // Duration for which the input values are memorized
     const INPUT_MEMORIZATION_DURATION: Duration = Duration::from_secs(10);
 
+    // Automatic transfers are inhibited once this many wing/trim tank quantities
+    // are unavailable. An invalid feed tank quantity inhibits transfers on its own
+    // (all_feed_tanks_valid only reports feed tanks).
+    const MAX_UNAVAILABLE_TANK_QUANTITIES: usize = 2;
+
     pub(super) fn new(context: &mut InitContext) -> Self {
         // TODO: This needs to be refactored when CPIOM implementation is done
         // CPIOM_COM_F1, CPIOM_MON_F3 [FQDC_1] -> 501PP
@@ -1008,15 +1013,13 @@ impl A380FuelQuantityManagementSystem {
             .iter()
             .any(|lgciu| lgciu.left_and_right_gear_compressed(false));
 
-        // Automatic transfers are disabled on the ground or when the fuel quantity
-        // in one feed tank is not available, or more than one tank are not available
-        let automatic_transfer_available = !is_on_ground
-            && !self.integrated_refuel_panel.refuel_is_enabled(context)
-            && self.fuel_measuring_application.all_feed_tanks_valid()
-            && self
-                .fuel_measuring_application
-                .unavailable_tank_quantity_count()
-                < 2;
+        let automatic_transfer_available = Self::automatic_transfers_available(
+            is_on_ground,
+            self.integrated_refuel_panel.refuel_is_enabled(context),
+            self.fuel_measuring_application.all_feed_tanks_valid(),
+            self.fuel_measuring_application
+                .unavailable_tank_quantity_count(),
+        );
 
         if automatic_transfer_available {
             self.fuel_transfer_application.update(
@@ -1116,6 +1119,23 @@ impl A380FuelQuantityManagementSystem {
     /// Extracts the FMS data by getting the first one available.
     fn get_fms_data<T: PartialEq>(fms_values: [Option<T>; 2]) -> Option<T> {
         fms_values.into_iter().flat_map(|x| x.into_iter()).next()
+    }
+
+    /// Decides whether automatic transfers may run. Transfers are inhibited on
+    /// the ground, while refuelling, when a feed tank quantity is invalid (a
+    /// single invalid feed tank is enough) or when at least
+    /// [`Self::MAX_UNAVAILABLE_TANK_QUANTITIES`] wing/trim tank quantities are
+    /// unavailable.
+    fn automatic_transfers_available(
+        is_on_ground: bool,
+        refuel_enabled: bool,
+        all_feed_tanks_valid: bool,
+        unavailable_tank_quantity_count: usize,
+    ) -> bool {
+        !is_on_ground
+            && !refuel_enabled
+            && all_feed_tanks_valid
+            && unavailable_tank_quantity_count < Self::MAX_UNAVAILABLE_TANK_QUANTITIES
     }
 
     fn write_arinc429<T: Default>(
@@ -1284,5 +1304,34 @@ mod tests {
 
         assert_eq!(value, expected_value);
         assert_eq!(flags, expected_flags);
+    }
+
+    #[rstest]
+    // ground, refuel, feed tanks valid, unavailable wing/trim count, expected
+    #[case(false, false, true, 0, true)]
+    #[case(false, false, true, 1, true)]
+    #[case(false, false, true, 2, false)]
+    #[case(false, false, true, 3, false)]
+    // A single invalid feed tank disables the transfers on its own, even though
+    // it is not counted among the unavailable wing/trim quantities.
+    #[case(false, false, false, 0, false)]
+    #[case(true, false, true, 0, false)]
+    #[case(false, true, true, 0, false)]
+    fn automatic_transfers_available(
+        #[case] is_on_ground: bool,
+        #[case] refuel_enabled: bool,
+        #[case] all_feed_tanks_valid: bool,
+        #[case] unavailable_tank_quantity_count: usize,
+        #[case] expected: bool,
+    ) {
+        assert_eq!(
+            A380FuelQuantityManagementSystem::automatic_transfers_available(
+                is_on_ground,
+                refuel_enabled,
+                all_feed_tanks_valid,
+                unavailable_tank_quantity_count,
+            ),
+            expected
+        );
     }
 }

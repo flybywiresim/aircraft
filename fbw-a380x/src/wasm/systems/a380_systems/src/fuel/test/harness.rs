@@ -1,7 +1,12 @@
 use crate::{
     airframe::A380Airframe,
     avionics_data_communication_network::A380AvionicsDataCommunicationNetwork,
-    fuel::{A380Fuel, A380FuelPump, A380FuelTankType, A380FuelValve},
+    fuel::{
+        discrete_words::{
+            bit_from_discrete_words, DISCRETE_BITS_PER_WORD, LEFT_FUEL_PUMPS, RIGHT_FUEL_PUMPS,
+        },
+        A380Fuel, A380FuelPump, A380FuelTankType, A380FuelValve,
+    },
 };
 use enum_map::Enum;
 use std::{collections::HashMap, time::Duration};
@@ -111,8 +116,13 @@ impl FuelTestAircraft {
         self.lgcius = [TestLgciu::new(on_ground), TestLgciu::new(on_ground)];
     }
 
-    fn set_bus_depowered(&mut self, bus_type: ElectricalBusType) {
-        self.depowered_buses.push(bus_type);
+    fn set_bus_depowered(&mut self, bus_type: ElectricalBusType, depowered: bool) {
+        let is_depowered = self.depowered_buses.contains(&bus_type);
+        if depowered && !is_depowered {
+            self.depowered_buses.push(bus_type);
+        } else if !depowered && is_depowered {
+            self.depowered_buses.retain(|bus| *bus != bus_type);
+        }
     }
 
     fn set_fqms_powered(&mut self, powered: bool) {
@@ -196,9 +206,21 @@ impl FuelTestBed {
         self
     }
 
+    /// Powers or un-powers the FQMS/CPIOM supply. Un-powering it after it has
+    /// already passed the self test forces the self test to restart from zero.
+    pub(super) fn set_fqms_powered(&mut self, powered: bool) {
+        self.command(|aircraft| aircraft.set_fqms_powered(powered));
+    }
+
     pub(super) fn with_bus_depowered(mut self, bus_type: ElectricalBusType) -> Self {
-        self.command(|aircraft| aircraft.set_bus_depowered(bus_type));
+        self.command(|aircraft| aircraft.set_bus_depowered(bus_type, true));
         self
+    }
+
+    /// Removes (or restores) power from a single bus while the simulation is
+    /// running, so that failovers can be exercised after power-up.
+    pub(super) fn set_bus_depowered(&mut self, bus_type: ElectricalBusType) {
+        self.command(|aircraft| aircraft.set_bus_depowered(bus_type, true));
     }
 
     pub(super) fn fqms_status_word(&mut self) -> Arinc429Word<u32> {
@@ -215,8 +237,25 @@ impl FuelTestBed {
     }
 
     pub(super) fn and_run_past_fqms_self_test(mut self) -> Self {
+        // The FQMS self test needs SELF_TEST_DURATION (30 s) of continuous
+        // power before its outputs leave failure warning. Step the simulation
+        // in 1 s frames and stop once the status word reports normal operation,
+        // instead of crossing the boundary in a single oversized frame and
+        // hard-coding the exact duration the (private) self test requires.
+        for _ in 0..120 {
+            self.run_with_delta(Duration::from_secs(1));
+            if self.fqms_status_word().is_normal_operation() {
+                break;
+            }
+        }
+        assert!(
+            self.fqms_status_word().is_normal_operation(),
+            "the FQMS did not finish its self test within 120 s"
+        );
+        // One extra frame so that the applications run once with the self test
+        // finished, reproducing the settled state the previous fixed 32 s run
+        // produced for the downstream transfer assertions.
         self.run_with_delta(Duration::from_secs(1));
-        self.run_with_delta(Duration::from_secs(31));
         self
     }
 
@@ -370,60 +409,96 @@ impl FuelTestBed {
         self
     }
 
+    /// Reads the left and right FQMS fuel pump target-state words.
+    fn read_fuel_pump_target_words(&mut self) -> [Arinc429Word<u32>; 2] {
+        [
+            self.read_arinc429_by_name("FQMS_LEFT_FUEL_PUMP_TARGET_STATE_WORD"),
+            self.read_arinc429_by_name("FQMS_RIGHT_FUEL_PUMP_TARGET_STATE_WORD"),
+        ]
+    }
+
+    /// Reads the three FQMS fuel valve target-state words.
+    fn read_fuel_valve_target_words(&mut self) -> [Arinc429Word<u32>; 3] {
+        [1, 2, 3].map(|i| self.read_arinc429_by_name(&format!("FQMS_VALVE_TARGET_STATE_WORD_{i}")))
+    }
+
     pub(super) fn assert_fqms_pump_targeted(&mut self, pump: A380FuelPump) {
-        let (word_name, bit) = pump_target_word_and_bit(pump);
+        let index = pump_discrete_index(pump);
         let command_name = pump_command_name(pump);
-        let word: Arinc429Word<u32> = self.read_arinc429_by_name(word_name);
+        let words = self.read_fuel_pump_target_words();
+        let word_name = pump_target_word_name(index);
+        let relevant_word = if index < DISCRETE_BITS_PER_WORD {
+            words[0]
+        } else {
+            words[1]
+        };
         assert!(
-            word.is_normal_operation(),
+            relevant_word.is_normal_operation(),
             "{word_name} should be normal operation"
         );
         assert!(
-            word.get_bit(bit),
-            "expected fuel pump target bit {bit} in {word_name}"
+            bit_from_discrete_words(&words.map(|w| w.value()), index),
+            "expected fuel pump target at discrete index {index} in {word_name}"
         );
         let commanded: bool = self.read_by_name(&command_name);
         assert!(commanded, "{command_name} should be true");
     }
 
     pub(super) fn assert_fqms_pump_not_targeted(&mut self, pump: A380FuelPump) {
-        let (word_name, bit) = pump_target_word_and_bit(pump);
+        let index = pump_discrete_index(pump);
         let command_name = pump_command_name(pump);
-        let word: Arinc429Word<u32> = self.read_arinc429_by_name(word_name);
+        let words = self.read_fuel_pump_target_words().map(|w| w.value());
         assert!(
-            !word.get_bit(bit),
-            "expected fuel pump target bit {bit} to be false in {word_name}"
+            !bit_from_discrete_words(&words, index),
+            "expected fuel pump target at discrete index {index} to be false"
         );
         let commanded: bool = self.read_by_name(&command_name);
         assert!(!commanded, "{command_name} should be false");
     }
 
     pub(super) fn assert_fqms_valve_targeted(&mut self, valve: A380FuelValve) {
-        let (word_name, bit) = valve_target_word_and_bit(valve);
+        let index = valve_discrete_index(valve);
         let command_name = valve_command_name(valve);
-        let word: Arinc429Word<u32> = self.read_arinc429_by_name(&word_name);
+        let words = self.read_fuel_valve_target_words();
+        let word_name = valve_target_word_name(index);
         assert!(
-            word.is_normal_operation(),
+            words[index / DISCRETE_BITS_PER_WORD].is_normal_operation(),
             "{word_name} should be normal operation"
         );
         assert!(
-            word.get_bit(bit),
-            "expected fuel valve target bit {bit} in {word_name}"
+            bit_from_discrete_words(&words.map(|w| w.value()), index),
+            "expected fuel valve target at discrete index {index} in {word_name}"
         );
         let commanded: bool = self.read_by_name(&command_name);
         assert!(commanded, "{command_name} should be true");
     }
 
     pub(super) fn assert_fqms_valve_not_targeted(&mut self, valve: A380FuelValve) {
-        let (word_name, bit) = valve_target_word_and_bit(valve);
+        let index = valve_discrete_index(valve);
         let command_name = valve_command_name(valve);
-        let word: Arinc429Word<u32> = self.read_arinc429_by_name(&word_name);
+        let words = self.read_fuel_valve_target_words().map(|w| w.value());
         assert!(
-            !word.get_bit(bit),
-            "expected fuel valve target bit {bit} to be false in {word_name}"
+            !bit_from_discrete_words(&words, index),
+            "expected fuel valve target at discrete index {index} to be false"
         );
         let commanded: bool = self.read_by_name(&command_name);
         assert!(!commanded, "{command_name} should be false");
+    }
+
+    /// Reports the electrical power state of a valve as seen by the fuel system.
+    /// This is purely electrical and therefore independent from the FQMS self
+    /// test, which makes it usable as a positive signal that bus power is back.
+    pub(super) fn fqms_valve_powered(&mut self, valve: A380FuelValve) -> bool {
+        let name = format!("FUEL_VALVE_{}_IS_POWERED", valve.into_usize() + 1);
+        self.read_by_name(&name)
+    }
+
+    /// Asserts the electrical power state of a valve as reported by the fuel
+    /// system. This is independent from the FQMS target command: the FQMS keeps
+    /// commanding a valve open even when the valve itself is unpowered.
+    pub(super) fn assert_fqms_valve_powered(&mut self, valve: A380FuelValve, powered: bool) {
+        let is_powered = self.fqms_valve_powered(valve);
+        assert_eq!(is_powered, powered, "unexpected power state for {valve:?}");
     }
 
     fn set_tank_quantity_kg(&mut self, tank: A380FuelTankType, quantity_kg: f64) {
@@ -572,29 +647,25 @@ pub(super) fn assert_fuel_quantity_max(test_bed: &FuelTestBed) {
     assert_fuel_quantity(test_bed, expected_quantities);
 }
 
-fn pump_target_word_and_bit(pump: A380FuelPump) -> (&'static str, u8) {
-    match pump {
-        A380FuelPump::Feed1Main => ("FQMS_LEFT_FUEL_PUMP_TARGET_STATE_WORD", 11),
-        A380FuelPump::Feed1Stby => ("FQMS_LEFT_FUEL_PUMP_TARGET_STATE_WORD", 12),
-        A380FuelPump::Feed2Main => ("FQMS_LEFT_FUEL_PUMP_TARGET_STATE_WORD", 13),
-        A380FuelPump::Feed2Stby => ("FQMS_LEFT_FUEL_PUMP_TARGET_STATE_WORD", 14),
-        A380FuelPump::LeftOuter => ("FQMS_LEFT_FUEL_PUMP_TARGET_STATE_WORD", 15),
-        A380FuelPump::LeftMidFwd => ("FQMS_LEFT_FUEL_PUMP_TARGET_STATE_WORD", 16),
-        A380FuelPump::LeftMidAft => ("FQMS_LEFT_FUEL_PUMP_TARGET_STATE_WORD", 17),
-        A380FuelPump::LeftInnerFwd => ("FQMS_LEFT_FUEL_PUMP_TARGET_STATE_WORD", 18),
-        A380FuelPump::LeftInnerAft => ("FQMS_LEFT_FUEL_PUMP_TARGET_STATE_WORD", 19),
-        A380FuelPump::TrimLeft => ("FQMS_LEFT_FUEL_PUMP_TARGET_STATE_WORD", 20),
-        A380FuelPump::Feed3Main => ("FQMS_RIGHT_FUEL_PUMP_TARGET_STATE_WORD", 11),
-        A380FuelPump::Feed3Stby => ("FQMS_RIGHT_FUEL_PUMP_TARGET_STATE_WORD", 12),
-        A380FuelPump::Feed4Main => ("FQMS_RIGHT_FUEL_PUMP_TARGET_STATE_WORD", 13),
-        A380FuelPump::Feed4Stby => ("FQMS_RIGHT_FUEL_PUMP_TARGET_STATE_WORD", 14),
-        A380FuelPump::RightOuter => ("FQMS_RIGHT_FUEL_PUMP_TARGET_STATE_WORD", 15),
-        A380FuelPump::RightMidFwd => ("FQMS_RIGHT_FUEL_PUMP_TARGET_STATE_WORD", 16),
-        A380FuelPump::RightMidAft => ("FQMS_RIGHT_FUEL_PUMP_TARGET_STATE_WORD", 17),
-        A380FuelPump::RightInnerFwd => ("FQMS_RIGHT_FUEL_PUMP_TARGET_STATE_WORD", 18),
-        A380FuelPump::RightInnerAft => ("FQMS_RIGHT_FUEL_PUMP_TARGET_STATE_WORD", 19),
-        A380FuelPump::TrimRight => ("FQMS_RIGHT_FUEL_PUMP_TARGET_STATE_WORD", 20),
-        A380FuelPump::Apu => ("FQMS_RIGHT_FUEL_PUMP_TARGET_STATE_WORD", 21),
+/// Flat discrete index of a pump across the two fuel pump target-state words,
+/// derived from the production packing layout so it cannot silently drift.
+fn pump_discrete_index(pump: A380FuelPump) -> usize {
+    if let Some(index) = LEFT_FUEL_PUMPS.iter().position(|&p| p == pump) {
+        index
+    } else {
+        DISCRETE_BITS_PER_WORD
+            + RIGHT_FUEL_PUMPS
+                .iter()
+                .position(|&p| p == pump)
+                .expect("fuel pump is not part of the discrete word layout")
+    }
+}
+
+fn pump_target_word_name(index: usize) -> &'static str {
+    if index < DISCRETE_BITS_PER_WORD {
+        "FQMS_LEFT_FUEL_PUMP_TARGET_STATE_WORD"
+    } else {
+        "FQMS_RIGHT_FUEL_PUMP_TARGET_STATE_WORD"
     }
 }
 
@@ -625,11 +696,17 @@ fn pump_command_name(pump: A380FuelPump) -> String {
     format!("FUEL_PUMP_{id}_ACTIVE_COMMAND")
 }
 
-fn valve_target_word_and_bit(valve: A380FuelValve) -> (String, u8) {
-    let index = valve.into_usize();
-    (
-        format!("FQMS_VALVE_TARGET_STATE_WORD_{}", index / 19 + 1),
-        11 + (index % 19) as u8,
+/// Flat discrete index of a valve across the three fuel valve target-state
+/// words. Valves are packed in declaration order, so the index is the
+/// enumeration discriminant.
+fn valve_discrete_index(valve: A380FuelValve) -> usize {
+    valve.into_usize()
+}
+
+fn valve_target_word_name(index: usize) -> String {
+    format!(
+        "FQMS_VALVE_TARGET_STATE_WORD_{}",
+        index / DISCRETE_BITS_PER_WORD + 1
     )
 }
 

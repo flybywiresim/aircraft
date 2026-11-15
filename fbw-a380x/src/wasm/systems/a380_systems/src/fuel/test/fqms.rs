@@ -174,3 +174,125 @@ fn automatic_transfers_reset_when_aircraft_lands() {
         test_bed.assert_fqms_valve_not_targeted(valve);
     }
 }
+
+#[test]
+fn fqms_reverts_to_failure_warning_when_power_is_lost_after_the_self_test() {
+    // Bring the FQMS up and let it finish its self test so that the outputs are
+    // in normal operation with the transfer running.
+    let mut test_bed = transfer_test_bed().and_run_past_fqms_self_test();
+    test_bed.assert_fqms_pump_targeted(A380FuelPump::LeftInnerFwd);
+    assert!(test_bed.fqms_status_word().is_normal_operation());
+
+    // Losing FQMS/CPIOM power after power-up must revert every output word to
+    // failure warning. A couple of frames are needed for the lost bus power to
+    // propagate through the CPIOMs into the FQMS.
+    test_bed.set_fqms_powered(false);
+    for _ in 0..3 {
+        test_bed.run();
+    }
+
+    assert!(
+        test_bed.fqms_status_word().is_failure_warning(),
+        "status word should revert to failure warning when power is lost"
+    );
+    assert!(
+        test_bed.fqms_pump_target_word("LEFT").is_failure_warning(),
+        "left pump target word should revert to failure warning when power is lost"
+    );
+    assert!(
+        test_bed.fqms_pump_target_word("RIGHT").is_failure_warning(),
+        "right pump target word should revert to failure warning when power is lost"
+    );
+
+    // Restoring power must not instantly return to normal operation: the FQMS
+    // restarts its self test from zero. Because the restored bus power itself
+    // only propagates into the FQMS a frame later, first wait until a valve
+    // reports powered again (a purely electrical signal that is not gated by the
+    // self test), then advance a few more frames - far short of the 30 s self
+    // test - and assert the outputs are *still* in failure warning.
+    let valve_for_power = A380FuelValve::FeedTank1ForwardTransferValve;
+    test_bed.set_fqms_powered(true);
+    let mut frames = 0;
+    while !test_bed.fqms_valve_powered(valve_for_power) && frames < 20 {
+        test_bed.run();
+        frames += 1;
+    }
+    assert!(
+        test_bed.fqms_valve_powered(valve_for_power),
+        "bus power did not come back after restoring the FQMS supply"
+    );
+    // A handful of frames: enough to rule out the power-propagation lag, far
+    // below the 30 s self test duration.
+    test_bed.run();
+    test_bed.run();
+    assert!(
+        test_bed.fqms_pump_target_word("LEFT").is_failure_warning(),
+        "the self test must restart after power is restored, but the left pump word is already normal"
+    );
+    assert!(
+        test_bed.fqms_pump_target_word("RIGHT").is_failure_warning(),
+        "the self test must restart after power is restored, but the right pump word is already normal"
+    );
+
+    // Once the restarted self test completes, normal operation resumes.
+    let mut test_bed = test_bed.and_run_past_fqms_self_test();
+    assert!(
+        test_bed.fqms_pump_target_word("LEFT").is_normal_operation(),
+        "left pump target word should return to normal operation after the self test"
+    );
+    test_bed.assert_fqms_pump_targeted(A380FuelPump::LeftInnerFwd);
+}
+
+#[test]
+fn transfers_fail_over_from_fqdc_1_to_fqdc_2_while_running() {
+    // Start fully healthy so that the FQMS runs on FQDC 1 (the 501PP sub bus).
+    let mut test_bed = transfer_test_bed().and_run_past_fqms_self_test();
+    test_bed.assert_fqms_pump_targeted(A380FuelPump::LeftInnerFwd);
+    test_bed.assert_fqms_pump_targeted(A380FuelPump::RightInnerFwd);
+
+    // Losing FQDC 1 during operation must fail the FQMS over to the still
+    // healthy FQDC 2 (DC 1) without interrupting the transfers.
+    test_bed.set_bus_depowered(ElectricalBusType::Sub("501PP"));
+    test_bed.run();
+
+    assert!(test_bed.fqms_status_word().is_normal_operation());
+    test_bed.assert_fqms_pump_targeted(A380FuelPump::LeftInnerFwd);
+    test_bed.assert_fqms_pump_targeted(A380FuelPump::RightInnerFwd);
+}
+
+#[test]
+fn transfers_re_enable_when_going_airborne_after_being_on_ground() {
+    // Bring the FQMS up while on the ground: transfers stay inhibited.
+    let mut test_bed = transfer_test_bed()
+        .with_on_ground(true)
+        .and_run_past_fqms_self_test();
+    for pump in A380FuelPump::iter() {
+        test_bed.assert_fqms_pump_not_targeted(pump);
+    }
+
+    // Going airborne must re-enable the automatic transfers.
+    let mut test_bed = test_bed.with_on_ground(false).and_run();
+
+    test_bed.assert_fqms_pump_targeted(A380FuelPump::LeftInnerFwd);
+    test_bed.assert_fqms_pump_targeted(A380FuelPump::RightInnerFwd);
+}
+
+#[test]
+fn valve_target_command_is_independent_of_valve_power() {
+    let valve = A380FuelValve::FeedTank1ForwardTransferValve; // powered by 502PP
+
+    let mut test_bed = transfer_test_bed().and_run_past_fqms_self_test();
+
+    // With a running transfer the valve is commanded open and powered.
+    test_bed.assert_fqms_valve_targeted(valve);
+    test_bed.assert_fqms_valve_powered(valve, true);
+
+    // Depowering only the valve bus must not change the FQMS command: the FQMS
+    // keeps commanding the valve open, but the valve reports itself unpowered
+    // (and therefore cannot actually move).
+    test_bed.set_bus_depowered(ElectricalBusType::DirectCurrentNamed("502PP"));
+    test_bed.run();
+
+    test_bed.assert_fqms_valve_targeted(valve);
+    test_bed.assert_fqms_valve_powered(valve, false);
+}

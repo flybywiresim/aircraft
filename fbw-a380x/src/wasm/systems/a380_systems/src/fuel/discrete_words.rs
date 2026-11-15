@@ -3,9 +3,9 @@ use strum::IntoEnumIterator;
 use systems::shared::arinc429::{Arinc429Word, SignStatus};
 
 const FIRST_DISCRETE_BIT: u8 = 11;
-const DISCRETE_BITS_PER_WORD: usize = 19;
+pub(super) const DISCRETE_BITS_PER_WORD: usize = 19;
 
-const LEFT_FUEL_PUMPS: [A380FuelPump; 10] = [
+pub(super) const LEFT_FUEL_PUMPS: [A380FuelPump; 10] = [
     A380FuelPump::Feed1Main,
     A380FuelPump::Feed1Stby,
     A380FuelPump::Feed2Main,
@@ -17,7 +17,7 @@ const LEFT_FUEL_PUMPS: [A380FuelPump; 10] = [
     A380FuelPump::LeftInnerAft,
     A380FuelPump::TrimLeft,
 ];
-const RIGHT_FUEL_PUMPS: [A380FuelPump; 11] = [
+pub(super) const RIGHT_FUEL_PUMPS: [A380FuelPump; 11] = [
     A380FuelPump::Feed3Main,
     A380FuelPump::Feed3Stby,
     A380FuelPump::Feed4Main,
@@ -80,7 +80,9 @@ fn pack_discrete_word_from_items<T>(
     word
 }
 
-#[allow(dead_code)]
+// The bit layout is shared with the integration test harness, which uses it to
+// decode the published target words instead of hand-replicating the offsets.
+#[cfg(test)]
 pub(super) fn bit_from_discrete_words<const WORD_COUNT: usize>(
     words: &[u32; WORD_COUNT],
     index: usize,
