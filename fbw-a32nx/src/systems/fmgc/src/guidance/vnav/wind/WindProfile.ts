@@ -21,6 +21,36 @@ import { FlightPlanTrackProfile } from './FlightPlanTrackProfile';
 import { WindMeasurement, WindObserver } from './WindObserver';
 import { WindUtils } from './WindUtils';
 
+/**
+ * Scaling of the lowest climb/descent wind entry below its altitude: from 0 at the airport (runway threshold) to 1 at
+ * the entry.
+ *
+ * When the entry is at or below the airport, e.g. the destination wind of PERF APPR (entered at the airport elevation,
+ * which the MSFS navdata backend makes the mean runway elevation, so often equal to the threshold), there is nothing to
+ * scale and the entry applies as is. The interpolation would divide by zero there, and the NaN wind made the whole
+ * descent profile NaN (no T/D, path target stuck at the last checkpoint).
+ * @param altitude the altitude, below the entry
+ * @param airportAltitude the origin/destination runway threshold or airport elevation
+ * @param lowestEntryAltitude the altitude of the lowest wind entry
+ * @returns the scaling factor, at least Number.EPSILON so that the vector keeps its direction
+ */
+export function scalingBelowLowestWindEntry(altitude: Feet, airportAltitude: Feet, lowestEntryAltitude: Feet): number {
+  if (!(lowestEntryAltitude > airportAltitude)) {
+    return 1;
+  }
+
+  return Math.max(
+    Number.EPSILON,
+    Common.interpolate(
+      MathUtils.clamp(altitude, airportAltitude, lowestEntryAltitude),
+      airportAltitude,
+      lowestEntryAltitude,
+      0,
+      1,
+    ),
+  );
+}
+
 export class WindProfile implements WindInterface {
   private static readonly VectorCache = [
     { direction: undefined, magnitude: undefined },
@@ -78,11 +108,7 @@ export class WindProfile implements WindInterface {
     if (firstclimbWindEntry !== undefined && firstclimbWindEntry.altitude !== undefined) {
       const lowestAltitude = firstclimbWindEntry.altitude;
       if (altitude < lowestAltitude) {
-        // We use Number.EPSILON instead of 0 to preserve the direction of the vector when scaling it down to zero
-        const scaling = Math.max(
-          Number.EPSILON,
-          Common.interpolate(MathUtils.clamp(altitude, originAlt, lowestAltitude), originAlt, lowestAltitude, 0, 1),
-        );
+        const scaling = scalingBelowLowestWindEntry(altitude, originAlt, lowestAltitude);
 
         return scaleWindVector(firstclimbWindEntry.vector, scaling, result);
       }
@@ -130,17 +156,7 @@ export class WindProfile implements WindInterface {
       const lowestAltitude = lowestDescentWindEntry.altitude;
 
       if (altitude < lowestAltitude) {
-        // We use Number.EPSILON instead of 0 to preserve the direction of the vector when scaling it down to zero
-        const scaling = Math.max(
-          Number.EPSILON,
-          Common.interpolate(
-            MathUtils.clamp(altitude, destinationAlt, lowestAltitude),
-            destinationAlt,
-            lowestAltitude,
-            0,
-            1,
-          ),
-        );
+        const scaling = scalingBelowLowestWindEntry(altitude, destinationAlt, lowestAltitude);
 
         return scaleWindVector(lowestDescentWindEntry.vector, scaling, result);
       } else {
@@ -397,11 +413,7 @@ export class ConstantWindProfile implements WindInterface {
 
       if (altitude < lowestAltitude) {
         const originAlt = this.plan.originRunway?.thresholdLocation.alt ?? this.plan.originAirport?.location.alt ?? 0;
-        // We use Number.EPSILON instead of 0 to preserve the direction of the vector when scaling it down to zero
-        const scaling = Math.max(
-          Number.EPSILON,
-          Common.interpolate(MathUtils.clamp(altitude, originAlt, lowestAltitude), originAlt, lowestAltitude, 0, 1),
-        );
+        const scaling = scalingBelowLowestWindEntry(altitude, originAlt, lowestAltitude);
 
         return scaleWindVector(lowestClimbWindEntry.vector, scaling, result);
       }
@@ -433,20 +445,11 @@ export class ConstantWindProfile implements WindInterface {
       if (altitude < lowestAltitude) {
         const destinationAlt =
           this.plan.destinationRunway?.thresholdLocation.alt ?? this.plan.destinationAirport?.location.alt ?? 0;
-        const scaling = Math.max(
-          Number.EPSILON,
-          Common.interpolate(
-            MathUtils.clamp(altitude, destinationAlt, lowestAltitude),
-            destinationAlt,
-            lowestAltitude,
-            0,
-            1,
-          ),
-        );
+        const scaling = scalingBelowLowestWindEntry(altitude, destinationAlt, lowestAltitude);
 
         return scaleWindVector(lowestDescentWindEntry.vector, scaling, result);
       } else {
-        WindUtils.interpolateWindEntries(descentWindEntries, altitude, result);
+        return WindUtils.interpolateWindEntries(descentWindEntries, altitude, result);
       }
     }
 
