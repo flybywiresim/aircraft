@@ -90,13 +90,14 @@ export class WindUtils {
   }
 
   /**
-   * Interpolates between two directions along the shorter way around the circle, e.g. from 350° to 010° through 360°.
-   * @param x the value to interpolate at
-   * @param x0 the value at the first direction
-   * @param x1 the value at the second direction
-   * @param d0 the first direction, in radians
-   * @param d1 the second direction, in radians
-   * @returns the interpolated direction, in radians from 0 to 2π
+   * Interpolates between two wind directions, turning the shorter way round: halfway between 350° and 010° is 000°,
+   * not 180° as interpolating the numbers would give.
+   * @param x the point to interpolate at, e.g. an altitude
+   * @param x0 the point where the direction is d0
+   * @param x1 the point where the direction is d1
+   * @param d0 the direction at x0, in radians
+   * @param d1 the direction at x1, in radians
+   * @returns the direction at x, in radians from 0 to 2π
    */
   private static interpolateDirection(x: number, x0: number, x1: number, d0: number, d1: number): number {
     return MathUtils.normalise2Pi(d0 + MathUtils.interpolate(x, x0, x1, 0, MathUtils.normalisePi(d1 - d0)));
