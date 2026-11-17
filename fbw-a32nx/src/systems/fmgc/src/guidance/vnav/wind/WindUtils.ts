@@ -79,7 +79,7 @@ export class WindUtils {
         direction:
           v0.direction === undefined || v1.direction === undefined
             ? undefined
-            : MathUtils.interpolate(x, x0, x1, v0.direction, v1.direction),
+            : WindUtils.interpolateDirection(x, x0, x1, v0.direction, v1.direction),
         magnitude:
           v0.magnitude === undefined || v1.magnitude === undefined
             ? undefined
@@ -87,6 +87,19 @@ export class WindUtils {
       },
       out,
     );
+  }
+
+  /**
+   * Interpolates between two directions along the shorter way around the circle, e.g. from 350° to 010° through 360°.
+   * @param x the value to interpolate at
+   * @param x0 the value at the first direction
+   * @param x1 the value at the second direction
+   * @param d0 the first direction, in radians
+   * @param d1 the second direction, in radians
+   * @returns the interpolated direction, in radians from 0 to 2π
+   */
+  private static interpolateDirection(x: number, x0: number, x1: number, d0: number, d1: number): number {
+    return MathUtils.normalise2Pi(d0 + MathUtils.interpolate(x, x0, x1, 0, MathUtils.normalisePi(d1 - d0)));
   }
 
   public static copyEmptyWindVector(result: WindVector) {
