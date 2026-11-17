@@ -22,20 +22,14 @@ import { WindMeasurement, WindObserver } from './WindObserver';
 import { WindUtils } from './WindUtils';
 
 /**
- * Scaling of the lowest climb/descent wind entry below its altitude: from 0 at the airport (runway threshold) to 1 at
- * the entry.
- *
- * When the entry is at or below the airport, e.g. the destination wind of PERF APPR (entered at the airport elevation,
- * which the MSFS navdata backend makes the mean runway elevation, so often equal to the threshold), there is nothing to
- * scale and the entry applies as is. The interpolation would divide by zero there, and the NaN wind made the whole
- * descent profile NaN (no T/D, path target stuck at the last checkpoint).
- * @param altitude the altitude, below the entry
- * @param airportAltitude the origin/destination runway threshold or airport elevation
- * @param lowestEntryAltitude the altitude of the lowest wind entry
- * @returns the scaling factor, at least Number.EPSILON so that the vector keeps its direction
+ * Computes the factor to scale the lowest wind entry by below its altitude, from 0 at the airport to 1 at the entry.
+ * Returns 1 if the entry is at or below the airport, or if an altitude is invalid.
+ * @param altitude the altitude to compute the scaling for, in feet
+ * @param airportAltitude the origin/destination runway threshold or airport elevation, in feet
+ * @param lowestEntryAltitude the altitude of the lowest wind entry, in feet
+ * @returns the scaling factor
  */
-function scalingBelowLowestWindEntry(altitude: Feet, airportAltitude: Feet, lowestEntryAltitude: Feet): number {
-  // Nothing to scale (entry at or below the airport), or no valid altitude: use the entry as is.
+function scalingBelowLowestWindEntry(altitude: number, airportAltitude: number, lowestEntryAltitude: number): number {
   if (
     !Number.isFinite(airportAltitude) ||
     !Number.isFinite(lowestEntryAltitude) ||
@@ -44,6 +38,7 @@ function scalingBelowLowestWindEntry(altitude: Feet, airportAltitude: Feet, lowe
     return 1;
   }
 
+  // We use Number.EPSILON instead of 0 to preserve the direction of the vector when scaling it down to zero
   return Math.max(
     Number.EPSILON,
     Common.interpolate(
