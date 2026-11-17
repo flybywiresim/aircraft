@@ -34,7 +34,7 @@ import { WindUtils } from './WindUtils';
  * @param lowestEntryAltitude the altitude of the lowest wind entry
  * @returns the scaling factor, at least Number.EPSILON so that the vector keeps its direction
  */
-export function scalingBelowLowestWindEntry(altitude: Feet, airportAltitude: Feet, lowestEntryAltitude: Feet): number {
+function scalingBelowLowestWindEntry(altitude: Feet, airportAltitude: Feet, lowestEntryAltitude: Feet): number {
   // Written as !(a > b) rather than a <= b so that it is also true when either altitude is NaN (any comparison with NaN
   // is false): the interpolation below would then make the wind, and the whole profile, NaN.
   if (!(lowestEntryAltitude > airportAltitude)) {
