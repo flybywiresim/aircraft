@@ -579,7 +579,7 @@ export class FwsMemos {
     '460000001': {
       // COMPANY MSG
       flightPhaseInhib: [3, 4, 5, 6, 7, 9, 10],
-      simVarIsActive: this.fws.compMesgCount.map((c) => c > 0),
+      simVarIsActive: this.fws.companyMessageMemo,
       whichCodeToReturn: () => [0],
       codesToReturn: ['460000001'],
       memoInhibit: () => false,
