@@ -73,9 +73,9 @@ export class RudderTrim extends DisplayComponent<RudderTrimProps> {
             {this.fcdcRudderTrimPosition.map((rudderTrim) => (Math.sign(rudderTrim.valueOr(0)) === 1 ? 'L' : 'R'))}
           </text>
           <text
-            x={144}
+            x={95}
             y={17}
-            class={this.powerAvailableClass.map((powerAvailableClass) => `${powerAvailableClass} F26 EndAlign`)}
+            class={this.powerAvailableClass.map((powerAvailableClass) => `${powerAvailableClass} F26`)}
           >
             {this.fcdcRudderTrimPosition.map((rudderTrim) => Math.abs(rudderTrim.valueOr(0)).toFixed(1))}
           </text>
