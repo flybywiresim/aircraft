@@ -793,8 +793,8 @@ export class CDUVerticalRevisionPage {
       matchResult[4] === undefined
         ? AltitudeDescriptor.AtAlt1
         : matchResult[4] === '-'
-          ? AltitudeDescriptor.AtOrAboveAlt1
-          : AltitudeDescriptor.AtOrBelowAlt1;
+          ? AltitudeDescriptor.AtOrBelowAlt1
+          : AltitudeDescriptor.AtOrAboveAlt1;
 
     if (matchResult[8] !== undefined) {
       alt = parseInt(matchResult[8]) * 100;

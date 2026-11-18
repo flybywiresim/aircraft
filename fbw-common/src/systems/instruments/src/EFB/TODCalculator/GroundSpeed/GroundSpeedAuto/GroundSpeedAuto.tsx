@@ -52,7 +52,7 @@ export const GroundSpeedAuto = () => {
 
       <button
         type="button"
-        className="flex justify-center rounded-md border-2 border-theme-highlight p-3 text-theme-highlight transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
+        className="flex justify-center rounded-md border-2 border-theme-highlight bg-theme-highlight p-3 text-theme-body transition duration-100 hover:bg-theme-body hover:text-theme-highlight"
         onClick={() => dispatch(setTodGroundSpeedMode(TOD_INPUT_MODE.MANUAL))}
       >
         <p className="text-current">{t('Performance.TopOfDescent.GroundSpeed.ManualInput')}</p>

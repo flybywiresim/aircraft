@@ -131,10 +131,10 @@ export const Data = ({ className }: { className: string }) => {
           >
             <button
               onClick={() => dispatch(setTodCurrentAltitudeSync(!currentAltitudeSyncEnabled))}
-              className={`flex h-auto items-center rounded-md rounded-l-none border-2 border-theme-highlight px-3 text-theme-highlight transition duration-100 ${currentAltitudeSyncEnabled && 'bg-theme-highlight !text-theme-body'}`}
+              className={`flex h-auto items-center rounded-md rounded-l-none border-2 border-theme-highlight bg-theme-highlight px-3 text-theme-body transition duration-100 hover:bg-theme-body hover:text-theme-highlight`}
               type="button"
             >
-              <p className="text-current">SYNC</p>
+              <p className="text-current">{currentAltitudeSyncEnabled ? 'DESYNC' : 'SYNC'}</p>
             </button>
           </TooltipWrapper>
         </div>
@@ -192,7 +192,7 @@ export const Data = ({ className }: { className: string }) => {
                 {!!calculationInput && !calculationInputSyncEnabled && (
                   <button
                     type="button"
-                    className="flex items-center rounded-md rounded-l-none border-2 border-utility-red px-3 text-utility-red transition duration-100 hover:bg-utility-red hover:text-theme-body"
+                    className="flex items-center rounded-md rounded-l-none border-2 border-utility-red bg-utility-red px-3 text-white transition duration-100 hover:bg-theme-body hover:text-utility-red"
                     onClick={() => dispatch(setTodData({ calculation: { input: undefined, type: undefined } }))}
                   >
                     X

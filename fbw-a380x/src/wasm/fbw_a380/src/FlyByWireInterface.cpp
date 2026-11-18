@@ -904,6 +904,13 @@ void FlyByWireInterface::setupLocalVariables() {
 
   idFcuShimLeftBaroCorrectionAdirs = std::make_unique<LocalVariable>("A32NX_FCU_LEFT_EIS_BARO_HPA");
   idFcuShimRightBaroCorrectionAdirs = std::make_unique<LocalVariable>("A32NX_FCU_RIGHT_EIS_BARO_HPA");
+
+  for (int i = 0; i < 4; i++) {
+    std::string idString = std::to_string(i + 1);
+
+    idEcuStatusWord3[i] = std::make_unique<LocalVariable>("A32NX_ECU_" + idString + "_STATUS_WORD_3");
+    idEcuMaintenanceWord6[i] = std::make_unique<LocalVariable>("A32NX_ECU_" + idString + "_MAINTENANCE_WORD_6");
+  }
 }
 
 bool FlyByWireInterface::handleFcuInitialization(double sampleTime) {
@@ -2416,8 +2423,9 @@ bool FlyByWireInterface::updateFcu(double sampleTime, int fcuIndex) {
 }
 
 bool FlyByWireInterface::updateEfisSync() {
-  // Disable EFIS Sync if it's disabled or one or more FCUs is faulty (nothing to sync in that case)
-  if (!idSyncFoEfisEnabled->get() || !fcus[0].getDiscreteOutputs().fcu_healthy || !fcus[1].getDiscreteOutputs().fcu_healthy) {
+  // Disable EFIS Sync if it's disabled, one or more FCUs is faulty or one or more EFIS CPs is disabled (nothing to sync in that case)
+  if (!idSyncFoEfisEnabled->get() || !fcus[0].getDiscreteOutputs().fcu_healthy || !fcus[1].getDiscreteOutputs().fcu_healthy ||
+      fcus[0].modelInputs.in.discrete_inputs.efis_backup_activated || fcus[1].modelInputs.in.discrete_inputs.efis_backup_activated) {
     return true;
   }
 
@@ -2997,6 +3005,9 @@ bool FlyByWireInterface::updateFadec(double sampleTime, int fadecIndex) {
     fadecOutputs[fadecIndex] = fadecs[fadecIndex].getExternalOutputs().out.output;
     fadecBusOutputs[fadecIndex] = fadecs[fadecIndex].getExternalOutputs().out.fadec_bus_output;
   }
+
+  idEcuStatusWord3[fadecIndex]->set(Arinc429Utils::toSimVar(fadecBusOutputs[fadecIndex].ecu_status_word_3));
+  idEcuMaintenanceWord6[fadecIndex]->set(Arinc429Utils::toSimVar(fadecBusOutputs[fadecIndex].ecu_maintenance_word_6));
 
   if (primDisabled != -1 || secDisabled != -1) {
     simConnectInterface.setClientDataFadec(fadecBusOutputs[fadecIndex], fadecIndex);

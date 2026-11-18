@@ -4,14 +4,15 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { MathUtils } from '@flybywiresim/fbw-sdk';
-import { MappedSubject, MutableSubscribable, Subject, Subscription, Vec2Math } from '@microsoft/msfs-sdk';
+import { MappedSubject, MutableSubscribable, Subject, Subscription } from '@microsoft/msfs-sdk';
 import {
   DefaultPerformanceData,
   FlightPlanPerformanceData,
   FlightPlanPerformanceDataProperties,
   SerializedFlightPlanPerformanceData,
 } from './FlightPlanPerformanceData';
-import { FlightPlanWindEntry, WindVector } from '../../data/wind';
+import { cloneWindVector, FlightPlanWindEntry, WindVector } from '../../data/wind';
+import { WindUtils } from '../../../guidance/vnav/wind/WindUtils';
 
 // TODO this should remain in fbw-a32nx/ once FMS is moved to fbw-common
 export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData {
@@ -123,19 +124,17 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
 
     cloned.climbWindEntries.set(
       this.climbWindEntries.get().map(({ vector, ...rest }) => ({
-        vector: Vec2Math.copy(vector, Vec2Math.create()),
+        vector: cloneWindVector(vector),
         ...rest,
       })),
     );
     cloned.descentWindEntries.set(
       this.descentWindEntries.get().map(({ vector, ...rest }) => ({
-        vector: Vec2Math.copy(vector, Vec2Math.create()),
+        vector: cloneWindVector(vector),
         ...rest,
       })),
     );
-
-    const alternateWind = this.alternateWind.get();
-    cloned.alternateWind.set(alternateWind !== null ? Vec2Math.copy(alternateWind, Vec2Math.create()) : null);
+    cloned.alternateWind.set(cloneWindVector(this.alternateWind.get()));
 
     return cloned;
   }
@@ -858,9 +857,9 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
   readonly descentWindEntries = Subject.create<FlightPlanWindEntry[]>([]);
 
   /**
-   * The average wind vector for the alternate flight plan, or null if not set.
+   * The average wind vector for the alternate flight plan
    */
-  readonly alternateWind = Subject.create<WindVector | null>(null);
+  readonly alternateWind = Subject.create<WindVector>(WindUtils.undefinedWindVector);
 
   readonly estimatedTakeoffTime = Subject.create<number | null>(null);
 

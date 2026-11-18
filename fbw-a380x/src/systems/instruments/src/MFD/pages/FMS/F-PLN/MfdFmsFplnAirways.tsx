@@ -5,7 +5,7 @@ import '../../common/style.scss';
 import { AbstractMfdPageProps, MfdDisplayInterface } from '../../../MFD';
 import { Footer } from '../../common/Footer';
 import { Button } from '../../../../MsfsAvionicsCommon/UiWidgets/Button';
-import { FmsPage } from '../../common/FmsPage';
+import { FmsFlightPlanPage } from '../../common/FmsFlightPlanPage';
 import { InputField } from '../../../../MsfsAvionicsCommon/UiWidgets/InputField';
 import { AirwayFormat, WaypointFormat } from '../../common/DataEntryFormats';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
@@ -20,7 +20,7 @@ import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 
 interface MfdFmsFplnAirwaysProps extends AbstractMfdPageProps {}
 
-export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
+export class MfdFmsFplnAirways extends FmsFlightPlanPage<MfdFmsFplnAirwaysProps> {
   private readonly revisedFixIdent = Subject.create<string>('');
 
   private readonly airwayLinesRef = FSComponent.createRef<HTMLDivElement>();
@@ -188,7 +188,7 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
 interface AirwayLineProps extends ComponentProps {
   fmc: FmcInterface;
   mfd: FmsDisplayInterface & MfdDisplayInterface;
-  tmpyActive: Subject<boolean>;
+  tmpyActive: Subscribable<boolean>;
   loadedFlightPlan: ReadonlyFlightPlan;
   loadedFlightPlanIndex: Subscribable<FlightPlanIndex>;
   fromFix: Fix;

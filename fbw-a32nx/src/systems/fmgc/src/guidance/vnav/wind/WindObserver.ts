@@ -1,7 +1,8 @@
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { WindEntry } from '../../../flightplanning/data/wind';
-import { ConsumerValue, EventBus, Vec2Math } from '@microsoft/msfs-sdk';
+import { ConsumerValue, EventBus } from '@microsoft/msfs-sdk';
 import { NavigationEvents } from '@fmgc/navigation/Navigation';
+import { WindUtils } from './WindUtils';
 
 export type WindMeasurement = WindEntry;
 
@@ -26,8 +27,7 @@ export class WindObserver {
     }
 
     result.altitude = altitude;
-    Vec2Math.setFromPolar(windSpeed, windDirection * MathUtils.DEGREES_TO_RADIANS, result.vector);
-
+    WindUtils.setValues(windSpeed, windDirection * MathUtils.DEGREES_TO_RADIANS, result.vector);
     return result;
   }
 }

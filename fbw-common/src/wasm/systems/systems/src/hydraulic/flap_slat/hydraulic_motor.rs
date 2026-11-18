@@ -1,5 +1,7 @@
-use super::linear_actuator::Actuator;
-use crate::{shared::low_pass_filter::LowPassFilter, simulation::UpdateContext};
+use crate::{
+    hydraulic::linear_actuator::Actuator, shared::low_pass_filter::LowPassFilter,
+    simulation::UpdateContext,
+};
 
 use uom::si::{
     angular_velocity::revolution_per_minute,
@@ -65,7 +67,7 @@ impl FlapSlatHydraulicMotor {
     pub fn update_flow(&mut self, context: &UpdateContext) {
         self.current_flow = VolumeRate::new::<gallon_per_minute>(
             Self::FLOW_CORRECTION_FACTOR
-                * self.speed().get::<revolution_per_minute>().abs()
+                * self.get_speed().get::<revolution_per_minute>().abs()
                 * self.displacement.get::<cubic_inch>()
                 / 231.,
         );
@@ -87,12 +89,7 @@ impl FlapSlatHydraulicMotor {
         )
     }
 
-    pub fn reset_accumulators(&mut self) {
-        self.total_volume_to_actuator = Volume::new::<gallon>(0.);
-        self.total_volume_returned_to_reservoir = Volume::new::<gallon>(0.);
-    }
-
-    pub fn speed(&self) -> AngularVelocity {
+    pub fn get_speed(&self) -> AngularVelocity {
         self.speed.output()
     }
 

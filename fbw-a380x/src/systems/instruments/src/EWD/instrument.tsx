@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -10,9 +10,11 @@ import { ArincValueProvider } from './shared/ArincValueProvider';
 import { EwdSimvarPublisher } from './shared/EwdSimvarPublisher';
 
 import { EngineWarningDisplay } from './EWD';
-import { AdrBusPublisher, ArincEventBus, CpiomDataPublisher, IrBusPublisher } from '@flybywiresim/fbw-sdk';
+import { AdrBusPublisher, ArincEventBus, IrBusPublisher } from '@flybywiresim/fbw-sdk';
 import { FcdcBusPublisher } from '@shared/publishers/FcdcPublisher';
 import { FGDataPublisher } from '../MsfsAvionicsCommon/providers/FGDataPublisher';
+import { CpiomDataPublisher } from '@providers/CpiomPublisher';
+import { EcuBusPublisher } from '@shared/publishers/EcuPublisher';
 
 class A380X_EWD extends BaseInstrument {
   private readonly bus = new ArincEventBus();
@@ -32,6 +34,8 @@ class A380X_EWD extends BaseInstrument {
 
   private readonly fgPublisher = new FGDataPublisher(this.bus);
 
+  private readonly ecuPublisher = new EcuBusPublisher(this.bus);
+
   private readonly clock = new Clock(this.bus);
 
   constructor() {
@@ -44,6 +48,7 @@ class A380X_EWD extends BaseInstrument {
     this.backplane.addPublisher('ADR', this.adrPublisher);
     this.backplane.addPublisher('IR', this.irPublisher);
     this.backplane.addPublisher('FG', this.fgPublisher);
+    this.backplane.addPublisher('ECU', this.ecuPublisher);
   }
 
   get templateID(): string {

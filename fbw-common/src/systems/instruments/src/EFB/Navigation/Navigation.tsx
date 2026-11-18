@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// Copyright (c) 2023-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len,react/no-this-in-sfc,no-console */
@@ -166,11 +166,13 @@ export const ChartViewer = () => {
       url = URL.createObjectURL(navigraphChartLightBlob);
     } else if ((provider === ChartProvider.FAA || provider === ChartProvider.LIDO) && msfsLightUrl) {
       url = msfsLightUrl;
+    } else if (provider === ChartProvider.LOCAL_FILES) {
+      url = chartLinks.light || null;
     } else {
       url = null;
     }
     return url;
-  }, [provider, navigraphChartLightBlob, msfsLightUrl]);
+  }, [provider, navigraphChartLightBlob, msfsLightUrl, chartLinks.light]);
 
   const chartDarkUrl = useMemo(() => {
     let url: string | null;
@@ -178,11 +180,13 @@ export const ChartViewer = () => {
       url = URL.createObjectURL(navigraphChartDarkBlob);
     } else if ((provider === ChartProvider.FAA || provider === ChartProvider.LIDO) && msfsDarkUrl) {
       url = msfsDarkUrl;
+    } else if (provider === ChartProvider.LOCAL_FILES) {
+      url = chartLinks.dark || null;
     } else {
       url = null;
     }
     return url;
-  }, [provider, navigraphChartDarkBlob, msfsDarkUrl]);
+  }, [provider, navigraphChartDarkBlob, msfsDarkUrl, chartLinks.dark]);
 
   useEffect(() => {
     let visible = false;

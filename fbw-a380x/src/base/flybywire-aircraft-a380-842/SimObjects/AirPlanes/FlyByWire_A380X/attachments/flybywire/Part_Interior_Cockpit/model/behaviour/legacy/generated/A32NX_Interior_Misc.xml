@@ -291,8 +291,6 @@
             <SEQ2_CODE>(L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON, Bool)</SEQ2_CODE>
             <LEFT_SINGLE_CODE>
                 (L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON) ! (&gt;L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON)
-
-                0 (&gt;K:APU_BLEED_AIR_SOURCE_TOGGLE)
             </LEFT_SINGLE_CODE>
         </UseTemplate>
     </Template>

@@ -14,7 +14,7 @@ Status legend:
 
 | Status      | URI | Sprint/Prio | Missing functionality |
 | ------------- | ------------- | ------------- | ---------- |
-| ✅ | fms/\*/init | 1 | CPNY WIND REQUEST, RTE SEL, ALTN RTE SEL, CPNY T.O REQUEST |
+| ✅ | fms/\*/init | 1 | RTE SEL, ALTN RTE SEL, CPNY T.O REQUEST |
 | ✅ | fms/\*/fuel-load | 1 | correct fuel calculation, FUEL PLANNING |
 | ✅ | fms/\*/perf | 1 | OPT FL, REC MAX, EO behavior, display of type of speed restriction (when MANAGED), PRED TO |
 |  |  |  |  |
@@ -33,7 +33,7 @@ Status legend:
 | 🟥 | fms/\*/f-pln-alternate | 3 | tbd |
 | 🟥 | fms/\*/f-pln-closest-airports | 3 | tbd |
 | 🟥 | fms/\*/f-pln-cpny-wind-data-req | 4 | tbd |
-| 🟥 | fms/\*/wind | 4 | tbd |
+| ✅ | fms/\*/wind | 4 | Cruise Temperature |
 | 🟥 | fms/\*/f-pln-cpny-to-data-req | 9 | tbd |
 | 🟥 | fms/\*/f-pln-cpny-to-data-recv | 9 | tbd |
 | 🟥 | fms/\*/f-pln-equi-time-point | 9 | tbd |
@@ -46,7 +46,7 @@ Status legend:
 | 🟥 | fms/position/report | 4 | tbd |
 | 🟥 | fms/position/time | 4 | tbd |
 |  |  |  |  |
-| 🟥 | fms/sec/index | 4 | tbd |
+| ✅ | fms/sec/index | 4 | XFR TO MAILBOX |
 |  |  |  |  |
 | ✅ | fms/data/status | 2 | FMS P/N page, idle/perf factors |
 | ✅ | fms/data/airport | 2 | pilot stored runways missing |
