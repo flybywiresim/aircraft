@@ -16,7 +16,7 @@ jobs:
       pull-requests: read
     steps:
       - name: Maximize space
-        uses: AdityaGarg8/remove-unwanted-software@v4.1
+        uses: AdityaGarg8/remove-unwanted-software@v5.1
         with:
           remove-android: 'true'
           remove-dotnet: 'true'
