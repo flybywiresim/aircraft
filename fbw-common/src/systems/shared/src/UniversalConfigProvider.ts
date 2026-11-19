@@ -1,4 +1,4 @@
-// Copyright (c) 2024 FlyByWire Simulations
+// Copyright (c) 2024-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable no-console */
@@ -75,6 +75,7 @@ export class UniversalConfigProvider {
         chartLimits: jsonPayload.chartLimits,
         planeCanvas: jsonPayload._canvas,
         seatDisplay: jsonPayload.seatDisplay,
+        performanceEnvelopeVariants: jsonPayload.performanceEnvelopeVariants,
       },
     };
 
