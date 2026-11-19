@@ -133,19 +133,13 @@ impl SecondarySurface {
 
     // NOTE: No failures are considered. All surfaces have the same deflection.
     fn update(&mut self, synchro_angle: Angle) {
-        let max_surface_position = Angle::new::<degree>(interpolation(
-            &self.synchro_breakpoints,
-            &self.surface_angle_carac,
-            self.max_synchro_angle.get::<degree>(),
-        ));
-
-        let surface_angle = self.get_surface_angle(synchro_angle);
-
-        let surface_percentage = surface_angle / max_surface_position;
+        let surface_percentage = synchro_angle / self.max_synchro_angle;
 
         for s in &mut self.surface_percentages {
             *s = surface_percentage;
         }
+
+        let surface_angle = self.get_surface_angle(synchro_angle);
         for s in &mut self.surface_angles {
             *s = surface_angle;
         }

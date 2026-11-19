@@ -29,6 +29,7 @@
 1. [A380X/MFD] Fix F speed showing CONF3 value instead of F2 on PERF APPR page - @smchuk
 1. [A380X/MFD] Show approach QNH and TEMP as mandatory only when closer than 180 NM to destination or when predictions are unavailable - @matze-tech (matze2346)
 1. [A380X/FMS] Disable destination QNH, temperature and wind fields on the PERF APPR page if no destination airport exists - @HendersonTyler
+1. [A32NX/EFB] Minor change to increase accuracy of CONF 3 Takeoff Speeds - @donstim (donbikes)
 1. [A380X/FMS] Added WIND page - @BravoMike99 (bruno_pt99)
 1. [A380X/FMS] Added "ENTRY NOT IN LIST" message - @BravoMike99 (bruno_pt99)
 1. [A380X/FMS] Fixed minimums of non active flightplans being taken into account - @BravoMike99 (bruno_pt99)
