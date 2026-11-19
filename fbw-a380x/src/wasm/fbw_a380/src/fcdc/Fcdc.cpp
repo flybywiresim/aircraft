@@ -369,7 +369,7 @@ FcdcBus Fcdc::getBusOutputs() {
   output.efcsStatus7.setBit(21, prim1RightSpoilerHydFault && prim1RightSpoilerElecFault);
   output.efcsStatus7.setBit(26, false);
   output.efcsStatus7.setBit(
-      27, valueOr(busInputs.prims[masterPrimIndex].fctl.speed_brake_command_deg, 0) < 0.1 &&
+      27, valueOr(busInputs.prims[masterPrimIndex].fctl.speed_brake_command_deg, 0) > -0.1 &&
               bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.discrete_status_word_1, 27, false));  // SPD BRK Disagree
   output.efcsStatus7.setBit(28, false);
   output.efcsStatus7.setBit(29, false);
