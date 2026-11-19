@@ -1,4 +1,4 @@
-//  Copyright (c) 2021 FlyByWire Simulations
+//  Copyright (c) 2021-2026 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
 import { AtsuMessageType, AtsuMessageDirection, AtsuMessageSerializationFormat, AtsuMessage } from './AtsuMessage';
@@ -21,7 +21,8 @@ export class FreetextMessage extends AtsuMessage {
       format === AtsuMessageSerializationFormat.FmsDisplay ||
       format === AtsuMessageSerializationFormat.FmsDisplayMonitored
     ) {
-      wordWrap(this.Message, 25).forEach((line) => {
+      // received telexes keep the sender's line layout (e.g. company loadsheets)
+      wordWrap(this.Message, 25, this.Direction === AtsuMessageDirection.Uplink).forEach((line) => {
         message += `{green}${line}{end}\n`;
       });
       message += '{white}------------------------{end}\n';
