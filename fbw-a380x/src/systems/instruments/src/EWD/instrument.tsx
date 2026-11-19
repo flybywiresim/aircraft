@@ -11,7 +11,7 @@ import { EwdSimvarPublisher } from './shared/EwdSimvarPublisher';
 
 import { EngineWarningDisplay } from './EWD';
 import { AdrBusPublisher, ArincEventBus, CpiomDataPublisher, IrBusPublisher } from '@flybywiresim/fbw-sdk';
-import { FcdcSimvarPublisher } from '../MsfsAvionicsCommon/providers/FcdcPublisher';
+import { FcdcSimvarPublisher } from '@shared/publishers/FcdcPublisher';
 import { FGDataPublisher } from '../MsfsAvionicsCommon/providers/FGDataPublisher';
 
 class A380X_EWD extends BaseInstrument {
