@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// Copyright (c) 2023-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
@@ -25,12 +25,15 @@ interface TPerformanceLanding {
   runwayCondition: LandingRunwayConditions;
   windDirection?: number;
   windMagnitude?: number;
+  windGust?: number;
+  windVariable?: boolean;
   windEntry?: string;
   temperature?: number;
   pressure?: number;
 
   weight?: number;
   overweightProcedure: boolean;
+  cg?: number;
   approachSpeed?: number;
   flaps: LandingFlapsConfig;
   reverseThrust: boolean;
@@ -38,6 +41,7 @@ interface TPerformanceLanding {
   maxAutobrakeLandingDist: number;
   mediumAutobrakeLandingDist: number;
   lowAutobrakeLandingDist: number;
+  factoredLandingDist?: number;
   runwayVisualizationLabels: DistanceLabel[];
   runwayNumber: number;
   displayedRunwayLength: number;
@@ -62,6 +66,8 @@ interface TPerformanceTakeoff {
   runwayCondition: RunwayCondition;
   windDirection?: number;
   windMagnitude?: number;
+  windGust?: number;
+  windVariable?: boolean;
   windEntry?: string;
   oat?: number;
   qnh?: number;
@@ -108,6 +114,7 @@ export const initialState: TPerformanceState = {
     maxAutobrakeLandingDist: 0,
     mediumAutobrakeLandingDist: 0,
     lowAutobrakeLandingDist: 0,
+    factoredLandingDist: undefined,
     runwayVisualizationLabels: [],
   },
   takeoff: {

@@ -219,6 +219,30 @@ Please keep all vars under the correct ATA chapter where they relate to aircraft
 
 ### Local Vars
 
+- `L:A380X_EFB_LOADED_PAX`
+    - Number of passengers currently loaded on the EFB seat map.
+    - Used by FMS Fuel Planning when importing the loaded aircraft.
+
+- `L:A380X_EFB_LOADED_PAX_VALID`
+    - Boolean
+    - Set after the EFB publishes the loaded passenger count, including zero.
+
+- `L:A380X_EFB_TO_STATUS`
+    - Number
+    - Takeoff bridge status: 0 no calculation, 1 no selected runway, 2 no airport, 3 incomplete result, 4 publishing/ready.
+
+- `L:A380X_EFB_TO_REQUEST`
+    - Number
+    - Incremented by FMS PERF T.O when it requests a fresh EFB takeoff publication.
+
+- `L:A380X_EFB_TO_RESPONSE`
+    - Number
+    - Echoes the last request seen by the EFB, including when no calculation is available.
+
 - `L:A380X_PILOT_IN_FO_SEAT`
     - Boolean
     - Whether the pilot is sitting on the first officer's half of the cockpit.
+
+- `L:A380X_WXR_AUTO`
+    - Boolean
+    - Enables the simulated weather precipitation overlay on the navigation displays when WXR is selected on the EFIS control panel.

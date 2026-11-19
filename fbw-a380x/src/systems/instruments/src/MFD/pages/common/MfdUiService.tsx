@@ -62,7 +62,12 @@ export class MfdUiService {
   public navigateTo(uri: string): void {
     let nextUri: string;
 
-    const forceReloadUrls = ['fms/active/f-pln/top', 'fms/active/perf'];
+    const forceReloadUrls = [
+      'fms/active/f-pln/top',
+      'fms/active/perf',
+      'atccom/msg-record/all-msg',
+      'atccom/msg-record/monitored-msg',
+    ];
     if (uri === this.activeUri.get().uri && !forceReloadUrls.includes(uri)) {
       // Same URL, don't navigate. Except for some URLs defined in forceReloadUrls
       console.info('Navigate to same URL, ignored.');

@@ -82,6 +82,7 @@ export interface NDProps<T extends number> {
   mapOptions?: Partial<MapOptions>;
 
   fmMessages: FMMessage[];
+  weatherLayer?: (mode: Subscribable<EfisNdMode>) => VNode;
 }
 
 export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> {
@@ -397,6 +398,7 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
           </svg>
         </div>
         <div style={{ display: this.showOans.map((it) => (it ? 'none' : 'block')) }}>
+          {this.props.weatherLayer?.(this.currentPageMode)}
           {/* ND Vector graphics - bottom layer */}
           <svg class="nd-svg" viewBox="0 0 768 768" style="transform: rotateX(0deg);">
             <RoseLSPage
