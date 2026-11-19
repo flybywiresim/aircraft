@@ -74,7 +74,7 @@ import { A380Failure } from '@failures';
 // FIXME should not import from instruments
 import { FuelSystemEvents } from '../../../instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
 // FIXME should not import from instruments
-import { FmsMessageVars } from '../../../instruments/src/MsfsAvionicsCommon/providers/FmsMessagePublisher';
+import { FmsMessageVars } from '../../../shared/src/publishers/FmsMessagePublisher';
 import { FwsSystemDisplayLogic } from './FwsSystemDisplayLogic';
 import { FwsInopSys, FwsInopSysPhases } from './FwsInopSys';
 import { FwsInformation } from './FwsInformation';
