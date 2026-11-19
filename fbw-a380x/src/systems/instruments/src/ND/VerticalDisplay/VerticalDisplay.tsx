@@ -7,6 +7,7 @@ import {
   EfisNdMode,
   EfisRecomputingReason,
   EfisSide,
+  EfisVectorsEvents,
   FcuSimVars,
   MathUtils,
   VerticalPathCheckpoint,
@@ -29,7 +30,6 @@ import { NDSimvars } from '../NDSimvarPublisher';
 
 import '../style.scss';
 import { SimplaneValues } from '../../MsfsAvionicsCommon/providers/SimplaneValueProvider';
-import { FmsSymbolsData } from '../FmsSymbolsPublisher';
 import { NDControlEvents } from '../NDControlEvents';
 import { VerticalDisplayCanvasMap } from './VerticalDisplayCanvasMap';
 import { VerticalMode } from '@shared/autopilot';
@@ -56,11 +56,11 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
 
   private readonly sub = this.props.bus.getArincSubscriber<
     AesuBusEvents &
+      EfisVectorsEvents &
       FcuEfisCpBusEvents &
       ClockEvents &
       FcuSimVars &
       FGVars &
-      FmsSymbolsData &
       GenericFcuEvents &
       GenericTawsEvents &
       MfdSurvEvents &
@@ -85,7 +85,8 @@ export class VerticalDisplay extends DisplayComponent<VerticalDisplayProps> {
     this.ndRangeSetting,
   );
 
-  private readonly fmsLateralPath = ConsumerSubject.create(this.sub.on('vectorsActive'), []);
+  // FMS geometry can be updated and republished using the same array reference.
+  private readonly fmsLateralPath = ConsumerSubject.create(this.sub.on('vectorsActive'), undefined, () => false);
   private readonly fmsTargetVdProfile = ConsumerSubject.create(this.sub.on('a32nx_fms_vertical_target_profile'), []);
   private readonly fmsActualVdProfile = ConsumerSubject.create(this.sub.on('a32nx_fms_vertical_actual_profile'), []);
   private readonly displayedFmsPathForVerticalRangeEstimation = MappedSubject.create(

@@ -8,7 +8,7 @@ import {
   Subscribable,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { Arinc429Word, ArincEventBus } from '@flybywiresim/fbw-sdk';
+import { Arinc429Register, Arinc429WordData, ArincEventBus } from '@flybywiresim/fbw-sdk';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { LagFilter } from './PFDUtils';
@@ -33,7 +33,7 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
 
   private needleColour = Subject.create('Green');
 
-  private radioAlt = new Arinc429Word(0);
+  private radioAlt: Arinc429WordData = Arinc429Register.empty();
 
   private vsFailed = FSComponent.createRef<SVGGElement>();
 

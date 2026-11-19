@@ -5,8 +5,9 @@ import { getDisplayIndex } from '../PFD';
 
 import {
   Arinc429LocalVarConsumerSubject,
+  Arinc429Register,
   Arinc429RegisterSubject,
-  Arinc429Word,
+  Arinc429WordData,
   MathUtils,
 } from '@flybywiresim/fbw-sdk';
 import {
@@ -23,43 +24,42 @@ import { PFDSimvars } from './PFDSimvarPublisher';
 import { FcuEfisCpBusEvents } from '@shared/publishers/EfisCpBusPublisher';
 
 export interface Arinc429Values {
-  pitchAr: Arinc429Word;
-  rollAr: Arinc429Word;
+  pitchAr: Arinc429WordData;
+  rollAr: Arinc429WordData;
 
   /** The "displayed altitude" in feet. It's baro corrected for QFE/QNH modes, otherwise pressure alt. */
-  altitudeAr: Arinc429Word;
+  altitudeAr: Arinc429WordData;
 
-  groundTrackAr: Arinc429Word;
-  headingAr: Arinc429Word;
-  speedAr: Arinc429Word;
-  machAr: Arinc429Word;
-  vs: Arinc429Word;
-  gs: Arinc429Word;
-  chosenRa: Arinc429Word;
-  fpa: Arinc429Word;
-  da: Arinc429Word;
-  landingElevation: Arinc429Word;
-  staticPressure: Arinc429Word;
+  groundTrackAr: Arinc429WordData;
+  headingAr: Arinc429WordData;
+  speedAr: Arinc429WordData;
+  machAr: Arinc429WordData;
+  vs: Arinc429WordData;
+  chosenRa: Arinc429WordData;
+  fpa: Arinc429WordData;
+  da: Arinc429WordData;
+  landingElevation: Arinc429WordData;
+  staticPressure: Arinc429WordData;
   fmEisDiscreteWord1Raw: number;
   fmEisDiscreteWord2Raw: number;
   fmMdaRaw: number;
   fmDhRaw: number;
   fmTransAltRaw: number;
   fmTransLvlRaw: number;
-  lgciuDiscreteWord1: Arinc429Word;
+  lgciuDiscreteWord1: Arinc429WordData;
 }
 export class ArincValueProvider implements Instrument {
   private readonly sub = this.bus.getSubscriber<FcuEfisCpBusEvents & ClockEvents & PFDSimvars>();
 
-  private roll = new Arinc429Word(0);
+  private readonly roll = Arinc429Register.empty();
 
-  private pitch = new Arinc429Word(0);
+  private readonly pitch = Arinc429Register.empty();
 
-  private groundTrack = new Arinc429Word(0);
+  private readonly groundTrack = Arinc429Register.empty();
 
-  private heading = new Arinc429Word(0);
+  private readonly heading = Arinc429Register.empty();
 
-  private speed = new Arinc429Word(0);
+  private readonly speed = Arinc429Register.empty();
 
   /** Displayed altitude. */
   private readonly altitude = Arinc429RegisterSubject.createEmpty();
@@ -75,31 +75,29 @@ export class ArincValueProvider implements Instrument {
 
   private readonly fcuEisDiscreteWord2 = Arinc429LocalVarConsumerSubject.create(null);
 
-  private mach = new Arinc429Word(0);
+  private readonly mach = Arinc429Register.empty();
 
-  private vsInert = new Arinc429Word(0);
+  private readonly vsInert = Arinc429Register.empty();
 
-  private vsBaro = new Arinc429Word(0);
+  private readonly vsBaro = Arinc429Register.empty();
 
-  private groundSpeed = new Arinc429Word(0);
+  private readonly radioAltitude1 = Arinc429Register.empty();
 
-  private radioAltitude1 = new Arinc429Word(0);
+  private readonly radioAltitude2 = Arinc429Register.empty();
 
-  private radioAltitude2 = new Arinc429Word(0);
+  private readonly radioAltitude3 = Arinc429Register.empty();
 
-  private radioAltitude3 = new Arinc429Word(0);
+  private readonly fpa = Arinc429Register.empty();
 
-  private fpa = new Arinc429Word(0);
+  private readonly da = Arinc429Register.empty();
 
-  private da = new Arinc429Word(0);
+  private readonly ownLandingElevation = Arinc429Register.empty();
 
-  private ownLandingElevation = new Arinc429Word(0);
+  private readonly oppLandingElevation = Arinc429Register.empty();
 
-  private oppLandingElevation = new Arinc429Word(0);
+  private readonly staticPressure = Arinc429Register.empty();
 
-  private staticPressure = new Arinc429Word(0);
-
-  private lgciuDiscreteWord1 = new Arinc429Word(0);
+  private readonly lgciuDiscreteWord1 = Arinc429Register.empty();
 
   private readonly fm1Healthy = ConsumerSubject.create(null, 0);
 
@@ -129,24 +127,24 @@ export class ArincValueProvider implements Instrument {
     const subscriber = this.bus.getSubscriber<PFDSimvars>();
 
     subscriber.on('pitch').handle((p) => {
-      this.pitch = new Arinc429Word(p);
+      this.pitch.set(p);
       publisher.pub('pitchAr', this.pitch);
     });
     subscriber.on('roll').handle((p) => {
-      this.roll = new Arinc429Word(p);
+      this.roll.set(p);
       publisher.pub('rollAr', this.roll);
     });
     subscriber.on('groundTrack').handle((gt) => {
-      this.groundTrack = new Arinc429Word(gt);
+      this.groundTrack.set(gt);
       publisher.pub('groundTrackAr', this.groundTrack);
     });
     subscriber.on('heading').handle((h) => {
-      this.heading = new Arinc429Word(h);
+      this.heading.set(h);
       publisher.pub('headingAr', this.heading);
     });
 
     subscriber.on('speed').handle((s) => {
-      this.speed = new Arinc429Word(s);
+      this.speed.set(s);
       publisher.pub('speedAr', this.speed);
     });
 
@@ -164,12 +162,12 @@ export class ArincValueProvider implements Instrument {
     }, true);
 
     subscriber.on('mach').handle((m) => {
-      this.mach = new Arinc429Word(m);
+      this.mach.set(m);
       publisher.pub('machAr', this.mach);
     });
 
     subscriber.on('vsInert').handle((ivs) => {
-      this.vsInert = new Arinc429Word(ivs);
+      this.vsInert.set(ivs);
 
       if (this.vsInert.isNormalOperation()) {
         publisher.pub('vs', this.vsInert);
@@ -177,58 +175,53 @@ export class ArincValueProvider implements Instrument {
     });
 
     subscriber.on('vsBaro').handle((vsb) => {
-      this.vsBaro = new Arinc429Word(vsb);
+      this.vsBaro.set(vsb);
       if (!this.vsInert.isNormalOperation()) {
         publisher.pub('vs', this.vsBaro);
       }
     });
 
-    subscriber.on('groundSpeed').handle((gs) => {
-      this.groundSpeed = new Arinc429Word(gs);
-      publisher.pub('gs', this.groundSpeed);
-    });
-
     subscriber.on('radioAltitude1').handle((ra) => {
-      this.radioAltitude1 = new Arinc429Word(ra);
+      this.radioAltitude1.set(ra);
       this.determineAndPublishChosenRadioAltitude(publisher);
     });
 
     subscriber.on('radioAltitude2').handle((ra) => {
-      this.radioAltitude2 = new Arinc429Word(ra);
+      this.radioAltitude2.set(ra);
       this.determineAndPublishChosenRadioAltitude(publisher);
     });
 
     subscriber.on('radioAltitude3').handle((ra) => {
-      this.radioAltitude3 = new Arinc429Word(ra);
+      this.radioAltitude3.set(ra);
       this.determineAndPublishChosenRadioAltitude(publisher);
     });
 
     subscriber.on('fpaRaw').handle((fpa) => {
-      this.fpa = new Arinc429Word(fpa);
+      this.fpa.set(fpa);
       publisher.pub('fpa', this.fpa);
     });
 
     subscriber.on('daRaw').handle((da) => {
-      this.da = new Arinc429Word(da);
+      this.da.set(da);
       publisher.pub('da', this.da);
     });
 
     subscriber.on('landingElevation1Raw').handle((elevation) => {
       if (getDisplayIndex() === 1) {
-        this.ownLandingElevation = new Arinc429Word(elevation);
+        this.ownLandingElevation.set(elevation);
       } else {
-        this.oppLandingElevation = new Arinc429Word(elevation);
+        this.oppLandingElevation.set(elevation);
       }
       this.determineAndPublishChosenLandingElevation(publisher);
     });
 
     subscriber.on('staticPressureRaw').handle((sp) => {
-      this.staticPressure = new Arinc429Word(sp);
+      this.staticPressure.set(sp);
       publisher.pub('staticPressure', this.staticPressure);
     });
 
     subscriber.on('lgciuDiscreteWord1Raw').handle((word) => {
-      this.lgciuDiscreteWord1 = new Arinc429Word(word);
+      this.lgciuDiscreteWord1.set(word);
       publisher.pub('lgciuDiscreteWord1', this.lgciuDiscreteWord1);
     });
 

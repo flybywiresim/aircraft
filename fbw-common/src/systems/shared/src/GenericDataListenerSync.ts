@@ -104,3 +104,44 @@ export class GenericDataListenerSync {
     // noop
   }
 }
+
+export class GenericDataListenerRecvSync {
+  private readonly callbacks = new Map<string, (topic: string, data: any) => void>();
+
+  private listener: GenericDataListener;
+
+  private lastEventSynced = -1;
+
+  constructor() {
+    this.listener = RegisterGenericDataListener(() => {
+      this.listener.onDataReceived(GenericDataListenerSync.EB_LISTENER_KEY, (data: SyncDataPackage) => {
+        this.processEventsReceived(data);
+      });
+    });
+  }
+
+  /** Registers the callback invoked for packages on the given topic (one callback per topic). */
+  public on(topic: string, callback: (topic: string, data: any) => void): void {
+    this.callbacks.set(topic, callback);
+  }
+
+  private processEventsReceived(syncDataPackage: SyncDataPackage) {
+    if (syncDataPackage.packagedId === this.lastEventSynced) {
+      return;
+    }
+    this.lastEventSynced = syncDataPackage.packagedId;
+    for (const data of syncDataPackage.data) {
+      const callback = this.callbacks.get(data.topic);
+      if (callback) {
+        try {
+          callback(data.topic, data.data !== undefined ? data.data : undefined);
+        } catch (e) {
+          console.error(e);
+          if (e instanceof Error) {
+            console.error(e.stack);
+          }
+        }
+      }
+    }
+  }
+}
