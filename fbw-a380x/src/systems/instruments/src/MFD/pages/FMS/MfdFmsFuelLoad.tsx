@@ -120,6 +120,27 @@ export class MfdFmsFuelLoad extends FmsFlightPlanPage<MfdFmsFuelLoadProps> {
 
   private readonly fuelPlanningIsDisabled = Subject.create<boolean>(true);
 
+  /**
+   * The FUEL PLANNING button is only shown before engine start and when the loaded flight plan
+   * contains a cruise flight level and both ZFW and ZFW CG have been inserted.
+   */
+  private readonly fuelPlanningButtonVisible = MappedSubject.create(
+    ([_fpVersion, enginesStarted, zfw, zfwCg]) => {
+      const cruiseFlightLevel = this.loadedFlightPlan?.performanceData.cruiseFlightLevel.get();
+      return (
+        !enginesStarted &&
+        cruiseFlightLevel !== null &&
+        cruiseFlightLevel !== undefined &&
+        zfw !== null &&
+        zfwCg !== null
+      );
+    },
+    this.currentFlightPlanVersion,
+    this.props.fmcService.master.enginesWereStarted,
+    this.zeroFuelWeight,
+    this.zeroFuelWeightCenterOfGravity,
+  );
+
   private readonly destinationAlternateTimeHeader = this.activeFlightPhase.map((v) =>
     v === FmgcFlightPhase.Preflight ? 'TIME' : 'UTC',
   );
@@ -336,6 +357,7 @@ export class MfdFmsFuelLoad extends FmsFlightPlanPage<MfdFmsFuelLoadProps> {
       this.extraFuelWeightText,
       this.extraFuelTimeText,
       this.taxiAndRouteRsvDisabled,
+      this.fuelPlanningButtonVisible,
       this.costIndexDisabled,
       this.costIndexModeDisabled,
       this.jettisonGrossWeightVisibility,
@@ -516,7 +538,14 @@ export class MfdFmsFuelLoad extends FmsFlightPlanPage<MfdFmsFuelLoadProps> {
                 hEventConsumer={this.props.mfd.hEventConsumer}
                 interactionMode={this.props.mfd.interactionMode}
               />
-              <div style="display: flex; flex: 1; justify-content: center;">
+              <div
+                style={{
+                  display: 'flex',
+                  flex: '1',
+                  'justify-content': 'center',
+                  visibility: this.fuelPlanningButtonVisible,
+                }}
+              >
                 <Button
                   disabled={this.fuelPlanningIsDisabled}
                   label={
