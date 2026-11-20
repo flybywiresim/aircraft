@@ -673,7 +673,13 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     plan.setPerformanceData('pilotMissedAccelerationAltitude', null);
     plan.setPerformanceData('pilotMissedEngineOutAccelerationAltitude', null);
 
-    plan.setPerformanceData('databaseTransitionLevel', airport?.transitionLevel ?? null);
+    // If the nav database has no transition level for the destination (common in Europe),
+    // fall back to the transition altitude expressed as a flight level, as the real FMS does
+    plan.setPerformanceData(
+      'databaseTransitionLevel',
+      airport?.transitionLevel ??
+        (airport?.transitionAltitude !== undefined ? MathUtils.round(airport.transitionAltitude / 100, 1) : null),
+    );
 
     plan.deleteDescentWindEntries();
   }
