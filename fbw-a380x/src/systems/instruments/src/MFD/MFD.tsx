@@ -28,7 +28,7 @@ import { MfdFmsFplnDuplicateNames } from './pages/FMS/F-PLN/MfdFmsFplnDuplicateN
 import { headerForSystem, pageForUrl } from './MfdPageDirectory';
 import { FmsDisplayInterface } from '@fmgc/flightplanning/interface/FmsDisplayInterface';
 import { FmsErrorType } from '@fmgc/FmsError';
-import { FmcServiceInterface } from './FMC/FmcServiceInterface';
+import { FmcIndex, FmcServiceInterface } from './FMC/FmcServiceInterface';
 import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayUnit';
 import { InternalKccuKeyEvent, MfdSimvars } from './shared/MFDSimvarPublisher';
 import { MfdFmsPageNotAvail } from './pages/FMS/MfdFmsPageNotAvail';
@@ -303,6 +303,10 @@ export class MfdComponent
     if (!this.props.fmcService.master) {
       return;
     }
+
+    // Route FMC-level UI (e.g. the duplicate names dialog) to the MFD the pilot is currently using,
+    // so requests from the FO side are not shown on the CAPT MFD
+    this.props.fmcService.setMfdReference(FmcIndex.FmcA, this);
 
     // Remove and destroy old header
     if (this.activeHeaderRef.getOrDefault()) {
