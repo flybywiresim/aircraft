@@ -355,7 +355,7 @@ export class MfdFmsFplnArr extends FmsFlightPlanPage<MfdFmsFplnArrProps> {
       this.toIcao.set(flightPlan.destinationAirport.ident);
 
       const runways: ButtonMenuItem[] = [];
-      const sortedRunways = flightPlan.availableDestinationRunways.sort((a, b) => a.ident.localeCompare(b.ident));
+      const sortedRunways = [...flightPlan.availableDestinationRunways].sort((a, b) => a.ident.localeCompare(b.ident));
       sortedRunways.forEach((rw) => {
         runways.push({
           label: `${rw.ident.substring(4).padEnd(3, ' ')} ${UnitType.METER.createNumber(rw.length).asUnit(this.lengthUnit.get()).toFixed(0).padStart(5, ' ')}${this.distanceUnitFormatter(this.lengthUnit.get())}`,

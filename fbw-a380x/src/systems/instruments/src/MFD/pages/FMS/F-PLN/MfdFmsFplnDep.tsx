@@ -89,7 +89,7 @@ export class MfdFmsFplnDep extends FmsFlightPlanPage<MfdFmsFplnDepProps> {
               },
             },
           ];
-          const sortedDepartures = flightPlan.availableDepartures.sort((a, b) => a.ident.localeCompare(b.ident));
+          const sortedDepartures = [...flightPlan.availableDepartures].sort((a, b) => a.ident.localeCompare(b.ident));
           sortedDepartures.forEach((dep) => {
             sids.push({
               label: dep.authorisationRequired ? `${dep.ident} (RNP)` : dep.ident,
@@ -176,7 +176,7 @@ export class MfdFmsFplnDep extends FmsFlightPlanPage<MfdFmsFplnDepProps> {
     if (flightPlan.originAirport) {
       this.fromIcao.set(flightPlan.originAirport.ident);
 
-      const sortedRunways = flightPlan.availableOriginRunways.sort((a, b) => a.ident.localeCompare(b.ident));
+      const sortedRunways = [...flightPlan.availableOriginRunways].sort((a, b) => a.ident.localeCompare(b.ident));
       const runways: ButtonMenuItem[] = sortedRunways.map((rw) => {
         return {
           label: `${rw.ident.substring(4).padEnd(3, '\xa0')}\xa0${UnitType.METER.createNumber(rw.length).asUnit(this.lengthUnit.get()).toFixed(0).padStart(5, '\xa0')}${this.distanceUnitFormatter(this.lengthUnit.get())} ${rw.lsIdent ? 'ILS' : ''}`,
