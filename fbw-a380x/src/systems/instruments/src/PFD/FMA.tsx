@@ -19,6 +19,7 @@ import {
   Arinc429LocalVarConsumerSubject,
   Arinc429Word,
   ArincEventBus,
+  NXLogicTriggeredMonostableNode,
 } from '@flybywiresim/fbw-sdk';
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { PrimFgBusBaseEvents } from '@shared/publishers/PrimFgPublisher';
@@ -41,6 +42,7 @@ import { FcdcBusBaseEvents } from '@shared/publishers/FcdcPublisher';
 import { FcuEfisCpBusEvents } from '../../../shared/src/publishers/EfisCpBusPublisher';
 import { getDisplayIndex } from './PFD';
 import { EcuBusEvents } from '@shared/publishers/EcuPublisher';
+import { ExtendedClockEvents } from '@providers/ExtendedClockProvider';
 
 abstract class ShowForSecondsComponent<T extends ComponentProps> extends DisplayComponent<T> {
   private timeout: number = 0;
@@ -509,7 +511,7 @@ class Row3 extends DisplayComponent<{
           <AB3Cell bus={this.props.bus} A3Message={this.props.A3Message} />
           <D3Cell bus={this.props.bus} />
         </g>
-        <BC3Cell BC3Message={this.props.BC3Message} />
+        <BC3Cell bus={this.props.bus} BC3Message={this.props.BC3Message} />
         <E3Cell bus={this.props.bus} />
       </g>
     );
@@ -531,12 +533,15 @@ class A1A2Cell extends ShowForSecondsComponent<A1A2CellProps> {
 
   private flexTemp = ConsumerSubject.create(this.sub.on('flexTemp'), 0);
 
+  private readonly amberFlashingBox = Subject.create(false);
+
   constructor(props: A1A2CellProps) {
     super(props, 10);
   }
 
   private setText() {
     let text: string = '';
+    let amberFlashingBox = false;
     this.isShown = true;
 
     switch (this.props.A1A2CellMessage.get()) {
@@ -614,17 +619,13 @@ class A1A2Cell extends ShowForSecondsComponent<A1A2CellProps> {
         break;
       case A1A2Messages.A_FLOOR:
         this.displayModeChangedPath(true);
-        text = `<g>
-                                <path class="NormalStroke Amber BlinkInfinite" d="m0.70556 1.8143h30.927v6.0476h-30.927z" />
-                                <text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">A.FLOOR</text>
-                            </g>`;
+        amberFlashingBox = true;
+        text = `<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">A.FLOOR</text>`;
         break;
       case A1A2Messages.TOGA_LK:
         this.displayModeChangedPath(true);
-        text = `<g>
-                                <path class="NormalStroke Amber BlinkInfinite" d="m0.70556 1.8143h30.927v6.0476h-30.927z" />
-                                <text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">TOGA LK</text>
-                            </g>`;
+        amberFlashingBox = true;
+        text = `<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">TOGA LK</text>`;
         break;
       case A1A2Messages.BTV:
         text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">BTV</text>';
@@ -657,6 +658,8 @@ class A1A2Cell extends ShowForSecondsComponent<A1A2CellProps> {
     }
 
     this.cellRef.instance.innerHTML = text;
+
+    this.amberFlashingBox.set(amberFlashingBox);
   }
 
   onAfterRender(node: VNode): void {
@@ -681,6 +684,9 @@ class A1A2Cell extends ShowForSecondsComponent<A1A2CellProps> {
           d="m3.3 1.8143h27.127v6.0476h-27.127z"
         />
         <g ref={this.cellRef} />
+        <FlashOneHertz bus={this.props.bus} flashDuration={Infinity} visible={this.amberFlashingBox}>
+          <path class="NormalStroke Amber" d="m0.70556 1.8143h30.927v6.0476h-30.927z" />
+        </FlashOneHertz>
       </>
     );
   }
@@ -732,7 +738,8 @@ class A3Cell extends DisplayComponent<A3CellProps> {
   }
 
   private readonly shouldFlash = this.props.A3Message.map(
-    (A3Message) => A3Message !== A3Messages.BRK_RTO && A3Message !== A3Messages.LVR_ASYM,
+    (A3Message) =>
+      A3Message !== A3Messages.BRK_RTO && A3Message !== A3Messages.LVR_ASYM && A3Message !== A3Messages.NONE,
   );
 
   onAfterRender(node: VNode): void {
@@ -1240,29 +1247,54 @@ class BC1Cell extends ShowForSecondsComponent<CellProps> {
   }
 }
 
-class BC3Cell extends DisplayComponent<{
+interface BC3CellProps extends CellProps {
   readonly BC3Message: Subscribable<BC3Messages>;
-}> {
-  private bc3Cell = FSComponent.createRef<SVGTextElement>();
+}
 
-  private classNameSub = Subject.create('');
+class BC3Cell extends DisplayComponent<BC3CellProps> {
+  private sub = this.props.bus.getSubscriber<ExtendedClockEvents>();
+
+  // We can't use FlashOneHertz here due to both 9s and infinite flash on the same component
+  private readonly oneHertzClock = ConsumerSubject.create(this.sub.on('ext_clock_one_hertz'), false);
+
+  private readonly flashingMtrig = new NXLogicTriggeredMonostableNode(9, true);
+
+  private readonly text = Subject.create('');
+
+  private normalClassNames = '';
+
+  private flashingClassName1 = '';
+
+  private flashingClassName2 = '';
+
+  private readonly className = Subject.create('');
+
+  private readonly isFlashing = Subject.create(false);
 
   private getBC3MessageText(BC3Message: BC3Messages) {
-    let text: string;
-    let className: string;
+    let text = '';
+    let className = '';
+    let flashingClassName1 = '';
+    let flashingClassName2 = '';
 
     switch (BC3Message) {
       case BC3Messages.USE_MAN_PITCH_TRIM:
         text = 'USE MAN PITCH TRIM';
-        className = 'PulseAmber9Seconds Amber';
+        className = 'FontSmall Fill';
+        flashingClassName1 = 'Amber';
+        flashingClassName2 = 'DimmedAmber';
         break;
       case BC3Messages.FOR_GA_SET_TOGA:
         text = 'FOR GA: SET TOGA';
-        className = 'PulseAmber9Seconds Amber';
+        className = 'FontMedium Fill';
+        flashingClassName1 = 'Amber';
+        flashingClassName2 = 'DimmedAmber';
         break;
       case BC3Messages.DISCONNECT_AP_FOR_LDG:
         text = 'DISCONNECT AP FOR LDG';
-        className = 'FontSmall PulseAmber9Seconds Amber';
+        className = 'FontSmall Fill';
+        flashingClassName1 = 'Amber';
+        flashingClassName2 = 'DimmedAmber';
         break;
       case BC3Messages.TCAS_ARMED:
         text = 'TCAS           ';
@@ -1278,7 +1310,9 @@ class BC3Cell extends DisplayComponent<{
         break;
       case BC3Messages.MOVE_THR_LEVERS:
         text = 'MOVE THR LEVERS';
-        className = 'BlinkInfinite Amber';
+        className = 'FontMedium Amber';
+        flashingClassName1 = '';
+        flashingClassName2 = 'HiddenElement';
         break;
       case BC3Messages.TD_REACHED:
         text = 'T/D REACHED';
@@ -1313,32 +1347,52 @@ class BC3Cell extends DisplayComponent<{
         className = 'FontMediumSmaller White';
         break;
       default:
-        return [null, null];
+        break;
     }
 
-    return [text, className];
-  }
-
-  private fillBC3Cell() {
-    const [text, className] = this.getBC3MessageText(this.props.BC3Message.get());
-    this.classNameSub.set(`FontMedium MiddleAlign ${className}`);
-    if (text !== null) {
-      this.bc3Cell.instance.innerHTML = text;
-    } else {
-      this.bc3Cell.instance.innerHTML = '';
-    }
+    return [text, className, flashingClassName1, flashingClassName2];
   }
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
     this.props.BC3Message.sub(() => {
-      this.fillBC3Cell();
+      const [text, className, flashingClassName1, flashingClassName2] = this.getBC3MessageText(
+        this.props.BC3Message.get(),
+      );
+
+      this.text.set(text);
+      this.normalClassNames = `MiddleAlign ${className}`;
+      this.flashingClassName1 = flashingClassName1;
+      this.flashingClassName2 = flashingClassName2;
+      this.isFlashing.set(flashingClassName1 !== '');
     }, true);
+
+    this.sub.on('ext_clock_delta_time').handle((dt) => {
+      const bc3Message = this.props.BC3Message.get();
+
+      this.flashingMtrig.write(
+        bc3Message === BC3Messages.DISCONNECT_AP_FOR_LDG ||
+          bc3Message === BC3Messages.FOR_GA_SET_TOGA ||
+          bc3Message === BC3Messages.USE_MAN_PITCH_TRIM,
+        dt,
+      );
+
+      const flashingClassName =
+        this.oneHertzClock.get() && (this.flashingMtrig.read() || bc3Message === BC3Messages.MOVE_THR_LEVERS)
+          ? this.flashingClassName2
+          : this.flashingClassName1;
+
+      this.className.set(`${this.normalClassNames} ${flashingClassName}`);
+    });
   }
 
   render(): VNode {
-    return <text ref={this.bc3Cell} class={this.classNameSub} x="68.087875" y="21.627102" style="white-space: pre" />;
+    return (
+      <text class={this.className} x="68.087875" y="21.627102" style="white-space: pre">
+        {this.text}
+      </text>
+    );
   }
 }
 

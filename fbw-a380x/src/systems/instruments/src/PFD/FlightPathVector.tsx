@@ -17,6 +17,7 @@ import { getDisplayIndex } from './PFD';
 import { FcuEfisCpBusEvents } from '@shared/publishers/EfisCpBusPublisher';
 import { PrimFgBusBaseEvents } from '@shared/publishers/PrimFgPublisher';
 import { SelectedFdEvents } from './shared/FdSelectionProvider';
+import { FlashOneHertz } from '../MsfsAvionicsCommon/FlashingElementUtils';
 
 const DistanceSpacing = 15;
 const ValueSpacing = 10;
@@ -71,8 +72,8 @@ export class FlightPathVector extends DisplayComponent<{ bus: EventBus }> {
     this.isDaAndFpaValid,
   );
 
-  private readonly isFailureFlagHidden = MappedSubject.create(
-    ([isRequested, isDaAndFpaValid, isRollAndPitchValid]) => !isRequested || isDaAndFpaValid || !isRollAndPitchValid,
+  private readonly fpvFlagVisible = MappedSubject.create(
+    ([isRequested, isDaAndFpaValid, isRollAndPitchValid]) => isRequested && !isDaAndFpaValid && isRollAndPitchValid,
     this.isRequested,
     this.isDaAndFpaValid,
     this.isRollAndPitchValid,
@@ -182,20 +183,11 @@ export class FlightPathVector extends DisplayComponent<{ bus: EventBus }> {
             </g>
           </svg>
         </g>
-        <text
-          id="FPVFlag"
-          x="62.987099"
-          y="89.42025"
-          class={{
-            HiddenElement: this.isFailureFlagHidden,
-            Blink9Seconds: true,
-            FontLargest: true,
-            Red: true,
-            EndAlign: true,
-          }}
-        >
-          FPV
-        </text>
+        <FlashOneHertz bus={this.props.bus} flashDuration={9} visible={this.fpvFlagVisible}>
+          <text id="FPVFlag" x="62.987099" y="89.42025" class="FontLargest Red EndAlign">
+            FPV
+          </text>
+        </FlashOneHertz>
       </>
     );
   }
