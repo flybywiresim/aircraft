@@ -134,7 +134,7 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
     if (atisReport.Timestamp) {
       this.atisTimestamp.set(atisReport.Timestamp.mailboxTimestamp());
     }
-    if (atisReport.Reports[0].report) {
+    if (atisReport.Reports[0]?.report) {
       this.atisMessage.set(this.truncateAtis(atisReport.Reports[0].report).toUpperCase());
     }
   }
@@ -146,10 +146,16 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
   public toggleAtisAutoUpdate(icao: string): void {
     if (this.datalink.atisAutoUpdateActive(icao)) {
       // could check FCOM if some error handling could be added
-      this.datalink.deactivateAtisAutoUpdate(this.props.index).then(() => {});
+      this.datalink
+        .deactivateAtisAutoUpdate(this.props.index)
+        .then(() => {})
+        .catch(console.error);
     } else {
       // could check FCOM if some error handling could be added
-      this.datalink.activateAtisAutoUpdate(this.props.index).then(() => {});
+      this.datalink
+        .activateAtisAutoUpdate(this.props.index)
+        .then(() => {})
+        .catch(console.error);
     }
   }
 
