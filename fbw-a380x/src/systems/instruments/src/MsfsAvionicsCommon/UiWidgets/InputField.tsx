@@ -175,8 +175,10 @@ export class InputField<
         this.textInputRef.getOrDefault()?.classList.remove('mandatory');
       }
     } else {
-      if (this.mandatory.get()) {
+      if (this.mandatory.get() && !this.disabled.get()) {
         this.textInputRef.getOrDefault()?.classList.add('mandatory');
+      } else {
+        this.textInputRef.getOrDefault()?.classList.remove('mandatory');
       }
     }
 
@@ -381,7 +383,7 @@ export class InputField<
       }
 
       // Restore mandatory class for correct coloring of dot (e.g. non-placeholders)
-      if (this.readValue.get() === null && this.mandatory.get()) {
+      if (this.readValue.get() === null && this.mandatory.get() && !this.disabled.get()) {
         this.textInputRef.instance.classList.add('mandatory');
       }
 
@@ -395,7 +397,8 @@ export class InputField<
     this.leadingUnit.set(unitLeading ?? '');
     this.trailingUnit.set(unitTrailing ?? '');
 
-    if (this.mandatory.get() && !this.inactive.get() && !this.disabled.get()) {
+    // Mandatory placeholders (boxes) are also shown when disabled; the disabled class keeps them grey
+    if (this.mandatory.get() && !this.inactive.get()) {
       this.textInputRef.instance.innerHTML =
         formatted?.replace(/-/gi, this.props.overrideEmptyMandatoryPlaceholder ?? '\u25AF') ?? '';
     } else {
@@ -505,7 +508,7 @@ export class InputField<
     this.subs.push(this.modifiedFieldValue.sub(() => this.updateDisplayElement()));
     this.subs.push(
       this.mandatory.sub((val) => {
-        if (val && this.readValue.get() === null) {
+        if (val && this.readValue.get() === null && !this.disabled.get()) {
           this.textInputRef.instance.classList.add('mandatory');
         } else {
           this.textInputRef.instance.classList.remove('mandatory');
