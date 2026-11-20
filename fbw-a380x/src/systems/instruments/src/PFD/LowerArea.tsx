@@ -128,6 +128,18 @@ class SlatsFlapsDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
 
   private readonly flapsOut = MappedSubject.create(([word]) => word.valueOr(0) > 5.0, this.flapPositionWord);
 
+  private readonly flapLeverPosition = ConsumerSubject.create(this.sub.on('flapHandleIndex').whenChanged(), 0);
+
+  // The SFCC status word reports the FMS-selected flap config even with the flap lever in detent 0 (e.g. after
+  // entering takeoff flaps on the MCDU), so only trust a non-clean config when the lever is actually out of 0.
+  private readonly slatsFlapsVisible = MappedSubject.create(
+    ([slatsOut, flapsOut, configClean, flapLever]) => slatsOut || flapsOut || (!configClean && flapLever > 0),
+    this.slatsOut,
+    this.flapsOut,
+    this.configClean,
+    this.flapLeverPosition,
+  );
+
   private targetText = MappedSubject.create(
     ([configClean, config1, config2, config3, configFull, flaps1AutoRetract]) => {
       if (configClean) {
@@ -203,28 +215,17 @@ class SlatsFlapsDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
     this.flapsOut,
   );
 
-  private readonly targetVisible = MappedSubject.create(
-    ([slatsOut, flapsOut, configClean]) => (slatsOut || flapsOut || !configClean ? 'visible' : 'hidden'),
-    this.slatsOut,
-    this.flapsOut,
-    this.configClean,
-  );
+  private readonly targetVisible = this.slatsFlapsVisible.map((v) => (v ? 'visible' : 'hidden'));
 
   private readonly slatExtensionVisible = MappedSubject.create(
-    ([slatsOut, flapsOut, configClean, flapsDataValid]) =>
-      (slatsOut || flapsOut || !configClean) && flapsDataValid ? 'visible' : 'hidden',
-    this.slatsOut,
-    this.flapsOut,
-    this.configClean,
+    ([visible, slatsDataValid]) => (visible && slatsDataValid ? 'visible' : 'hidden'),
+    this.slatsFlapsVisible,
     this.slatsDataValid,
   );
 
   private readonly flapExtensionVisible = MappedSubject.create(
-    ([slatsOut, flapsOut, configClean, slatsDataValid]) =>
-      (slatsOut || flapsOut || !configClean) && slatsDataValid ? 'visible' : 'hidden',
-    this.slatsOut,
-    this.flapsOut,
-    this.configClean,
+    ([visible, flapsDataValid]) => (visible && flapsDataValid ? 'visible' : 'hidden'),
+    this.slatsFlapsVisible,
     this.flapsDataValid,
   );
 
