@@ -573,7 +573,12 @@ class SpeedIndicator extends DisplayComponent<{ bus: EventBus }> {
     this.groundSpeedRegister.sub((data) => {
       const element = this.groundSpeedRef.instance;
 
-      element.textContent = data.isNormalOperation() ? Math.round(data.value).toString() : '';
+      // NCD (no computed data) is shown dashed, other invalid words stay blank
+      element.textContent = data.isNormalOperation()
+        ? Math.round(data.value).toString()
+        : data.isNoComputedData()
+          ? '---'
+          : '';
     }, true);
 
     sub
@@ -584,7 +589,12 @@ class SpeedIndicator extends DisplayComponent<{ bus: EventBus }> {
     this.trueAirSpeedRegister.sub((data) => {
       const element = this.trueAirSpeedRef.instance;
 
-      element.textContent = data.isNormalOperation() ? Math.round(data.value).toString() : '';
+      // NCD (no computed data) is shown dashed, other invalid words stay blank
+      element.textContent = data.isNormalOperation()
+        ? Math.round(data.value).toString()
+        : data.isNoComputedData()
+          ? '---'
+          : '';
     }, true);
   }
 
