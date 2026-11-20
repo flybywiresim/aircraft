@@ -35,6 +35,8 @@ import { MfdFmsPageNotAvail } from './pages/FMS/MfdFmsPageNotAvail';
 
 import { InteractionMode } from '../MsfsAvionicsCommon/UiWidgets/InputField';
 import { AtcDatalinkSystem } from './ATCCOM/AtcDatalinkSystem';
+import { FmgcFlightPhase } from '@shared/flightphase';
+import { dataStatusUri } from './shared/utils';
 import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
 
 export const getDisplayIndex = () => {
@@ -226,6 +228,20 @@ export class MfdComponent
         .on(isCaptainSide ? 'kccuOnL' : 'kccuOnR')
         .whenChanged()
         .handle((it) => this.interactionMode.set(it ? InteractionMode.Kccu : InteractionMode.Touchscreen)),
+    );
+
+    this.subs.push(
+      this.props.bus
+        .getSubscriber<MfdSimvars>()
+        .on('flightPhase')
+        .whenChanged()
+        .handle((phase) => {
+          // After landing, every MFD should show the FMS STATUS page - the FMC itself only
+          // navigates its single mfdReference, which would leave the other MFD behind
+          if (phase === FmgcFlightPhase.Done) {
+            this.uiService.navigateTo(dataStatusUri);
+          }
+        }),
     );
 
     this.subs.push(
