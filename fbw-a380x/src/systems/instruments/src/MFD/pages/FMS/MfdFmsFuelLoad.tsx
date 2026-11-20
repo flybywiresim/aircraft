@@ -124,16 +124,16 @@ export class MfdFmsFuelLoad extends FmsFlightPlanPage<MfdFmsFuelLoadProps> {
    * The FUEL PLANNING button is only shown before engine start and when the loaded flight plan
    * contains a cruise flight level and both ZFW and ZFW CG have been inserted.
    */
-  private readonly fuelPlanningButtonVisible = MappedSubject.create(
-    ([_fpVersion, enginesStarted, zfw, zfwCg]) => {
+  private readonly fuelPlanningButtonVisibility = MappedSubject.create(
+    ([_fpVersion, enginesStarted, zfw, zfwCg]): 'visible' | 'hidden' => {
       const cruiseFlightLevel = this.loadedFlightPlan?.performanceData.cruiseFlightLevel.get();
-      return (
-        !enginesStarted &&
+      return !enginesStarted &&
         cruiseFlightLevel !== null &&
         cruiseFlightLevel !== undefined &&
         zfw !== null &&
         zfwCg !== null
-      );
+        ? 'visible'
+        : 'hidden';
     },
     this.currentFlightPlanVersion,
     this.props.fmcService.master.enginesWereStarted,
@@ -357,7 +357,7 @@ export class MfdFmsFuelLoad extends FmsFlightPlanPage<MfdFmsFuelLoadProps> {
       this.extraFuelWeightText,
       this.extraFuelTimeText,
       this.taxiAndRouteRsvDisabled,
-      this.fuelPlanningButtonVisible,
+      this.fuelPlanningButtonVisibility,
       this.costIndexDisabled,
       this.costIndexModeDisabled,
       this.jettisonGrossWeightVisibility,
@@ -543,7 +543,7 @@ export class MfdFmsFuelLoad extends FmsFlightPlanPage<MfdFmsFuelLoadProps> {
                   display: 'flex',
                   flex: '1',
                   'justify-content': 'center',
-                  visibility: this.fuelPlanningButtonVisible,
+                  visibility: this.fuelPlanningButtonVisibility,
                 }}
               >
                 <Button
