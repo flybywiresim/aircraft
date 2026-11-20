@@ -361,23 +361,29 @@ export class MfdFmsFpln extends FmsFlightPlanPage<MfdFmsFplnProps> {
 
       this.emptyFlightPlanRendered = false;
 
+      // Hoisted loop invariants - these were previously re-evaluated for every leg on every update
+      const mainAllLegsLength = this.loadedFlightPlan.allLegs.length;
+      const mainLegCount = this.loadedFlightPlan.legCount ?? 0;
+      const mainFirstMissedApproachLegIndex = this.loadedFlightPlan.firstMissedApproachLegIndex;
+      const altFirstMissedApproachLegIndex = this.loadedAlternateFlightPlan?.firstMissedApproachLegIndex ?? 0;
+      const altFirstMissedApproachLegIndexOrInf =
+        this.loadedAlternateFlightPlan?.firstMissedApproachLegIndex ?? Infinity;
+      const altLegCount =
+        this.props.flightPlanInterface.get(this.loadedFlightPlanIndex.get()).alternateFlightPlan.legCount ?? 0;
+      const lastEnrouteLegIndex = this.loadedFlightPlan.lastEnrouteLegIndex;
+      const transAlt = this.loadedFlightPlan.performanceData.transitionAltitude.get();
+      const transLevel = this.loadedFlightPlan.performanceData.transitionLevel.get();
+      const transLevelAsAlt = transLevel !== null && transLevel !== undefined ? transLevel * 100 : null;
+
       jointFlightPlan.forEach((el, index) => {
         const newEl: DerivedFplnLegData = { distanceFromLastWpt: null, trackFromLastWpt: null };
 
-        if (
-          index === this.loadedFlightPlan?.allLegs.length ||
-          index === this.loadedFlightPlan?.firstMissedApproachLegIndex
-        ) {
+        if (index === mainAllLegsLength || index === mainFirstMissedApproachLegIndex) {
           // Reset distance accumulation for ALTN flight plan and for missed apch
           lastDistanceFromStart = 0;
         }
 
-        if (
-          el instanceof FlightPlanLeg &&
-          index <
-            (this.loadedFlightPlan?.legCount ?? 0) +
-              (this.props.flightPlanInterface.get(this.loadedFlightPlanIndex.get()).alternateFlightPlan.legCount ?? 0)
-        ) {
+        if (el instanceof FlightPlanLeg && index < mainLegCount + altLegCount) {
           if (index === 0 || el.calculated === undefined) {
             newEl.distanceFromLastWpt = null;
             newEl.trackFromLastWpt = null;
@@ -417,7 +423,7 @@ export class MfdFmsFpln extends FmsFlightPlanPage<MfdFmsFplnProps> {
 
       for (let i = 0; i < jointFlightPlan.length; i++) {
         const leg = jointFlightPlan[i];
-        const isAltn = i >= (this.loadedFlightPlan.allLegs.length ?? 0);
+        const isAltn = i >= mainAllLegsLength;
         let reduceDistanceBy = 0;
         const pred = isActive
           ? this.props.fmcService?.master?.guidanceController?.vnavDriver?.mcduProfile?.waypointPredictions?.get(i)
@@ -432,8 +438,8 @@ export class MfdFmsFpln extends FmsFlightPlanPage<MfdFmsFplnProps> {
             isPseudoWaypoint: true,
             isAltnWaypoint: isAltn,
             isMissedAppchWaypoint: isAltn
-              ? i >= (this.loadedAlternateFlightPlan?.firstMissedApproachLegIndex ?? Infinity)
-              : i >= (this.loadedFlightPlan?.firstMissedApproachLegIndex ?? Infinity),
+              ? i >= altFirstMissedApproachLegIndexOrInf
+              : i >= (mainFirstMissedApproachLegIndex ?? Infinity),
             ident: pwp.mcduIdent ?? pwp.ident,
             overfly: false,
             annotation: pwp.mcduHeader ?? '',
@@ -458,17 +464,13 @@ export class MfdFmsFpln extends FmsFlightPlanPage<MfdFmsFplnProps> {
         }
 
         if (leg instanceof FlightPlanLeg) {
-          const transAlt = this.loadedFlightPlan.performanceData.transitionAltitude.get();
-          const transLevel = this.loadedFlightPlan.performanceData.transitionLevel.get();
-          const transLevelAsAlt = transLevel !== null && transLevel !== undefined ? transLevel * 100 : null;
-          const useTransLevel = i >= this.loadedFlightPlan.lastEnrouteLegIndex;
-          const firstMissedApproachLegIndex = this.loadedAlternateFlightPlan?.firstMissedApproachLegIndex ?? 0;
+          const useTransLevel = i >= lastEnrouteLegIndex;
           const isMissedApproachWaypoint = isAltn
-            ? i >= firstMissedApproachLegIndex
-            : i >= this.loadedFlightPlan.firstMissedApproachLegIndex;
+            ? i >= altFirstMissedApproachLegIndex
+            : i >= mainFirstMissedApproachLegIndex;
           const isHM = leg.type === LegType.HM;
           if (isHM) {
-            const loadedFpIndex = this.loadedFlightPlanIndex.get();
+            const loadedFpIndex = fpIndex;
             const holdData: FplnLineHoldDisplayData = {
               type: FplnLineType.HoldHm,
               originalLegIndex: i,
@@ -501,7 +503,7 @@ export class MfdFmsFpln extends FmsFlightPlanPage<MfdFmsFplnProps> {
 
           const data: FplnLineWaypointDisplayData = {
             type: FplnLineType.Waypoint,
-            originalLegIndex: isAltn ? i - this.loadedFlightPlan.legCount : i,
+            originalLegIndex: isAltn ? i - mainLegCount : i,
             isPseudoWaypoint: false,
             isAltnWaypoint: isAltn,
             isActiveHoldFix: isHM && i === this.loadedFlightPlan.activeLegIndex,
@@ -541,14 +543,14 @@ export class MfdFmsFpln extends FmsFlightPlanPage<MfdFmsFplnProps> {
         } else {
           const data: FplnLineSpecialDisplayData = {
             type: FplnLineType.Special,
-            originalLegIndex: isAltn ? i - this.loadedFlightPlan.legCount : i,
+            originalLegIndex: isAltn ? i - mainLegCount : i,
             label: this.discontinuityLabel,
           };
           this.lineData.push(data);
         }
 
         // Identify end of F-PLN
-        if (i === this.loadedFlightPlan.allLegs.length - 1) {
+        if (i === mainAllLegsLength - 1) {
           this.lineData.push(this.endOfFlightPlan);
 
           if (this.loadedAlternateFlightPlan?.allLegs.length === 0) {
