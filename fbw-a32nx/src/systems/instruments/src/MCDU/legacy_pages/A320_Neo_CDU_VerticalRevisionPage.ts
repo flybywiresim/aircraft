@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { FmgcFlightPhase } from '@shared/flightphase';
+import { MAXIMUM_CERTIFIED_ALTITUDE } from '@shared/A32NXPerformanceConstants';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { CDUFlightPlanPage } from './A320_Neo_CDU_FlightPlanPage';
 import { CDUStepAltsPage } from './A320_Neo_CDU_StepAltsPage';
@@ -287,7 +288,7 @@ export class CDUVerticalRevisionPage {
       const speed = parseInt(matchResult[1]);
       let alt = matchResult[5] !== undefined ? parseInt(matchResult[5]) * 100 : parseInt(matchResult[6]);
 
-      if (speed < 90 || speed > 350 || alt > 45000) {
+      if (speed < 90 || speed > 350 || alt > MAXIMUM_CERTIFIED_ALTITUDE - 100) {
         mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
         scratchpadCallback();
         return;
@@ -442,7 +443,7 @@ export class CDUVerticalRevisionPage {
               ? AltitudeDescriptor.AtOrBelowAlt1
               : AltitudeDescriptor.AtOrAboveAlt1;
 
-        if (altitude > 45000) {
+        if (altitude > MAXIMUM_CERTIFIED_ALTITUDE - 100) {
           mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
           scratchpadCallback();
           return;
@@ -804,7 +805,10 @@ export class CDUVerticalRevisionPage {
       alt = parseInt(matchResult[9]);
     }
 
-    if ((speed !== undefined && (speed < 90 || speed > 350)) || (alt !== undefined && alt > 45000)) {
+    if (
+      (speed !== undefined && (speed < 90 || speed > 350)) ||
+      (alt !== undefined && alt > MAXIMUM_CERTIFIED_ALTITUDE - 100)
+    ) {
       mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
       scratchpadCallback();
       return;
