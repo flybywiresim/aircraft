@@ -53,7 +53,16 @@ export class FlowEventSync {
     if (args.length === 0 || args[0] !== FlowEventSync.EB_LISTENER_KEY) {
       return;
     }
-    const syncDataPackage = JSON.parse(args[1]);
+    let syncDataPackage;
+    try {
+      syncDataPackage = JSON.parse(args[1]);
+    } catch (e) {
+      console.error('FlowEventSync: failed to parse received sync data package', e);
+      return;
+    }
+    if (!syncDataPackage || !Array.isArray(syncDataPackage.data)) {
+      return;
+    }
     syncDataPackage.data.forEach((data) => {
       if (data.topic === this.topic) {
         try {
