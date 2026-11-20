@@ -135,17 +135,38 @@ export class WaypointEntryUtils {
    * @returns coordinates
    */
   static parseLatLon(place: string): Coordinates {
-    const latlon = place.match(/^([NS])?([0-9]{2,4}\.[0-9])([NS])?\/([EW])?([0-9]{2,5}\.[0-9])([EW])?$/);
+    // Accepts DDMM.M/DDDMM.M (with minutes) as well as degrees-only (e.g. N12/W120) per DSC-22-FMS-20-100
+    const latlon = place.match(/^([NS])?([0-9]{2,4})(\.[0-9])?([NS])?\/([EW])?([0-9]{2,5})(\.[0-9])?([EW])?$/);
 
     if (latlon !== null) {
-      const latB = (latlon[1] || '') + (latlon[3] || '');
-      const lonB = (latlon[4] || '') + (latlon[6] || '');
-      const latDigits = latlon[2].length === 4 ? 3 : 4;
-      const latD = parseInt(latlon[2].substring(0, latlon[2].length - latDigits));
-      const latM = parseFloat(latlon[2].substring(latlon[2].length - latDigits));
-      const lonDigits = latlon[5].length === 4 ? 3 : 4;
-      const lonD = parseInt(latlon[5].substring(0, latlon[5].length - lonDigits));
-      const lonM = parseFloat(latlon[5].substring(latlon[5].length - lonDigits));
+      const latB = (latlon[1] || '') + (latlon[4] || '');
+      const lonB = (latlon[5] || '') + (latlon[8] || '');
+
+      let latD: number;
+      let latM: number;
+      if (latlon[3] !== undefined) {
+        const latStr = latlon[2] + latlon[3];
+        const latDigits = latStr.length === 4 ? 3 : 4;
+        latD = parseInt(latStr.substring(0, latStr.length - latDigits));
+        latM = parseFloat(latStr.substring(latStr.length - latDigits));
+      } else {
+        // degrees only, e.g. N12
+        latD = parseInt(latlon[2]);
+        latM = 0;
+      }
+
+      let lonD: number;
+      let lonM: number;
+      if (latlon[7] !== undefined) {
+        const lonStr = latlon[6] + latlon[7];
+        const lonDigits = lonStr.length === 4 ? 3 : 4;
+        lonD = parseInt(lonStr.substring(0, lonStr.length - lonDigits));
+        lonM = parseFloat(lonStr.substring(lonStr.length - lonDigits));
+      } else {
+        // degrees only, e.g. W120
+        lonD = parseInt(latlon[6]);
+        lonM = 0;
+      }
 
       if (latB.length !== 1 || lonB.length !== 1 || !Number.isFinite(latM) || !Number.isFinite(lonM)) {
         throw new FmsError(FmsErrorType.FormatError);
@@ -253,7 +274,7 @@ export class WaypointEntryUtils {
    * @returns true if valid lat/lon format
    */
   static isLatLonFormat(str: string) {
-    return str.match(/^([NS])?([0-9]{2,4}\.[0-9])([NS])?\/([EW])?([0-9]{2,5}\.[0-9])([EW])?$/) !== null;
+    return str.match(/^([NS])?([0-9]{2,4})(\.[0-9])?([NS])?\/([EW])?([0-9]{2,5})(\.[0-9])?([EW])?$/) !== null;
   }
 
   /**
