@@ -21,6 +21,7 @@ import {
   WaypointConstraintType,
   InternalFmsSymbol,
   NdSymbol,
+  NdSymbolConstraint,
   VdSymbol,
   FmsData,
   NdPwpSymbolTypeFlags,
@@ -818,7 +819,7 @@ export class EfisSymbols<T extends number> {
       }
 
       let type = NdSymbolTypeFlags.FlightPlan;
-      const constraints = [];
+      const constraints: NdSymbolConstraint[] = [];
       let direction;
 
       const isCourseReversal =
@@ -873,6 +874,10 @@ export class EfisSymbols<T extends number> {
       }
 
       if ((efisOption & EfisOption.Constraints) > 0 && !isBeforeActiveLeg) {
+        const wpPrediction = waypointPredictions?.get(i);
+        const altConstraintMissed = wpPrediction ? !wpPrediction.isAltitudeConstraintMet : undefined;
+        const speedConstraintMissed = wpPrediction ? !wpPrediction.isSpeedConstraintMet : undefined;
+
         if (!leg.isXA()) {
           const descent = leg.constraintType === WaypointConstraintType.DES;
           switch (altConstraint?.altitudeDescriptor) {
@@ -880,31 +885,49 @@ export class EfisSymbols<T extends number> {
             case AltitudeDescriptor.AtAlt1GsIntcptAlt2:
             case AltitudeDescriptor.AtAlt1AngleAlt2:
               if (altConstraint.altitude1 !== undefined) {
-                constraints.push(formatConstraintAlt(altConstraint.altitude1, descent));
+                constraints.push({
+                  text: formatConstraintAlt(altConstraint.altitude1, descent),
+                  missed: altConstraintMissed,
+                });
               }
               break;
             case AltitudeDescriptor.AtOrAboveAlt1:
             case AltitudeDescriptor.AtOrAboveAlt1GsIntcptAlt2:
             case AltitudeDescriptor.AtOrAboveAlt1AngleAlt2:
               if (altConstraint.altitude1 !== undefined) {
-                constraints.push(formatConstraintAlt(altConstraint.altitude1, descent, '+'));
+                constraints.push({
+                  text: formatConstraintAlt(altConstraint.altitude1, descent, '+'),
+                  missed: altConstraintMissed,
+                });
               }
               break;
             case AltitudeDescriptor.AtOrBelowAlt1:
             case AltitudeDescriptor.AtOrBelowAlt1AngleAlt2:
               if (altConstraint.altitude1 !== undefined) {
-                constraints.push(formatConstraintAlt(altConstraint.altitude1, descent, '-'));
+                constraints.push({
+                  text: formatConstraintAlt(altConstraint.altitude1, descent, '-'),
+                  missed: altConstraintMissed,
+                });
               }
               break;
             case AltitudeDescriptor.BetweenAlt1Alt2:
               if (altConstraint.altitude1 !== undefined && altConstraint.altitude2 !== undefined) {
-                constraints.push(formatConstraintAlt(altConstraint.altitude1, descent, '-'));
-                constraints.push(formatConstraintAlt(altConstraint.altitude2, descent, '+'));
+                constraints.push({
+                  text: formatConstraintAlt(altConstraint.altitude1, descent, '-'),
+                  missed: altConstraintMissed,
+                });
+                constraints.push({
+                  text: formatConstraintAlt(altConstraint.altitude2, descent, '+'),
+                  missed: altConstraintMissed,
+                });
               }
               break;
             case AltitudeDescriptor.AtOrAboveAlt2:
               if (altConstraint.altitude2 !== undefined) {
-                constraints.push(formatConstraintAlt(altConstraint.altitude2, descent, '+'));
+                constraints.push({
+                  text: formatConstraintAlt(altConstraint.altitude2, descent, '+'),
+                  missed: altConstraintMissed,
+                });
               }
               break;
             default:
@@ -916,13 +939,13 @@ export class EfisSymbols<T extends number> {
         const speedConstraint = leg.speedConstraint;
 
         if (speedConstraint?.speed !== undefined) {
-          constraints.push(formatConstraintSpeed(speedConstraint.speed));
+          constraints.push({ text: formatConstraintSpeed(speedConstraint.speed), missed: speedConstraintMissed });
         }
       }
 
       if (VnavConfig.DEBUG_GUIDANCE && leg.calculated) {
-        constraints.push(`${Math.round(leg.calculated.cumulativeDistanceWithTransitions)}NM`);
-        constraints.push(`${Math.round(leg.calculated.cumulativeDistanceToEndWithTransitions)}NM`);
+        constraints.push({ text: `${Math.round(leg.calculated.cumulativeDistanceWithTransitions)}NM` });
+        constraints.push({ text: `${Math.round(leg.calculated.cumulativeDistanceToEndWithTransitions)}NM` });
       }
 
       const distanceFromAirplane =

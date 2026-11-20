@@ -104,7 +104,10 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
     for (let i = 0; i < symbol.constraints.length; i++) {
       const line = symbol.constraints[i];
 
-      PaintUtils.paintText(true, context, x + 15, y + 35 + 18 * i, line, '#ff94ff');
+      // Missed constraints are shown in amber, like the constraint circle
+      const color = line.missed ? '#e68000' : '#ff94ff';
+
+      PaintUtils.paintText(true, context, x + 15, y + 35 + 18 * i, line.text, color);
     }
   }
 
