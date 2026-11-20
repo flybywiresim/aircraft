@@ -28,7 +28,6 @@ export const RealismPage = () => {
   const [adirsAlignTime, setAdirsAlignTime] = usePersistentProperty('CONFIG_ALIGN_TIME', 'REAL');
   const [, setAdirsAlignTimeSimVar] = useSimVar('L:A32NX_CONFIG_ADIRS_IR_ALIGN_TIME', 'Enum', Number.MAX_SAFE_INTEGER);
   const [dmcSelfTestTime, setDmcSelfTestTime] = usePersistentProperty('CONFIG_SELF_TEST_TIME', '12');
-  const [boardingRate, setBoardingRate] = usePersistentProperty('CONFIG_BOARDING_RATE', 'REAL');
   const [mcduInput, setMcduInput] = usePersistentBooleanProperty('MCDU_KB_INPUT', false);
   const [mcduTimeout, setMcduTimeout] = usePersistentProperty('CONFIG_MCDU_KB_TIMEOUT', '60');
   const [pauseAtTod, setPauseAtTod] = usePersistentBooleanProperty('PAUSE_AT_TOD', false);
@@ -54,12 +53,6 @@ export const RealismPage = () => {
     { name: t('Settings.Instant'), setting: '0' },
     { name: t('Settings.Fast'), setting: '5' },
     { name: t('Settings.Real'), setting: '12' },
-  ];
-
-  const boardingRateButtons: ButtonType[] = [
-    { name: t('Settings.Instant'), setting: 'INSTANT' },
-    { name: t('Settings.Fast'), setting: 'FAST' },
-    { name: t('Settings.Real'), setting: 'REAL' },
   ];
 
   return (
@@ -88,20 +81,6 @@ export const RealismPage = () => {
               key={button.name}
               onSelect={() => setDmcSelfTestTime(button.setting)}
               selected={dmcSelfTestTime === button.setting}
-            >
-              {button.name}
-            </SelectItem>
-          ))}
-        </SelectGroup>
-      </SettingItem>
-
-      <SettingItem name={t('Settings.Realism.BoardingTime')}>
-        <SelectGroup>
-          {boardingRateButtons.map((button) => (
-            <SelectItem
-              key={button.name}
-              onSelect={() => setBoardingRate(button.setting)}
-              selected={boardingRate === button.setting}
             >
               {button.name}
             </SelectItem>
