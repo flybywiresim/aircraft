@@ -21,6 +21,7 @@ import {
 
 import { PFDSimvars } from './PFDSimvarPublisher';
 import { FcuEfisCpBusEvents } from '@shared/publishers/EfisCpBusPublisher';
+import { DmcLogicEvents } from '../../MsfsAvionicsCommon/providers/DmcPublisher';
 
 export interface Arinc429Values {
   pitchAr: Arinc429Word;
@@ -136,14 +137,22 @@ export class ArincValueProvider implements Instrument {
       this.roll = new Arinc429Word(p);
       publisher.pub('rollAr', this.roll);
     });
-    subscriber.on('groundTrack').handle((gt) => {
-      this.groundTrack = new Arinc429Word(gt);
-      publisher.pub('groundTrackAr', this.groundTrack);
-    });
-    subscriber.on('heading').handle((h) => {
-      this.heading = new Arinc429Word(h);
-      publisher.pub('headingAr', this.heading);
-    });
+    // Use the DMC track word, which switches to true track when the TRUE ref is active
+    this.bus
+      .getSubscriber<DmcLogicEvents>()
+      .on('track')
+      .handle((t) => {
+        this.groundTrack = new Arinc429Word(Arinc429Word.getRawWord(t.value, t.ssm));
+        publisher.pub('groundTrackAr', this.groundTrack);
+      });
+    // Use the DMC heading word, which switches to true heading when the TRUE ref is active
+    this.bus
+      .getSubscriber<DmcLogicEvents>()
+      .on('heading')
+      .handle((h) => {
+        this.heading = new Arinc429Word(Arinc429Word.getRawWord(h.value, h.ssm));
+        publisher.pub('headingAr', this.heading);
+      });
 
     subscriber.on('speed').handle((s) => {
       this.speed = new Arinc429Word(s);
