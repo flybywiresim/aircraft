@@ -511,7 +511,7 @@ export class ProcedureLinesGenerator {
           style: clStyle,
           firstLine: (!this.procedureIsActive.get() && isAbnormal) || this.type === ProcedureType.FwsFailedFallback,
           lastLine: (!this.procedureIsActive.get() && isAbnormal) || this.type === ProcedureType.FwsFailedFallback,
-          originalItemIndex: !isCondition || (isCondition && item.sensed) ? itemIndex : undefined, // FIXME It should be possible to scroll to non sensed conditions
+          originalItemIndex: itemIndex,
           inactive: inactive,
           specialLine: clStyle === ChecklistLineStyle.Empty ? WdSpecialLine.Empty : undefined,
         });
