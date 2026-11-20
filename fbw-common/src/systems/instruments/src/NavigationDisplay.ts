@@ -95,6 +95,12 @@ export enum EfisRecomputingReason {
   ModeAndRangeChange,
 }
 
+export interface NdSymbolConstraint {
+  text: string;
+  /** True when the prediction says this constraint will be missed (shown amber on the ND) */
+  missed?: boolean;
+}
+
 export interface InternalFmsSymbol {
   databaseId: string;
   ident: string;
@@ -104,7 +110,7 @@ export interface InternalFmsSymbol {
   length?: number; // nautical miles
   type: NdSymbolTypeFlags;
   typePwp?: NdPwpSymbolTypeFlags; // only for PWP
-  constraints?: string[];
+  constraints?: NdSymbolConstraint[];
   altConstraint?: AltitudeConstraint;
   isAltitudeConstraintMet?: boolean;
   radials?: number[];
