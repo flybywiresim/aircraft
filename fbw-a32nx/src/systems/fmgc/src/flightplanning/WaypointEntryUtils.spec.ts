@@ -27,6 +27,21 @@ describe('WaypointEntryUtils', () => {
     expect(waypoint).not.toBeFalsy();
   });
 
+  it('can parse a degrees-only lat/long waypoint', async () => {
+    const waypoint = await WaypointEntryUtils.getOrCreateWaypoint(testFms, 'N12/W120', false);
+
+    expect(waypoint).not.toBeFalsy();
+  });
+
+  it('parses degrees-only lat/lon as whole degrees', () => {
+    expect(WaypointEntryUtils.parseLatLon('N12/W120')).toEqual({ lat: 12, long: -120 });
+    expect(WaypointEntryUtils.parseLatLon('S045/E005')).toEqual({ lat: -45, long: 5 });
+  });
+
+  it('still parses DDMM.M lat/lon with minutes', () => {
+    expect(WaypointEntryUtils.parseLatLon('3800.0N/02000.0W')).toEqual({ lat: 38, long: -20 });
+  });
+
   it('can parse a PBD waypoint', async () => {
     const waypoint = await WaypointEntryUtils.getOrCreateWaypoint(testFms, 'NOSUS/360/10', false);
 
