@@ -1,4 +1,4 @@
-﻿@import "../../../MsfsAvionicsCommon/definitions";
+@import "../../../MsfsAvionicsCommon/definitions";
 
 .mfd-msg-list-element-container {
   margin: 75px;
@@ -9,5 +9,8 @@
   font-size: 26px;
   height: 80px;
   padding: 5px;
-  border-bottom: 2px solid white;
+  // fit each message line's box to its text instead of spanning the full width
+  width: fit-content;
+  // thin black separator between message lines
+  border-bottom: 2px solid $display-background;
 }
