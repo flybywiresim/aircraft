@@ -103,7 +103,7 @@ import { FlightPlan } from '@fmgc/flightplanning/plans/FlightPlan';
 import { A32NXFcuBusEvents } from '@shared/publishers/A32NXFcuBusPublisher';
 import { A32NXFgBusEvents } from '@shared/publishers/A32NXFGBusPublisher';
 import { formatWindRequest } from '@fmgc/flightplanning/uplink/WindUplinkUtilts';
-import { MAXIMUM_CERTIFIED_FLIGHT_LEVEL } from '@shared/A32NXPerformanceConstants';
+import { MAXIMUM_CERTIFIED_ALTITUDE, MAXIMUM_CERTIFIED_FLIGHT_LEVEL } from '@shared/A32NXPerformanceConstants';
 export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInterface, Fmgc {
   private static DEBUG_INSTANCE: FMCMainDisplay;
 
@@ -166,7 +166,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
   );
 
   /** Declaration of every variable used (NOT initialization) */
-  private readonly maximumAllowedCruiseFlightLevel = 390;
+  private readonly maximumAllowedCruiseFlightLevel = MAXIMUM_CERTIFIED_FLIGHT_LEVEL;
   public coRoute = { routeNumber: undefined, routes: undefined };
 
   private readonly fuelComputationsCache: Map<FlightPlanIndex, FuelPredComputations> = new Map();
@@ -2845,8 +2845,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     const newAccAlt = accAlt !== null ? accAlt : plan.performanceData.accelerationAltitude.get();
 
     if (
-      (thrRed !== null && (thrRed < minimumAltitude || thrRed > 45000)) ||
-      (accAlt !== null && (accAlt < minimumAltitude || accAlt > 45000)) ||
+      (thrRed !== null && (thrRed < minimumAltitude || thrRed > MAXIMUM_CERTIFIED_ALTITUDE)) ||
+      (accAlt !== null && (accAlt < minimumAltitude || accAlt > MAXIMUM_CERTIFIED_ALTITUDE)) ||
       (newThrRed !== null && newAccAlt !== null && newThrRed > newAccAlt)
     ) {
       this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
@@ -2899,7 +2899,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     const elevation = origin.location.alt !== undefined ? origin.location.alt : 0;
     const minimumAltitude = elevation + 400;
 
-    if (accAlt < minimumAltitude || accAlt > 45000) {
+    if (accAlt < minimumAltitude || accAlt > MAXIMUM_CERTIFIED_ALTITUDE) {
       this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
       return false;
     }
@@ -2954,8 +2954,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     const newAccAlt = accAlt !== null ? accAlt : plan.performanceData.missedAccelerationAltitude.get();
 
     if (
-      (thrRed !== null && (thrRed < minimumAltitude || thrRed > 45000)) ||
-      (accAlt !== null && (accAlt < minimumAltitude || accAlt > 45000)) ||
+      (thrRed !== null && (thrRed < minimumAltitude || thrRed > MAXIMUM_CERTIFIED_ALTITUDE)) ||
+      (accAlt !== null && (accAlt < minimumAltitude || accAlt > MAXIMUM_CERTIFIED_ALTITUDE)) ||
       (newThrRed !== null && newAccAlt !== null && newThrRed > newAccAlt)
     ) {
       this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
@@ -3008,7 +3008,7 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     const elevation = destination.location.alt !== undefined ? destination.location.alt : 0;
     const minimumAltitude = elevation + 400;
 
-    if (accAlt < minimumAltitude || accAlt > 45000) {
+    if (accAlt < minimumAltitude || accAlt > MAXIMUM_CERTIFIED_ALTITUDE) {
       this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
       return false;
     }
