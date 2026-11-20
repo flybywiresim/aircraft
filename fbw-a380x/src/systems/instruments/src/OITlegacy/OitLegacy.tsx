@@ -26,7 +26,7 @@ import {
 import { EventBus, Subscription } from '@microsoft/msfs-sdk';
 import { Provider } from 'react-redux';
 import { ErrorBoundary } from 'react-error-boundary';
-import { MemoryRouter as Router } from 'react-router';
+import { MemoryRouter as Router, useHistory } from 'react-router';
 import {
   FmsData,
   NavigraphAuthProvider,
@@ -179,6 +179,18 @@ export const OitEfbPageWrapper: React.FC<OitEfbWrapperProps> = () => {
 
   const showEfbOverlay = (showCharts === 1 && !reloadAircraft) || showOfp === 1;
   document.getElementsByTagName('a380x-oitlegacy')[0].classList.toggle('nopointer', !showEfbOverlay);
+
+  const history = useHistory();
+
+  // The overlay pages are routed components (e.g. /dispatch/ofp), but this MemoryRouter starts at '/', which
+  // matches no tab route and leaves the overlay blank. Navigate to the first tab when an overlay activates.
+  useEffect(() => {
+    if (showOfp === 1) {
+      history.replace('/dispatch/ofp');
+    } else if (showCharts === 1 && !reloadAircraft) {
+      history.replace('/navigation/lido');
+    }
+  }, [showOfp, showCharts, reloadAircraft]);
 
   useEffect(() => {
     const cancelSub = NXDataStore.getAndSubscribeLegacy('NAVIGRAPH_ACCESS_TOKEN', (_, token) => {
