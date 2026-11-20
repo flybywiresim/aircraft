@@ -256,39 +256,45 @@ export class MfdFmsFplnArr extends FmsFlightPlanPage<MfdFmsFplnArrProps> {
           },
         ];
 
-        flightPlan.availableArrivals.forEach((el) => {
-          const arr: ButtonMenuItem = {
-            label: el.ident,
-            action: async () => {
-              await this.props.flightPlanInterface.setArrival(el.databaseId, this.loadedFlightPlanIndex.get(), isAltn);
-              await this.props.flightPlanInterface.setArrivalEnrouteTransition(
-                undefined,
-                this.loadedFlightPlanIndex.get(),
-                isAltn,
-              );
-            },
-          };
+        [...flightPlan.availableArrivals]
+          .sort((a, b) => a.ident.localeCompare(b.ident))
+          .forEach((el) => {
+            const arr: ButtonMenuItem = {
+              label: el.ident,
+              action: async () => {
+                await this.props.flightPlanInterface.setArrival(
+                  el.databaseId,
+                  this.loadedFlightPlanIndex.get(),
+                  isAltn,
+                );
+                await this.props.flightPlanInterface.setArrivalEnrouteTransition(
+                  undefined,
+                  this.loadedFlightPlanIndex.get(),
+                  isAltn,
+                );
+              },
+            };
 
-          if (el.runwayTransitions.length > 0) {
-            let apprIsMatching = false;
-            el.runwayTransitions.forEach((it) => {
-              if (
-                it.ident === flightPlan.approach?.runwayIdent ||
-                (it.ident.charAt(4) === 'B' &&
-                  it.ident.substring(0, 4) === flightPlan.approach?.runwayIdent?.substring(0, 4))
-              ) {
-                apprIsMatching = true;
+            if (el.runwayTransitions.length > 0) {
+              let apprIsMatching = false;
+              el.runwayTransitions.forEach((it) => {
+                if (
+                  it.ident === flightPlan.approach?.runwayIdent ||
+                  (it.ident.charAt(4) === 'B' &&
+                    it.ident.substring(0, 4) === flightPlan.approach?.runwayIdent?.substring(0, 4))
+                ) {
+                  apprIsMatching = true;
+                }
+              });
+
+              if (apprIsMatching) {
+                arrivals.push(arr);
               }
-            });
-
-            if (apprIsMatching) {
+            } else {
+              // No runway transitions, push all
               arrivals.push(arr);
             }
-          } else {
-            // No runway transitions, push all
-            arrivals.push(arr);
-          }
-        });
+          });
         this.starOptions.set(arrivals);
         this.starDisabled.set(false);
       } else {
