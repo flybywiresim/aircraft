@@ -1640,7 +1640,13 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
 
       // Format time to leg
       // TODO: Time constraint.
-      if (this.props.globalLineColor.get() === FplnLineColor.Active) {
+      // Alternate and missed approach legs have no valid ETA prediction, so they must show dashes
+      // instead of a time (which would otherwise fall back to the current time).
+      if (
+        this.props.globalLineColor.get() === FplnLineColor.Active &&
+        !data.isAltnWaypoint &&
+        !data.isMissedAppchWaypoint
+      ) {
         if (data.etaOrSecondsFromPresent) {
           const date = new Date(data.etaOrSecondsFromPresent);
           this.timeText.set(
