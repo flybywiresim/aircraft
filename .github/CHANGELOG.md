@@ -120,6 +120,7 @@ Always start an item with "1."; GitHub will number the rendered list automatical
 1. [EFB] Fixed local PDFs not displaying in EFB - @saschl
 1. [A380X/FLIGHT MODEL] Flight model fixes - @donstim (donbikes)
 1. [A32NX/FMS] Fix Vs1g for CONF 1+F and fix Vls for CONF 3 CG=>25%
+1. [A380X/MFD] Fit each message line's background to its text and separate lines with a thin black line on the message list page - @luftSvensken
 
 ## 2024.1.0
 
