@@ -736,7 +736,8 @@ class A3Cell extends DisplayComponent<A3CellProps> {
   }
 
   private readonly shouldFlash = this.props.A3Message.map(
-    (A3Message) => A3Message !== A3Messages.BRK_RTO && A3Message !== A3Messages.LVR_ASYM,
+    (A3Message) =>
+      A3Message !== A3Messages.BRK_RTO && A3Message !== A3Messages.LVR_ASYM && A3Message !== A3Messages.NONE,
   );
 
   onAfterRender(node: VNode): void {
