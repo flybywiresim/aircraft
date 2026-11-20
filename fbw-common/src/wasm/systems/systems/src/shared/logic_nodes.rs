@@ -153,6 +153,10 @@ impl PulseNode {
         self.last_hi = Some(hi);
         self.output
     }
+
+    pub fn output(&self) -> bool {
+        self.output
+    }
 }
 
 /// A flip-flop or memory circuit that can be used to store a single bit. It has two inputs: Set and
@@ -223,6 +227,10 @@ where
         } else if value >= self.upper {
             self.output = true;
         }
+        self.output
+    }
+
+    pub fn get_output(&self) -> bool {
         self.output
     }
 }

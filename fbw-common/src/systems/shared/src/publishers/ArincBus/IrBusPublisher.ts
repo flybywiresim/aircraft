@@ -58,29 +58,29 @@ interface IrBusBaseEvents {
    * Indicates state of the IR. Raw ARINC Word.
    * Bit(s)   | Meaning
    * -------- | --------------------------
-   *        0 | ALIGNMENT_NOT_READY
-   *        1 | REV_ATT_MODE
-   *        2 | NAV_MODE
-   *        3 | VALID_SET_HEADING
-   *        4 | ATTITUDE_INVALID
-   *        5 | DC_FAIL
-   *        6 | ON_DC
-   *        7 | ADR_FAULT
-   *        8 | IR_FAULT
-   *        9 | DC_FAIL_ON_DC
-   *       10 | ALIGN_FAULT
-   *       11 | NO_IRS_INITIAL
-   *       12 | EXCESS_MOTION_ERROR
-   *       13 | ADR_IR_FAULT
-   *       14 | EXTREME_LATITUDE
-   * 15,16,17 | ALIGN_7_10_MINUTES
-   *    16,17 | ALIGN_6_MINUTES
-   *    15,17 | ALIGN_5_MINUTES
-   *       17 | ALIGN_4_MINUTES
-   *    15,16 | ALIGN_3_MINUTES
-   *       16 | ALIGN_2_MINUTES
-   *       15 | ALIGN_1_MINUTES
-   *       18 | COMPUTED_LATITUDE_MISCOMPARE
+   *       11 | ALIGNMENT_NOT_READY
+   *       12 | REV_ATT_MODE
+   *       13 | NAV_MODE
+   *       14 | VALID_SET_HEADING
+   *       15 | ATTITUDE_INVALID
+   *       16 | DC_FAIL
+   *       17 | ON_DC
+   *       18 | ADR_FAULT
+   *       19 | IR_FAULT
+   *       20 | DC_FAIL_ON_DC
+   *       21 | ALIGN_FAULT
+   *       22 | NO_IRS_INITIAL
+   *       23 | EXCESS_MOTION_ERROR
+   *       24 | ADR_IR_FAULT
+   *       25 | EXTREME_LATITUDE
+   * 26,27,28 | ALIGN_7_10_MINUTES
+   *    27,28 | ALIGN_6_MINUTES
+   *    26,28 | ALIGN_5_MINUTES
+   *       28 | ALIGN_4_MINUTES
+   *    26,27 | ALIGN_3_MINUTES
+   *       27 | ALIGN_2_MINUTES
+   *       26 | ALIGN_1_MINUTES
+   *       29 | COMPUTED_LATITUDE_MISCOMPARE
    */
   ir_maint_word: number;
 }

@@ -210,25 +210,25 @@ export class MfdFmsPositionIrs extends FmsPage<MfdFmsPositionIrsProps> {
   }
 
   private alignDurationLeft(v: Arinc429Register): string {
-    if (v.bitValue(16) && v.bitValue(17) && v.bitValue(18)) {
+    if (v.bitValue(26) && v.bitValue(27) && v.bitValue(28)) {
       return 'AVAIL IN \u003e 7 MIN';
     }
-    if (v.bitValue(17) && v.bitValue(18)) {
+    if (v.bitValue(27) && v.bitValue(28)) {
       return 'AVAIL IN 6 MIN';
     }
-    if (v.bitValue(16) && v.bitValue(18)) {
+    if (v.bitValue(26) && v.bitValue(28)) {
       return 'AVAIL IN 5 MIN';
     }
-    if (v.bitValue(18)) {
+    if (v.bitValue(28)) {
       return 'AVAIL IN 4 MIN';
     }
-    if (v.bitValue(16) && v.bitValue(17)) {
+    if (v.bitValue(26) && v.bitValue(27)) {
       return 'AVAIL IN 3 MIN';
     }
-    if (v.bitValue(17)) {
+    if (v.bitValue(27)) {
       return 'AVAIL IN 2 MIN';
     }
-    if (v.bitValue(16)) {
+    if (v.bitValue(26)) {
       return 'AVAIL IN 1 MIN';
     }
     return '';
@@ -244,29 +244,29 @@ export class MfdFmsPositionIrs extends FmsPage<MfdFmsPositionIrsProps> {
     const knob: number = SimVar.GetSimVarValue(`L:A32NX_OVHD_ADIRS_IR_${ir}_MODE_SELECTOR_KNOB`, 'Enum');
 
     if (knob === 1 || knob === 2) {
-      if (v.bitValue(1)) {
+      if (v.bitValue(11)) {
         first.set('ALIGN');
         second.set(this.alignDurationLeft(v));
-      } else if (v.bitValue(2)) {
+      } else if (v.bitValue(12)) {
         first.set('ATT');
-      } else if (v.bitValue(3)) {
+      } else if (v.bitValue(13)) {
         first.set('NAV');
       } else {
         first.set('INVALID');
       }
 
       // Third column
-      if (v.bitValue(4)) {
+      if (v.bitValue(14)) {
         third.set('ENTER HDG');
       }
 
-      if (v.bitValue(9) || v.bitValue(14)) {
+      if (v.bitValue(19) || v.bitValue(24)) {
         third.set('IR FAULT');
-      } else if (v.bitValue(4)) {
+      } else if (v.bitValue(14)) {
         third.set('ENTER HDG');
-      } else if (v.bitValue(13)) {
+      } else if (v.bitValue(23)) {
         third.set('EXCESS MOTION');
-      } else if (v.bitValue(8)) {
+      } else if (v.bitValue(18)) {
         third.set('SWITCH ADR');
       } else {
         third.set('');
