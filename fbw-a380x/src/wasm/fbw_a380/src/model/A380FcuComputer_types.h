@@ -220,6 +220,11 @@ struct base_prim_fctl_out_bus
   base_arinc_429 v_alpha_lim_kn;
   base_arinc_429 v_alpha_prot_kn;
   base_arinc_429 v_alpha_stall_warn_kn;
+  base_arinc_429 aileron_droop_command_deg;
+  base_arinc_429 upper_rudder_travel_lim_deg;
+  base_arinc_429 lower_rudder_travel_lim_deg;
+  base_arinc_429 speed_brake_command_deg;
+  base_arinc_429 ground_spoiler_command_deg;
 };
 
 #endif
@@ -377,17 +382,16 @@ struct base_fcu_afs_panel_outputs
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_fcu_bus_
-#define DEFINED_TYPEDEF_FOR_base_fcu_bus_
+#ifndef DEFINED_TYPEDEF_FOR_base_fcu_sim_input_
+#define DEFINED_TYPEDEF_FOR_base_fcu_sim_input_
 
-struct base_fcu_bus
+struct base_fcu_sim_input
 {
-  base_arinc_429 efis_discrete_word_1;
-  base_arinc_429 efis_discrete_word_2;
-  base_arinc_429 baro_setting_hpa;
-  base_arinc_429 baro_setting_inhg;
-  base_arinc_429 afs_discrete_word_1;
-  base_arinc_429 afs_discrete_word_2;
+  real32_T baro_setting_hpa;
+  int8_T efis_mode;
+  int8_T efis_range;
+  int8_T navaid_1_mode;
+  int8_T navaid_2_mode;
 };
 
 #endif
@@ -405,16 +409,17 @@ struct base_fcu_discrete_outputs
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_fcu_sim_input_
-#define DEFINED_TYPEDEF_FOR_base_fcu_sim_input_
+#ifndef DEFINED_TYPEDEF_FOR_base_fcu_bus_
+#define DEFINED_TYPEDEF_FOR_base_fcu_bus_
 
-struct base_fcu_sim_input
+struct base_fcu_bus
 {
-  real32_T baro_setting_hpa;
-  int8_T efis_mode;
-  int8_T efis_range;
-  int8_T navaid_1_mode;
-  int8_T navaid_2_mode;
+  base_arinc_429 efis_discrete_word_1;
+  base_arinc_429 efis_discrete_word_2;
+  base_arinc_429 baro_setting_hpa;
+  base_arinc_429 baro_setting_inhg;
+  base_arinc_429 afs_discrete_word_1;
+  base_arinc_429 afs_discrete_word_2;
 };
 
 #endif
