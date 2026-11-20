@@ -107,7 +107,12 @@ export class CdsDisplayUnit extends DisplayComponent<DisplayUnitProps> {
 
     const sub = this.props.bus.getSubscriber<DisplayVars & ClockEvents>();
 
-    sub.on('realTime').handle(() => this.update());
+    // update() only feeds the brightness/power state machine, which reacts to changes -
+    // polling it every frame wastes 3 SimVar reads per display per frame; 1 Hz is plenty
+    sub
+      .on('realTime')
+      .atFrequency(1)
+      .handle(() => this.update());
     sub
       .on('realTime')
       .atFrequency(1)
