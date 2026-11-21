@@ -146,6 +146,8 @@ class FmgcComputer final
     rtDW_MATLABFunction_FmgcComputer_f_T sf_MATLABFunction_pl4;
     rtDW_MATLABFunction_FmgcComputer_f_T sf_MATLABFunction_g0;
     rtDW_MATLABFunction_FmgcComputer_f_T sf_MATLABFunction_an;
+    rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_oo;
+    rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_o5;
     rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_mw;
     rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_itu;
     rtDW_MATLABFunction_FmgcComputer_c_T sf_MATLABFunction_abn;
@@ -1009,6 +1011,8 @@ class FmgcComputer final
     boolean_T PulseNode6_isRisingEdge_k;
     boolean_T PulseNode7_isRisingEdge_c;
     boolean_T PulseNode_isRisingEdge_c2;
+    boolean_T PulseNode1_isRisingEdge_dz;
+    boolean_T PulseNode2_isRisingEdge_m;
     boolean_T ConfirmNode1_isRisingEdge_i;
     boolean_T ConfirmNode2_isRisingEdge_i;
     boolean_T ConfirmNode_isRisingEdge_dh;
