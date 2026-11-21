@@ -1058,19 +1058,20 @@ void FcuComputer::step()
     }
 
     FcuComputer_DWork.prevTrkFpaActive = FcuComputer_DWork.p_trk_fpa_active;
-    FcuComputer_MATLABFunction((FcuComputer_DWork.pValue_m != FcuComputer_DWork.DelayInput1_DSTATE[0]),
-      FcuComputer_U.in.time.dt, &rtb_Equal8, FcuComputer_P.MTrigNode_isRisingEdge_i,
+    FcuComputer_MATLABFunction(((FcuComputer_DWork.pValue_m != FcuComputer_DWork.DelayInput1_DSTATE[0]) &&
+      (!rtb_dashes_h)), FcuComputer_U.in.time.dt, &rtb_Equal8, FcuComputer_P.MTrigNode_isRisingEdge_i,
       FcuComputer_P.MTrigNode_retriggerable_k, FcuComputer_P.MTrigNode_triggerDuration_m,
       &FcuComputer_DWork.sf_MATLABFunction_av);
     FcuComputer_MATLABFunction((FcuComputer_DWork.pValue_e != FcuComputer_DWork.DelayInput1_DSTATE[1]),
       FcuComputer_U.in.time.dt, &rtb_y_o, FcuComputer_P.MTrigNode1_isRisingEdge_m,
       FcuComputer_P.MTrigNode1_retriggerable_p, FcuComputer_P.MTrigNode1_triggerDuration_h,
       &FcuComputer_DWork.sf_MATLABFunction_p5r);
-    FcuComputer_MATLABFunction((FcuComputer_DWork.pValue != FcuComputer_DWork.DelayInput1_DSTATE[2]),
+    FcuComputer_MATLABFunction(((FcuComputer_DWork.pValue != FcuComputer_DWork.DelayInput1_DSTATE[2]) && (!rtb_Equal9)),
       FcuComputer_U.in.time.dt, &rtb_Equal6, FcuComputer_P.MTrigNode2_isRisingEdge_hp,
       FcuComputer_P.MTrigNode2_retriggerable_k, FcuComputer_P.MTrigNode2_triggerDuration_a,
       &FcuComputer_DWork.sf_MATLABFunction_lh);
-    FcuComputer_MATLABFunction((FcuComputer_DWork.pValue_p != FcuComputer_DWork.DelayInput1_DSTATE[3]),
+    rtb_OR3_j = !rtb_DataTypeConversion_e;
+    FcuComputer_MATLABFunction(((FcuComputer_DWork.pValue_p != FcuComputer_DWork.DelayInput1_DSTATE[3]) && rtb_OR3_j),
       FcuComputer_U.in.time.dt, &rtb_OR3_j, FcuComputer_P.MTrigNode3_isRisingEdge_j,
       FcuComputer_P.MTrigNode3_retriggerable_a, FcuComputer_P.MTrigNode3_triggerDuration_h,
       &FcuComputer_DWork.sf_MATLABFunction_oi);
