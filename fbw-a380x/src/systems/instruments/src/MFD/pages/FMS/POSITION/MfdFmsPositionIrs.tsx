@@ -2,6 +2,7 @@ import { ClockEvents, FSComponent, MappedSubject, Subject, VNode } from '@micros
 
 import './MfdFmsPositionIrs.scss';
 import { AbstractMfdPageProps } from '../../../MFD';
+import { showReturnButtonUriExtra } from '../../../shared/utils';
 import { Footer } from '../../common/Footer';
 
 import { Button } from '../../../../MsfsAvionicsCommon/UiWidgets/Button';
@@ -23,6 +24,8 @@ enum IrsDataFor {
 type IrsStatus = 'NAV' | 'ALIGN' | 'ATT' | 'INVALID' | 'OFF' | '';
 
 export class MfdFmsPositionIrs extends FmsPage<MfdFmsPositionIrsProps> {
+  private readonly returnButtonVisible = this.props.mfd.uiService.activeUri.get().extra === showReturnButtonUriExtra;
+
   private readonly ir1MaintWord = Arinc429RegisterSubject.createEmpty();
 
   private readonly ir2MaintWord = Arinc429RegisterSubject.createEmpty();
@@ -459,6 +462,7 @@ export class MfdFmsPositionIrs extends FmsPage<MfdFmsPositionIrsProps> {
           <div style="width: 150px;">
             <Button
               label="RETURN"
+              visible={this.returnButtonVisible}
               onClick={() => this.props.mfd.uiService.navigateTo('back')}
               buttonStyle="margin-right: 5px;"
             />

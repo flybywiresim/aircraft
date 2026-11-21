@@ -701,7 +701,7 @@ export class MfdFmsPositionMonitor extends FmsPage<MfdFmsPositionMonitorPageProp
               />
               <Button
                 label="IRS"
-                onClick={() => this.props.mfd.uiService.navigateTo('fms/position/irs')}
+                onClick={() => this.props.mfd.uiService.navigateTo(`fms/position/irs/${showReturnButtonUriExtra}`)}
                 buttonStyle="margin-right: 5px; width:136px; height:43px;"
               />
             </div>

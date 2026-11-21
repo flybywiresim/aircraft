@@ -712,7 +712,7 @@ export class MfdFmsInit extends FmsFlightPlanPage<MfdFmsInitProps> {
             <div style={{ visibility: this.visibilityOnlyInActive }}>
               <Button
                 label="IRS"
-                onClick={() => this.props.mfd.uiService.navigateTo('fms/position/irs')}
+                onClick={() => this.props.mfd.uiService.navigateTo(`fms/position/irs/${showReturnButtonUriExtra}`)}
                 buttonStyle="width: 160px; margin-left: 150px; margin-bottom: 10px;"
               />
               <div class="fr">
