@@ -13,10 +13,10 @@ export class CruiseCond extends DestroyableComponent<CruiseCondProps> {
   private readonly cockpitCabinTempFormatted = this.cockpitCabinTemp.map((v) => v.toFixed(0));
 
   private readonly fwdCargoTemp = ConsumerSubject.create(this.sub.on('fwdCargoTemp'), 0);
-  private readonly fwdCargoTempFormatted = this.cockpitCabinTemp.map((v) => v.toFixed(0));
+  private readonly fwdCargoTempFormatted = this.fwdCargoTemp.map((v) => v.toFixed(0));
 
   private readonly aftCargoTemp = ConsumerSubject.create(this.sub.on('aftCargoTemp'), 0);
-  private readonly aftCargoTempFormatted = this.cockpitCabinTemp.map((v) => v.toFixed(0));
+  private readonly aftCargoTempFormatted = this.aftCargoTemp.map((v) => v.toFixed(0));
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
