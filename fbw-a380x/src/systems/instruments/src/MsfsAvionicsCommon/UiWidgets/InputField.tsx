@@ -251,7 +251,7 @@ export class InputField<
   }
 
   private onKeyDown(ev: KeyboardEvent) {
-    if (!this.isFocused.get() || this.props.fixedValuesDropDown) {
+    if (!this.isFocused.get() || this.disabled.get() || this.inactive.get() || this.props.fixedValuesDropDown) {
       return;
     }
 
@@ -275,7 +275,7 @@ export class InputField<
   }
 
   private onKeyPress = (ev: KeyboardEvent) => {
-    if (!this.isFocused.get() || this.props.fixedValuesDropDown) {
+    if (!this.isFocused.get() || this.disabled.get() || this.inactive.get() || this.props.fixedValuesDropDown) {
       return;
     }
 
@@ -529,9 +529,21 @@ export class InputField<
 
     this.subs.push(
       this.disabled.sub((val) => {
+        if (val && this.isFocused.get()) {
+          // Field became disabled while focused: leave edit mode without validating
+          // (onBlur itself refuses to run once disabled, so unfocus inline)
+          if (this.props.interactionMode.get() === InteractionMode.Touchscreen) {
+            Coherent.trigger('UNFOCUS_INPUT_FIELD', this.guid);
+          }
+          this.isFocused.set(false);
+          this.valueSelected.set(false);
+          this.caretRef.instance.style.display = 'none';
+          this.editing.set(false);
+          this.updateDisplayElement();
+        }
         if (!this.inactive.get()) {
           if (val) {
-            this.textInputRef.instance.tabIndex = 0;
+            this.textInputRef.instance.tabIndex = -1;
             this.containerRef.instance.classList.add('disabled');
             this.textInputRef.instance.classList.add('disabled');
 
@@ -568,7 +580,7 @@ export class InputField<
     }
 
     this.props.hEventConsumer.handle((key) => {
-      if (!this.isFocused.get() || this.props.fixedValuesDropDown) {
+      if (!this.isFocused.get() || this.disabled.get() || this.inactive.get() || this.props.fixedValuesDropDown) {
         return;
       }
 
