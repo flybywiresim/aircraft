@@ -304,8 +304,6 @@ const EgtGauge = ({ x, y }: ComponentPositionProps) => {
 
   const apuEgtWarning = useArinc429Var('L:A32NX_APU_EGT_WARNING', 500);
 
-  const redLineShown = apuEgtWarning.isNormalOperation();
-
   // FBW-31-05
   let egtNeedleStyle: string;
 
@@ -336,6 +334,9 @@ const EgtGauge = ({ x, y }: ComponentPositionProps) => {
   const GAUGE_END = 122;
 
   const GAUGE_MARKING_START = GAUGE_START;
+
+  // The warning limit can exceed the gauge maximum (e.g. in flight); then no red arc fits on the gauge
+  const redLineShown = apuEgtWarning.isNormalOperation() && apuEgtWarning.value < GAUGE_MAX;
 
   const gaugeMarkerClassName = 'SW3 White LineRound';
   const gaugeMarkerTextClassName = 'F22 LS1 White';
@@ -465,10 +466,14 @@ const EgtGauge = ({ x, y }: ComponentPositionProps) => {
               x={0}
               y={0}
               radius={GAUGE_RADIUS - 1}
-              startAngle={
-                GAUGE_END +
-                ((GAUGE_MAX - apuEgtWarning.value) / (GAUGE_MAX - GAUGE_MIDDLE)) * (GAUGE_END - GAUGE_MIDDLE_ANGLE)
-              }
+              startAngle={Math.max(
+                GAUGE_END,
+                Math.min(
+                  GAUGE_MIDDLE_ANGLE,
+                  GAUGE_END +
+                    ((GAUGE_MAX - apuEgtWarning.value) / (GAUGE_MAX - GAUGE_MIDDLE)) * (GAUGE_END - GAUGE_MIDDLE_ANGLE),
+                ),
+              )}
               endAngle={GAUGE_END}
               visible={redLineShown}
               className="SW6 Red NoFill"
