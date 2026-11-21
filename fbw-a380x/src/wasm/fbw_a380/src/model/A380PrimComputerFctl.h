@@ -61,7 +61,7 @@ class A380PrimComputerFctl final
   };
 
   struct BlockIO_A380PrimComputerFctl_T {
-    prim_outputs BusAssignment_nw;
+    prim_outputs BusAssignment_i;
     prim_outputs BusAssignment_m;
   };
 
@@ -121,6 +121,7 @@ class A380PrimComputerFctl final
     rtDW_MATLABFunction_A380PrimComputerFctl_o_T sf_MATLABFunction_gc;
     rtDW_MATLABFunction_A380PrimComputerFctl_o_T sf_MATLABFunction_m1;
     rtDW_MATLABFunction_A380PrimComputerFctl_o_T sf_MATLABFunction_ff;
+    rtDW_RateLimiter_A380PrimComputerFctl_p_T sf_RateLimiter_d3;
     rtDW_RateLimiter_A380PrimComputerFctl_p_T sf_RateLimiter_j;
     rtDW_RateLimiter_A380PrimComputerFctl_p_T sf_RateLimiter_b;
     rtDW_RateLimiter_A380PrimComputerFctl_p_T sf_RateLimiter_c4;
@@ -152,14 +153,13 @@ class A380PrimComputerFctl final
     rtDW_RateLimiter_A380PrimComputerFctl_p_T sf_RateLimiter_ob;
     rtDW_RateLimiter_A380PrimComputerFctl_p_T sf_RateLimiter_f1;
     rtDW_RateLimiter_A380PrimComputerFctl_p_T sf_RateLimiter_iv;
-    rtDW_RateLimiter_A380PrimComputerFctl_p_T sf_RateLimiter_mt;
+    rtDW_RateLimiter_A380PrimComputerFctl_p_T sf_RateLimiter_m;
     rtDW_RateLimiter_A380PrimComputerFctl_p_T sf_RateLimiter_fk;
     rtDW_RateLimiter_A380PrimComputerFctl_p_T sf_RateLimiter_g;
     rtDW_RateLimiter_A380PrimComputerFctl_p_T sf_RateLimiter_o;
     rtDW_RateLimiter_A380PrimComputerFctl_p_T sf_RateLimiter_f;
     rtDW_RateLimiter_A380PrimComputerFctl_p_T sf_RateLimiter_i;
     rtDW_RateLimiter_A380PrimComputerFctl_p_T sf_RateLimiter_h;
-    rtDW_RateLimiter_A380PrimComputerFctl_T sf_RateLimiter_m;
     rtDW_RateLimiter_A380PrimComputerFctl_T sf_RateLimiter;
   };
 
@@ -187,7 +187,6 @@ class A380PrimComputerFctl final
     real_T RateLimiterVariableTs4_InitialCondition;
     real_T RateLimiterVariableTs6_InitialCondition;
     real_T RateLimiterVariableTs1_InitialCondition;
-    real_T RateLimiterVariableTs2_InitialCondition;
     real_T RateLimiterVariableTs3_InitialCondition;
     real_T RateLimiterGenericVariableTs25_InitialCondition;
     real_T RateLimiterVariableTs5_InitialCondition;
@@ -280,6 +279,7 @@ class A380PrimComputerFctl final
     real_T BitfromLabel1_bit_cm;
     real_T BitfromLabel_bit_e;
     real_T BitfromLabel1_bit_d;
+    real_T BitfromLabel2_bit_l2;
     real_T BitfromLabel2_bit_pt;
     real_T BitfromLabel3_bit_g;
     real_T BitfromLabel4_bit_a;
@@ -331,6 +331,7 @@ class A380PrimComputerFctl final
     real_T CompareToConstant1_const_c;
     real_T CompareToConstant_const_e;
     real_T CompareToConstant_const_b;
+    real_T CompareToConstant_const_nt;
     real_T CompareToConstant1_const_b;
     real_T CompareToConstant2_const_d;
     real_T CompareToConstant_const_d5;
@@ -345,8 +346,8 @@ class A380PrimComputerFctl final
     real_T RateLimiterGenericVariableTs24_lo;
     real_T RateLimiterVariableTs4_lo;
     real_T RateLimiterVariableTs6_lo;
+    real_T RateLimiterGenericVariableTs_lo_i;
     real_T RateLimiterVariableTs1_lo;
-    real_T RateLimiterVariableTs2_lo;
     real_T RateLimiterVariableTs3_lo;
     real_T RateLimiterGenericVariableTs4_lo;
     real_T RateLimiterGenericVariableTs_lo_d;
@@ -395,8 +396,8 @@ class A380PrimComputerFctl final
     real_T RateLimiterGenericVariableTs24_up;
     real_T RateLimiterVariableTs4_up;
     real_T RateLimiterVariableTs6_up;
+    real_T RateLimiterGenericVariableTs_up_l;
     real_T RateLimiterVariableTs1_up;
-    real_T RateLimiterVariableTs2_up;
     real_T RateLimiterVariableTs3_up;
     real_T RateLimiterGenericVariableTs4_up;
     real_T RateLimiterGenericVariableTs_up_p;
@@ -442,6 +443,7 @@ class A380PrimComputerFctl final
     a380_efcs_law EnumeratedConstant4_Value;
     a380_efcs_law EnumeratedConstant_Value_j;
     a380_efcs_law EnumeratedConstant1_Value_a;
+    a380_efcs_law EnumeratedConstant5_Value;
     a380_efcs_law EnumeratedConstant4_Value_k;
     a380_efcs_law EnumeratedConstant3_Value;
     a380_lateral_law EnumeratedConstant_Value_g;
@@ -478,15 +480,14 @@ class A380PrimComputerFctl final
     real_T Gain6_Gain;
     real_T Constant9_Value;
     real_T Constant8_Value;
-    real_T Constant2_Value;
-    real_T Constant1_Value;
     real_T Constant4_Value;
-    real_T Constant3_Value;
     real_T Gain1_Gain_c;
     real_T Gain_Gain;
     real_T Gain7_Gain;
-    real_T Constant2_Value_g;
-    real_T Constant3_Value_m;
+    real_T Constant2_Value;
+    real_T Constant3_Value;
+    real_T Constant2_Value_d;
+    real_T Constant1_Value;
     real_T Constant5_Value;
     real_T Constant6_Value;
     real_T Constant_Value;
@@ -543,6 +544,10 @@ class A380PrimComputerFctl final
     real_T uDLookupTable2_bp01Data[4];
     real_T uDLookupTable_tableData_n[4];
     real_T uDLookupTable_bp01Data_m[4];
+    real_T uDLookupTable1_tableData_d[9];
+    real_T uDLookupTable1_bp01Data_n[9];
+    real_T uDLookupTable2_tableData_o[9];
+    real_T uDLookupTable2_bp01Data_o[9];
     real_T Constant_Value_i;
     real_T Gain8_Gain;
     real_T Saturation3_UpperSat;
@@ -564,11 +569,7 @@ class A380PrimComputerFctl final
     real_T Saturation4_LowerSat;
     real_T Gain5_Gain;
     real_T Gain2_Gain;
-    real_T uDLookupTable1_tableData_d[9];
-    real_T uDLookupTable1_bp01Data_n[9];
     real_T Gain9_Gain;
-    real_T uDLookupTable2_tableData_o[9];
-    real_T uDLookupTable2_bp01Data_o[9];
     real_T Saturation6_UpperSat;
     real_T Saturation6_LowerSat;
     real_T Saturation5_UpperSat;
@@ -585,6 +586,10 @@ class A380PrimComputerFctl final
     real_T Saturation1_LowerSat_b;
     real_T Constant2_Value_o;
     real_T Switch7_Threshold;
+    real32_T Saturation_UpperSat_e;
+    real32_T Saturation_LowerSat_e;
+    real32_T uDLookupTable3_tableData[6];
+    real32_T uDLookupTable3_bp01Data[6];
     real32_T Constant10_Value_b;
     real32_T Constant9_Value_o;
     real32_T Constant8_Value_j;
@@ -662,7 +667,7 @@ class A380PrimComputerFctl final
     boolean_T Constant7_Value_p;
     boolean_T Constant8_Value_h3;
     boolean_T Constant9_Value_f;
-    boolean_T Constant2_Value_d;
+    boolean_T Constant2_Value_ds;
     rtP_PulseRejectNode_A380PrimComputerFctl_T PulseRejectNode1;
     rtP_PulseRejectNode_A380PrimComputerFctl_T PulseRejectNode;
   };
