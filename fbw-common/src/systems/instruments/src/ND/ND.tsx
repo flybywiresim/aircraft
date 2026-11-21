@@ -335,8 +335,8 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
       this.currentPageMode.get() !== EfisNdMode.ROSE_VOR &&
       !this.mapFlagShown.get()
     ) {
-      // Range has priority over mode change
-      this.pageChangeInProgress.set(false);
+      // A mode change triggered together with the range change (e.g. EFIS CP mode knob) keeps
+      // priority for the MODE CHANGE message, so don't clear the page change flag here
       this.rangeChangeInProgress.set(true);
       this.rangeChangeInvalidationTimeout = window.setTimeout(
         () => {
@@ -357,7 +357,6 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
     if (
       this.currentPageMode.get() !== EfisNdMode.ROSE_ILS &&
       this.currentPageMode.get() !== EfisNdMode.ROSE_VOR &&
-      !this.rangeChangeInProgress.get() &&
       !this.mapFlagShown.get()
     ) {
       this.pageChangeInProgress.set(true);
@@ -479,19 +478,19 @@ export class NDComponent<T extends number> extends DisplayComponent<NDProps<T>> 
               HDG
             </Flag>
 
-            <Flag visible={this.rangeChangeInProgress} x={384} y={320} class="Green FontIntermediate mode-range-change">
-              {this.props.rangeChangeMessage}
-            </Flag>
             <Flag
               visible={MappedSubject.create(
-                ([rangeChange, pageChange]) => !rangeChange && pageChange,
+                ([rangeChange, pageChange]) => rangeChange && !pageChange,
                 this.rangeChangeInProgress,
                 this.pageChangeInProgress,
               )}
               x={384}
               y={320}
-              class="Green mode-range-change"
+              class="Green FontIntermediate mode-range-change"
             >
+              {this.props.rangeChangeMessage}
+            </Flag>
+            <Flag visible={this.pageChangeInProgress} x={384} y={320} class="Green mode-range-change">
               {this.props.modeChangeMessage}
             </Flag>
 
