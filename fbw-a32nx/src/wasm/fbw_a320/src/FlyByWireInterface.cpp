@@ -388,6 +388,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idFmsSpeedMarginVisible = std::make_unique<LocalVariable>("A32NX_PFD_SHOW_SPEED_MARGINS");
   idFmsTowerHeadwindComponent = std::make_unique<LocalVariable>("A32NX_FM_APPROACH_HEADWIND_COMPONENT");
   idFmsFlap3ApproachSelected = std::make_unique<LocalVariable>("A32NX_FM_LANDING_CONF3");
+  idFmsMachModeRequested = std::make_unique<LocalVariable>("A32NX_FM_MACH_MODE_REQUESTED");
 
   idFmLateralPlanAvail = std::make_unique<LocalVariable>("A32NX_FM_LATERAL_FLIGHTPLAN_AVAIL");
   idFmCrossTrackError = std::make_unique<LocalVariable>("A32NX_FG_CROSS_TRACK_ERROR");
@@ -1804,8 +1805,7 @@ bool FlyByWireInterface::updateFmgc(double sampleTime, int fmgcIndex) {
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.preset_spd_kts = idFmsPresetSpeed->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.preset_mach = idFmsPresetMach->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.preset_spd_mach_activate = simInputAutopilot.preset_spd_activate;
-  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.fms_spd_mode_activate = simInputAutopilot.spd_mode_activate;
-  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.fms_mach_mode_activate = simInputAutopilot.mach_mode_activate;
+  fmgcs[fmgcIndex].modelInputs.in.fms_inputs.fms_mach_mode_active = idFmsMachModeRequested->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.flex_temp_deg_c = idFmgcFlexTemperature->get();
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.acceleration_alt_ft = fmAccelerationAltitude->valueOr(0);
   fmgcs[fmgcIndex].modelInputs.in.fms_inputs.thrust_reduction_alt_ft = fmThrustReductionAltitude->valueOr(0);
