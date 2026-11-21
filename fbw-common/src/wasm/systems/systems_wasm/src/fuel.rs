@@ -57,7 +57,11 @@ pub(super) fn fuel_valves(
     move |builder| {
         for (valve_index, circuit_id) in valve_indexes.into_iter().zip(pump_circuit_ids) {
             builder.copy(
-                Variable::aircraft("FUELSYSTEM VALVE OPEN", "Bool", valve_index as _),
+                Variable::aircraft(
+                    "FUELSYSTEM VALVE OPEN",
+                    "Percent Over 100",
+                    valve_index as _,
+                ),
                 Variable::aspect(&format!("FUEL_VALVE_{valve_index}_OPEN")),
             );
 
