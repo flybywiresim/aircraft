@@ -111,7 +111,7 @@ class SystemsHost extends BaseInstrument {
     this.failuresConsumer,
   );
   // MSFS only supports 1
-  // private readonly xpdr2 = new Transponder(2, 144, this.acBus2Powered, this.failuresConsumer);
+  // private readonly xpdr2 = new Transponder(2, 136, this.acBus2Powered, this.failuresConsumer);
 
   private readonly simVarHandling = new SimVarHandling(this.bus);
   private readonly atsu = new AtsuSystem(this.bus);

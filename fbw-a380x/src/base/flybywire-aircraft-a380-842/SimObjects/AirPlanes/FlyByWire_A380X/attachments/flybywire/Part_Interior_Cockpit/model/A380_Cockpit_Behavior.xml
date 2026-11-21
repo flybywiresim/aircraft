@@ -135,13 +135,13 @@
         <Component ID="WipersLeft">
             <UseTemplate Name="FBW_Airbus_Wiper">
                 <ANIM_NAME>HANDLING_Wiper_left</ANIM_NAME>
-                <CIRCUIT_ID_WIPERS>141</CIRCUIT_ID_WIPERS>
+                <CIRCUIT_ID_WIPERS>129</CIRCUIT_ID_WIPERS>
             </UseTemplate>
         </Component>
         <Component ID="WipersRight">
             <UseTemplate Name="FBW_Airbus_Wiper">
                 <ANIM_NAME>HANDLING_Wiper_right</ANIM_NAME>
-                <CIRCUIT_ID_WIPERS>143</CIRCUIT_ID_WIPERS>
+                <CIRCUIT_ID_WIPERS>131</CIRCUIT_ID_WIPERS>
             </UseTemplate>
         </Component>
 
@@ -3844,7 +3844,7 @@
                     <UseTemplate Name="FBW_Airbus_Wiper_Knob">
                         <NODE_ID>HANDLING_Switch_Wiper_left</NODE_ID>
                         <ANIM_NAME>HANDLING_Switch_Wiper_left</ANIM_NAME>
-                        <CIRCUIT_ID_WIPERS>141</CIRCUIT_ID_WIPERS>
+                        <CIRCUIT_ID_WIPERS>129</CIRCUIT_ID_WIPERS>
                         <PART_ID>HANDLING_Switch_Wipers_left</PART_ID>
                         <ANIMTIP_0>Set left wiper to OFF</ANIMTIP_0>
                         <ANIMTIP_1>Set left wiper to SLOW</ANIMTIP_1>
@@ -3853,7 +3853,7 @@
                     <UseTemplate Name="FBW_Airbus_Wiper_Knob">
                         <NODE_ID>HANDLING_Switch_Wiper_right</NODE_ID>
                         <ANIM_NAME>HANDLING_Switch_Wiper_right</ANIM_NAME>
-                        <CIRCUIT_ID_WIPERS>143</CIRCUIT_ID_WIPERS>
+                        <CIRCUIT_ID_WIPERS>131</CIRCUIT_ID_WIPERS>
                         <PART_ID>HANDLING_Switch_Wipers_right</PART_ID>
                         <ANIMTIP_0>Set right wiper to OFF</ANIMTIP_0>
                         <ANIMTIP_1>Set right wiper to SLOW</ANIMTIP_1>
