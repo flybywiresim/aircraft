@@ -69,6 +69,7 @@ import { CpiomData, CpiomDataPublisher } from '@providers/CpiomPublisher';
 import { AtcDatalink } from './CpiomD/AtcDatalink';
 import { Acr } from './CpiomD/Acr';
 import { SimVarHandling } from '@datalink/common';
+import { EcuBusPublisher } from '@shared/publishers/EcuPublisher';
 
 class SystemsHost extends BaseInstrument {
   private readonly bus = new ArincEventBus();
@@ -155,6 +156,7 @@ class SystemsHost extends BaseInstrument {
   private readonly lgciuBusPublisher = new LgciuBusPublisher(this.bus);
   private readonly aesuBusPublisher = new AesuBusPublisher(this.bus);
   private readonly switchingPanelPublisher = new SwitchingPanelPublisher(this.bus);
+  private readonly ecuPublisher = new EcuBusPublisher(this.bus);
 
   private readonly efisTawsBridge = new EfisTawsBridge(this.bus, this, this.failuresConsumer);
 
@@ -236,6 +238,7 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addPublisher('AesuPublisher', this.aesuBusPublisher);
     this.backplane.addPublisher('SwitchingPanelPublisher', this.switchingPanelPublisher);
     this.backplane.addPublisher('fmsMessage', this.fmsMessagePublisher);
+    this.backplane.addPublisher('ecuBus', this.ecuPublisher);
 
     this.hEventPublisher = new HEventPublisher(this.bus);
     this.soundManager = new LegacySoundManager();

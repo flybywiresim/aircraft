@@ -691,6 +691,9 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFcuShimFpaValue;
   std::unique_ptr<LocalVariable> idFcuShimVsManaged;
 
+  std::unique_ptr<LocalVariable> idEcuStatusWord3[4];
+  std::unique_ptr<LocalVariable> idEcuMaintenanceWord6[4];
+
   double prevFcuAltValue = 0;
 
   void loadConfiguration();

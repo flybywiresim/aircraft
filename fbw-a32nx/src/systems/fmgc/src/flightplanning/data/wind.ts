@@ -96,8 +96,11 @@ export function copyWindVector(source: WindVector, destination: WindVector): Win
   return destination;
 }
 
+/**
+ * Scales the speed of a wind vector; the direction stays the same.
+ */
 export function scaleWindVector(vector: WindVector, scale: number, result: WindVector): WindVector {
-  result.direction = vector.direction !== undefined ? vector.direction * scale : undefined;
+  result.direction = vector.direction;
   result.magnitude = vector.magnitude !== undefined ? vector.magnitude * scale : undefined;
   return result;
 }
