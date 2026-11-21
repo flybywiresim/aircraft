@@ -74,7 +74,7 @@ export const KeyboardWrapper = ({ onChangeAll, keyboardRef, setOpen, blurInput, 
 
   return (
     <div
-      className="fixed bottom-0 z-50 m-0 w-[1430px] shadow-lg"
+      className="fixed bottom-0 z-50 m-0 w-[min(1430px,100vw)] shadow-lg"
       style={{ transform: `translate(${offsetX}px, ${verticalDeviation - offsetY}px)` }}
       ref={keyboardWrapperRef}
     >
