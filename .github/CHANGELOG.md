@@ -108,18 +108,20 @@ Always start an item with "1."; GitHub will number the rendered list automatical
 1. [A380X/RMP] Fix RMP brightness initialisation - @CameronCarlyon (YouBaconMeCrazy)
 1. [A380X] Make flightdeck lighting panel-state and time-of-day aware. Adjust existing values. @CameronCarlyon (YouBaconMeCrazy)
 1. [FMS] Limit step descent guidance to -1000fpm - @Jonny23787 (Jonathan), @BlueberryKing (BlueberryKing)
-1. [A380X/SD] Correct EL/DC page APU TR text display color - @ksleungac (pzb-851. [A380X/FMS] Added FMS WIND page - @BravoMike99 (bruno_pt99)
-1. [A380X/FMS] Added "ENTRY NOT IN LIST" message - @BravoMike99 (bruno_pt99)
-1. [A380X/FMS] Fixed minimums of non active flightplans being taken into account - @BravoMike99 (bruno_pt99)
-1. [A380X/FMS] Added wind uplink request - @BravoMike99 (bruno_pt99)
-1. [A32NX/FMS] Disable approach wind modification if no airport is present - @BravoMike99 (bruno_pt99)
-1. [A32NX/FUEL SYSTEM] Close center tank valves if they are triggered open with no fuel in center tank - @donstim (donbikes)
-1. [A380X/FUEL SYSTEM] Prevent CG control transfer end from ending normal trim tank transfers - @donstim (donbikes)
-1. [A32NX/FMS] Fixed +/- altitude constraints entered on the F-PLN page being inverted - @shinji1100
-1. [A32NX/FMS] Fixed FM light coming up too often - @saschl
-1. [EFB] Fixed local PDFs not displaying in EFB - @saschl
-1. [A380X/FLIGHT MODEL] Flight model fixes - @donstim (donbikes)
-1. [A32NX/FMS] Fix Vs1g for CONF 1+F and fix Vls for CONF 3 CG=>25%
+1. [A380X/SD] Correct EL/DC page APU TR text display color - @ksleungac (pzb-851)
+1. [A380X/FMS] Added FMS WIND page - @BravoMike99 (bruno_pt99)
+3. [A380X/FMS] Added "ENTRY NOT IN LIST" message - @BravoMike99 (bruno_pt99)
+4. [A380X/FMS] Fixed minimums of non active flightplans being taken into account - @BravoMike99 (bruno_pt99)
+5. [A380X/FMS] Added wind uplink request - @BravoMike99 (bruno_pt99)
+6. [A32NX/FMS] Disable approach wind modification if no airport is present - @BravoMike99 (bruno_pt99)
+7. [A32NX/FUEL SYSTEM] Close center tank valves if they are triggered open with no fuel in center tank - @donstim (donbikes)
+8. [A380X/FUEL SYSTEM] Prevent CG control transfer end from ending normal trim tank transfers - @donstim (donbikes)
+9. [A32NX/FMS] Fixed +/- altitude constraints entered on the F-PLN page being inverted - @shinji1100
+10. [A32NX/FMS] Fixed FM light coming up too often - @saschl
+11. [EFB] Fixed local PDFs not displaying in EFB - @saschl
+12. [A380X/FLIGHT MODEL] Flight model fixes - @donstim (donbikes)
+13. [A32NX/FMS] Fix Vs1g for CONF 1+F and fix Vls for CONF 3 CG=>25% - @donstim (donbikes)
+14. [A32NX/FWS] Add intermediate callouts to FWC - @BravoMike99 (bruno_pt99)
 
 ## 2024.1.0
 
