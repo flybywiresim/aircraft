@@ -235,6 +235,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFmsSpeedMarginVisible;
   std::unique_ptr<LocalVariable> idFmsTowerHeadwindComponent;
   std::unique_ptr<LocalVariable> idFmsFlap3ApproachSelected;
+  std::unique_ptr<LocalVariable> idFmsMachModeRequested;
 
   std::unique_ptr<LocalVariable> idAirConditioningPack_1;
   std::unique_ptr<LocalVariable> idAirConditioningPack_2;
