@@ -30,6 +30,7 @@
   - [Sound Variables](#sound-variables)
   - [Autobrakes](#autobrakes)
   - [Non-Systems Related](#non-systems-related)
+  - [Virtual Crew](#virtual-crew)
 
 ## Uncategorized
 
@@ -1826,3 +1827,66 @@ The PRIMs perform the flight guidance and flight envelope functions.
   - If ground power is avail or not
   - {number}
         - 1 - 4
+
+## Virtual Crew
+
+See the [virtual crew user manual](virtual-crew/README.md). The values are defined in
+`fbw-a380x/src/systems/shared/src/VirtualCrew.ts`.
+
+- `L:A380X_VCREW_PRIMARY_BUTTON`
+  - Bool
+  - Write 1 to press the primary button of the virtual crew (next action of the SOP), reset to 0 by the virtual crew
+
+- `L:A380X_VCREW_SECONDARY_BUTTON`
+  - Bool
+  - Write 1 to press the secondary button of the virtual crew (stop the checklist, "Stop" before V1, skip the pending
+    order), reset to 0 by the virtual crew
+
+- `L:A380X_VCREW_COMMAND`
+  - Enum, `VirtualCrewCommand`
+  - Command of the flyPad to the virtual crew (start preflight, briefings, end flight...), reset to 0 once processed
+
+- `L:A380X_VCREW_COMMAND_PARAM`
+  - Number
+  - Parameter of the command, written before `L:A380X_VCREW_COMMAND` (index of the cockpit control test)
+
+- `L:A380X_VCREW_PHASE`
+  - Enum, `VirtualCrewFlightPhase`
+  - Flight phase of the virtual crew, 0 when no flight is in progress, 1 preflight ... 19 securing the aircraft
+
+- `L:A380X_VCREW_NEXT_ACTION`
+  - Enum, index in `VirtualCrewNextActions`
+  - What the next press on the primary button does, 0 when there is nothing to do
+
+- `L:A380X_VCREW_PREFLIGHT_REMAINING`
+  - Seconds
+  - Remaining time of the preflight countdown
+
+- `L:A380X_VCREW_ACCELERATED`
+  - Bool
+  - True if the preflight countdown is accelerated
+
+- `L:A380X_VCREW_WORKFLOW`
+  - Number
+  - Index + 1 of the workflow or flow performed by the virtual crew member, 0 if none
+
+- `L:A380X_VCREW_BRIEFING_DONE`, `L:A380X_VCREW_APPR_BRIEFING_DONE`
+  - Bool
+  - True once the takeoff, respectively the approach, briefing has been performed in the current flight
+
+- `L:A380X_VCREW_CHECKLIST_AVAILABLE`, `L:A380X_VCREW_CHECKLIST_RUNNING`
+  - Number
+  - Index + 1 in `VirtualCrewChecklists` of the checklist which can be requested, respectively which is being read, 0
+    if none
+
+- `L:A380X_VCREW_CHECKLIST_ITEM`
+  - Number
+  - Index of the checklist item being read, -1 if none
+
+- `L:A380X_VCREW_CHECKLIST_STEP`
+  - Enum, `VirtualCrewChecklistStep`
+  - Step of the checklist being read (reading, waiting for the response, discrepancy...)
+
+- `L:A380X_VCREW_CHECKLISTS_DONE`
+  - Bit field
+  - Bit n set when the checklist n of `VirtualCrewChecklists` has been completed in the current flight

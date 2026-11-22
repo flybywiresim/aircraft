@@ -123,6 +123,7 @@ Always start an item with "1."; GitHub will number the rendered list automatical
 1. [A32NX/FCTL] Added new rotation law - @lukecologne (luke)
 1. [A32NX/FCTL] Added new FCDC outputs and moved F/CTL SD page to use FCDC data - @lukecologne (luke)
 1. [A32NX/FCTL] Improvements to the PFD lower area spoiler and THS indications - @lukecologne (luke)
+1. [A380X/EFB] Add an optional virtual first officer following the SOP: flows, ECL checklists, callouts, briefings and orders of the pilot flying, operated with two buttons and the new Crew page of the flyPad - @jacmba (Jacinto Mba Cantero)
 
 ## 2024.1.0
 

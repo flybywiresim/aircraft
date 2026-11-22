@@ -1,8 +1,8 @@
 // @ts-strict-ignore
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// Copyright (c) 2023-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import React, { FC } from 'react';
+import React, { FC, useContext } from 'react';
 
 import { Route, Switch, useHistory } from 'react-router';
 import { Link } from 'react-router-dom';
@@ -19,6 +19,7 @@ import { AtsuAocPage } from './Pages/AtsuAocPage';
 import { AudioPage } from './Pages/AudioPage';
 import { FlyPadPage } from './Pages/FlyPadPage';
 import { ThirdPartyOptionsPage } from './Pages/ThirdPartyOptionsPage';
+import { AircraftContext } from '../AircraftContext';
 
 export type ButtonType = {
   name: string;
@@ -45,6 +46,9 @@ export const SelectionTabs = ({ tabs }: SelectionTabsProps) => (
 );
 
 export const Settings = () => {
+  const aircraftContext = useContext(AircraftContext);
+  const VirtualCrewPage = aircraftContext.settingsPages.virtualCrewPage;
+
   const tabs: PageLink[] = [
     {
       alias: t('Settings.AircraftOptionsPinPrograms.Title'),
@@ -55,6 +59,7 @@ export const Settings = () => {
     { alias: t('Settings.Realism.Title'), name: 'Realism', component: <RealismPage /> },
     { alias: t('Settings.ThirdPartyOptions.Title'), name: '3rd Party Options', component: <ThirdPartyOptionsPage /> },
     { alias: t('Settings.AtsuAoc.Title'), name: 'ATSU / AOC', component: <AtsuAocPage /> },
+    ...(VirtualCrewPage ? [{ name: 'Virtual Crew', component: <VirtualCrewPage /> }] : []),
     { alias: t('Settings.Audio.Title'), name: 'Audio', component: <AudioPage /> },
     { alias: t('Settings.flyPad.Title'), name: 'flyPad', component: <FlyPadPage /> },
     { alias: t('Settings.About.Title'), name: 'About', component: <AboutPage /> },

@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// Copyright (c) 2023-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import React from 'react';
@@ -6,6 +6,8 @@ import { render } from '@instruments/common/index';
 import { AircraftContext, EfbWrapper, syncSettingsFromPersistentStorage } from '@flybywiresim/flypad';
 import { A380FailureDefinitions } from '../../../failures';
 import { AutomaticCallOutsPage } from './Pages/AutomaticCallOutsPage';
+import { VirtualCrewPage } from './Pages/VirtualCrewPage';
+import { CrewPage } from './Pages/CrewPage';
 import { a380xSyncedSettings } from './settingsSync';
 
 import './Efb.scss';
@@ -73,7 +75,9 @@ render(
           ],
         },
         autoCalloutsPage: AutomaticCallOutsPage,
+        virtualCrewPage: VirtualCrewPage,
       },
+      crewPage: CrewPage,
       hashFile: '/Data/a380x_hashes.json',
       hashSeed: 380,
     }}

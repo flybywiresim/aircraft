@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2023-2025 FlyByWire Simulations
+// Copyright (c) 2023-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useContext, useEffect, useState } from 'react';
@@ -227,7 +227,7 @@ export const Efb: React.FC<EfbProps> = ({ aircraftChecklistsProp }) => {
 
   const history = useHistory();
 
-  const { hashFile, hashSeed } = useContext(AircraftContext);
+  const { hashFile, hashSeed, crewPage } = useContext(AircraftContext);
 
   useEffect(() => {
     document.documentElement.classList.add(`theme-${theme}`, 'animationsEnabled');
@@ -455,6 +455,7 @@ export const Efb: React.FC<EfbProps> = ({ aircraftChecklistsProp }) => {
                     <Route path="/failures" component={Failures} />
                     <Route path="/checklists" component={Checklists} />
                     <Route path="/presets" component={Presets} />
+                    {crewPage && <Route path="/crew" component={crewPage} />}
                     <Route path="/settings" component={Settings} />
                     <Route path="/settings/flypad" component={FlyPadPage} />
                   </Switch>

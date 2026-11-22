@@ -1,0 +1,609 @@
+{
+  "comment": "Single source of the virtual crew phrases. The generator script (tools/virtual-crew-voices) creates one audio file per voice and line. 'text' is what is spoken, written for the speech synthesiser.",
+  "voices": [
+    "male",
+    "female"
+  ],
+  "lines": {
+    "takeoff": {
+      "text": "Takeoff."
+    },
+    "thrustSet": {
+      "text": "Thrust set."
+    },
+    "oneHundredKnots": {
+      "text": "One hundred knots."
+    },
+    "v1": {
+      "text": "Vee one."
+    },
+    "rotate": {
+      "text": "Rotate."
+    },
+    "positiveClimb": {
+      "text": "Positive climb."
+    },
+    "gearUp": {
+      "text": "Gear up."
+    },
+    "flapsOne": {
+      "text": "Flaps one."
+    },
+    "flapsZero": {
+      "text": "Flaps zero."
+    },
+    "stop": {
+      "text": "Stop!"
+    },
+    "cockpitPreparationChecklist": {
+      "text": "Cockpit preparation checklist."
+    },
+    "cockpitPreparationChecklistComplete": {
+      "text": "Cockpit preparation checklist complete."
+    },
+    "beforeStartChecklist": {
+      "text": "Before start checklist."
+    },
+    "beforeStartChecklistComplete": {
+      "text": "Before start checklist complete."
+    },
+    "clGearPinsAndCovers": {
+      "text": "Gear pins and covers?"
+    },
+    "clFuelQuantity": {
+      "text": "Fuel quantity?"
+    },
+    "clSeatBelts": {
+      "text": "Seat belts?"
+    },
+    "clBaroRef": {
+      "text": "Baro reference?"
+    },
+    "clParkingBrake": {
+      "text": "Parking brake?"
+    },
+    "clTakeoffSpeedsAndThrust": {
+      "text": "Takeoff speeds and thrust?"
+    },
+    "clBeacon": {
+      "text": "Beacon?"
+    },
+    "respRemoved": {
+      "text": "Removed."
+    },
+    "respChecked": {
+      "text": "Checked."
+    },
+    "respOn": {
+      "text": "On."
+    },
+    "respSet": {
+      "text": "Set."
+    },
+    "pleaseCheck": {
+      "text": "Please check, I see a discrepancy."
+    },
+    "engine": {
+      "text": "Engine"
+    },
+    "startValveOpen": {
+      "text": "start valve open."
+    },
+    "fuelFlow": {
+      "text": "Fuel flow."
+    },
+    "engineStable": {
+      "text": "stable."
+    },
+    "oneThousandToGo": {
+      "text": "One thousand to go."
+    },
+    "localizerAlive": {
+      "text": "Localizer alive."
+    },
+    "glideslopeAlive": {
+      "text": "Glideslope alive."
+    },
+    "speed": {
+      "text": "Speed!"
+    },
+    "spoilers": {
+      "text": "Spoilers."
+    },
+    "reverseGreen": {
+      "text": "Reverse green."
+    },
+    "decel": {
+      "text": "Decel."
+    },
+    "seventyKnots": {
+      "text": "Seventy knots."
+    },
+    "checkSpeed": {
+      "text": "Check speed."
+    },
+    "gearDown": {
+      "text": "Gear down."
+    },
+    "flapsTwo": {
+      "text": "Flaps two."
+    },
+    "flapsThree": {
+      "text": "Flaps three."
+    },
+    "flapsFull": {
+      "text": "Flaps full."
+    },
+    "goAroundFlaps": {
+      "text": "Go around, flaps!"
+    },
+    "paSeatsForTakeoff": {
+      "text": "Cabin crew, seats for takeoff."
+    },
+    "paSeatsForLanding": {
+      "text": "Cabin crew, seats for landing."
+    },
+    "afterStartChecklist": {
+      "text": "After start checklist."
+    },
+    "afterStartChecklistComplete": {
+      "text": "After start checklist complete."
+    },
+    "taxiChecklist": {
+      "text": "Taxi checklist."
+    },
+    "taxiChecklistComplete": {
+      "text": "Taxi checklist complete."
+    },
+    "lineUpChecklist": {
+      "text": "Line up checklist."
+    },
+    "lineUpChecklistComplete": {
+      "text": "Line up checklist complete."
+    },
+    "approachChecklist": {
+      "text": "Approach checklist."
+    },
+    "approachChecklistComplete": {
+      "text": "Approach checklist complete."
+    },
+    "landingChecklist": {
+      "text": "Landing checklist."
+    },
+    "landingChecklistComplete": {
+      "text": "Landing checklist complete."
+    },
+    "parkingChecklist": {
+      "text": "Parking checklist."
+    },
+    "parkingChecklistComplete": {
+      "text": "Parking checklist complete."
+    },
+    "securingChecklist": {
+      "text": "Securing the aircraft checklist."
+    },
+    "securingChecklistComplete": {
+      "text": "Securing the aircraft checklist complete."
+    },
+    "clAntiIce": {
+      "text": "Anti ice?"
+    },
+    "clPitchTrim": {
+      "text": "Pitch trim?"
+    },
+    "clRudderTrim": {
+      "text": "Rudder trim?"
+    },
+    "clFlightControls": {
+      "text": "Flight controls?"
+    },
+    "clFlapsSetting": {
+      "text": "Flaps setting?"
+    },
+    "clRadar": {
+      "text": "Radar?"
+    },
+    "clAutobrake": {
+      "text": "Autobrake?"
+    },
+    "clTakeoffRunway": {
+      "text": "Takeoff runway?"
+    },
+    "clPacks": {
+      "text": "Packs one and two?"
+    },
+    "clMinimum": {
+      "text": "Minimum?"
+    },
+    "clParkingBrakeOrChocks": {
+      "text": "Parking brake or chocks?"
+    },
+    "clEngines": {
+      "text": "Engines?"
+    },
+    "clWingLights": {
+      "text": "Wing lights?"
+    },
+    "clFuelPumps": {
+      "text": "Fuel pumps?"
+    },
+    "clOxygen": {
+      "text": "Oxygen?"
+    },
+    "clEmergencyExitLight": {
+      "text": "Emergency exit light?"
+    },
+    "clEfbs": {
+      "text": "E F Bs?"
+    },
+    "clBatteries": {
+      "text": "Batteries?"
+    },
+    "respOff": {
+      "text": "Off."
+    },
+    "respNeutral": {
+      "text": "Neutral."
+    },
+    "respSetForTakeoff": {
+      "text": "Set for takeoff."
+    },
+    "numZero": {
+      "text": "zero"
+    },
+    "numOne": {
+      "text": "one"
+    },
+    "numTwo": {
+      "text": "two"
+    },
+    "numThree": {
+      "text": "three"
+    },
+    "numFour": {
+      "text": "four"
+    },
+    "numFive": {
+      "text": "five"
+    },
+    "numSix": {
+      "text": "six"
+    },
+    "numSeven": {
+      "text": "seven"
+    },
+    "numEight": {
+      "text": "eight"
+    },
+    "numNine": {
+      "text": "niner"
+    },
+    "numHundred": {
+      "text": "hundred"
+    },
+    "numThousand": {
+      "text": "thousand"
+    },
+    "numDecimal": {
+      "text": "decimal"
+    },
+    "numFlightLevel": {
+      "text": "flight level"
+    },
+    "numFeet": {
+      "text": "feet"
+    },
+    "rwyLeft": {
+      "text": "left"
+    },
+    "rwyRight": {
+      "text": "right"
+    },
+    "rwyCenter": {
+      "text": "center"
+    },
+    "minBaro": {
+      "text": "baro"
+    },
+    "minRadio": {
+      "text": "radio"
+    },
+    "abBtv": {
+      "text": "B T V"
+    },
+    "abLow": {
+      "text": "low"
+    },
+    "abHigh": {
+      "text": "high"
+    },
+    "apIls": {
+      "text": "I L S"
+    },
+    "apGls": {
+      "text": "G L S"
+    },
+    "apRnp": {
+      "text": "R N P"
+    },
+    "apVor": {
+      "text": "V O R"
+    },
+    "apNdb": {
+      "text": "N D B"
+    },
+    "apLoc": {
+      "text": "localizer"
+    },
+    "apVisual": {
+      "text": "visual"
+    },
+    "brInformation": {
+      "text": "We have information"
+    },
+    "brRunwayCondition": {
+      "text": "Runway condition"
+    },
+    "brDry": {
+      "text": "dry."
+    },
+    "brWet": {
+      "text": "wet."
+    },
+    "brContaminated": {
+      "text": "contaminated."
+    },
+    "brAsReported": {
+      "text": "as reported."
+    },
+    "brTakeoffThrust": {
+      "text": "Takeoff thrust"
+    },
+    "brFlex": {
+      "text": "flex"
+    },
+    "brToga": {
+      "text": "TOGA."
+    },
+    "brFlaps": {
+      "text": "Flaps"
+    },
+    "brOnePlusF": {
+      "text": "one plus F."
+    },
+    "brVOne": {
+      "text": "Vee one"
+    },
+    "brVR": {
+      "text": "Vee R"
+    },
+    "brVTwo": {
+      "text": "Vee two"
+    },
+    "brTaxiRoute": {
+      "text": "Taxi route as per the chart."
+    },
+    "brClearedAltitude": {
+      "text": "Cleared initial altitude"
+    },
+    "brSquawk": {
+      "text": "Squawk"
+    },
+    "brDepartureFrequency": {
+      "text": "Departure frequency"
+    },
+    "brAntiIce": {
+      "text": "Anti ice"
+    },
+    "brOff": {
+      "text": "off."
+    },
+    "brEngineOn": {
+      "text": "engine anti ice on."
+    },
+    "brEngineAndWingOn": {
+      "text": "engine and wing anti ice on."
+    },
+    "brEngineFailure": {
+      "text": "In case of engine failure, we follow the engine out procedure as briefed."
+    },
+    "brThreats": {
+      "text": "Threats and remarks as discussed."
+    },
+    "brEndOfBriefing": {
+      "text": "End of briefing. Any questions?"
+    },
+    "brLandingRunway": {
+      "text": "Landing runway"
+    },
+    "brApproach": {
+      "text": "Approach"
+    },
+    "brAsPublished": {
+      "text": "as published."
+    },
+    "brMinimum": {
+      "text": "Minimum"
+    },
+    "brLandingFlaps": {
+      "text": "Landing flaps"
+    },
+    "brFull": {
+      "text": "full."
+    },
+    "brVApp": {
+      "text": "Vee app"
+    },
+    "brAutobrake": {
+      "text": "Autobrake"
+    },
+    "brGoAroundAltitude": {
+      "text": "Go around altitude"
+    },
+    "brTaxiIn": {
+      "text": "Taxi in route as per the chart."
+    },
+    "alphaA": {
+      "text": "alpha"
+    },
+    "alphaB": {
+      "text": "bravo"
+    },
+    "alphaC": {
+      "text": "charlie"
+    },
+    "alphaD": {
+      "text": "delta"
+    },
+    "alphaE": {
+      "text": "echo"
+    },
+    "alphaF": {
+      "text": "foxtrot"
+    },
+    "alphaG": {
+      "text": "golf"
+    },
+    "alphaH": {
+      "text": "hotel"
+    },
+    "alphaI": {
+      "text": "india"
+    },
+    "alphaJ": {
+      "text": "juliett"
+    },
+    "alphaK": {
+      "text": "kilo"
+    },
+    "alphaL": {
+      "text": "lima"
+    },
+    "alphaM": {
+      "text": "mike"
+    },
+    "alphaN": {
+      "text": "november"
+    },
+    "alphaO": {
+      "text": "oscar"
+    },
+    "alphaP": {
+      "text": "papa"
+    },
+    "alphaQ": {
+      "text": "quebec"
+    },
+    "alphaR": {
+      "text": "romeo"
+    },
+    "alphaS": {
+      "text": "sierra"
+    },
+    "alphaT": {
+      "text": "tango"
+    },
+    "alphaU": {
+      "text": "uniform"
+    },
+    "alphaV": {
+      "text": "victor"
+    },
+    "alphaW": {
+      "text": "whiskey"
+    },
+    "alphaX": {
+      "text": "x-ray"
+    },
+    "alphaY": {
+      "text": "yankee"
+    },
+    "alphaZ": {
+      "text": "zulu"
+    },
+    "flightControlCheck": {
+      "text": "Flight control check."
+    },
+    "fullUp": {
+      "text": "Full up."
+    },
+    "fullDown": {
+      "text": "Full down."
+    },
+    "fullLeft": {
+      "text": "Full left."
+    },
+    "fullRight": {
+      "text": "Full right."
+    },
+    "brakeCheck": {
+      "text": "Brake check."
+    },
+    "pressureZero": {
+      "text": "Pressure zero."
+    },
+    "clEcamMemo": {
+      "text": "ECAM memo?"
+    },
+    "respTakeoffNoBlue": {
+      "text": "Takeoff, no blue."
+    },
+    "respLandingNoBlue": {
+      "text": "Landing, no blue."
+    },
+    "brReadyDeparture": {
+      "text": "Are you ready for the departure briefing?"
+    },
+    "brReadyApproach": {
+      "text": "Are you ready for the approach briefing?"
+    },
+    "goAhead": {
+      "text": "Go ahead."
+    },
+    "noQuestions": {
+      "text": "No questions."
+    },
+    "taxiLightsOff": {
+      "text": "Taxi lights off."
+    },
+    "respConfirmed": {
+      "text": "Confirmed."
+    },
+    "respConfOnePlusF": {
+      "text": "Config one plus F."
+    },
+    "respConfTwo": {
+      "text": "Config two."
+    },
+    "respConfThree": {
+      "text": "Config three."
+    },
+    "transition": {
+      "text": "Transition."
+    },
+    "altimeterStandard": {
+      "text": "Altimeter standard."
+    },
+    "qnh": {
+      "text": "Q N H"
+    },
+    "letsGetStarted": {
+      "text": "OK, let's get it started."
+    },
+    "goingWithPowerUp": {
+      "text": "All right, I'm going with the power up."
+    },
+    "walkaroundGoingOut": {
+      "text": "I'm going out for the walkaround."
+    },
+    "okay": {
+      "text": "OK!"
+    },
+    "walkaroundBack": {
+      "text": "I'm back from the walkaround, no issues found."
+    },
+    "thankYou": {
+      "text": "All right, thank you so much!"
+    }
+  }
+}
