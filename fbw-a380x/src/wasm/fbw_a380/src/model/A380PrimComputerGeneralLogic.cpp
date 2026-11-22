@@ -108,6 +108,8 @@ void A380PrimComputerGeneralLogic::step()
   real32_T rtb_raComputationValue;
   real32_T rtb_theta;
   real32_T rtb_theta_dot;
+  real32_T rtb_v_gnd;
+  real32_T rtb_v_z_bi;
   uint32_T rtb_y;
   uint32_T rtb_y_d;
   uint32_T rtb_y_dw;
@@ -504,6 +506,56 @@ void A380PrimComputerGeneralLogic::step()
       }
 
       rtb_phi_dot = v[rtb_handleIndex];
+      v[0] = A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_1_bus.ground_speed_kn.Data;
+      v[1] = A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_2_bus.ground_speed_kn.Data;
+      v[2] = A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_3_bus.ground_speed_kn.Data;
+      if (A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_1_bus.ground_speed_kn.Data <
+          A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_2_bus.ground_speed_kn.Data) {
+        if (A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_2_bus.ground_speed_kn.Data <
+            A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_3_bus.ground_speed_kn.Data) {
+          rtb_handleIndex = 1;
+        } else if (A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_1_bus.ground_speed_kn.Data <
+                   A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_3_bus.ground_speed_kn.Data) {
+          rtb_handleIndex = 2;
+        } else {
+          rtb_handleIndex = 0;
+        }
+      } else if (A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_1_bus.ground_speed_kn.Data <
+                 A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_3_bus.ground_speed_kn.Data) {
+        rtb_handleIndex = 0;
+      } else if (A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_2_bus.ground_speed_kn.Data <
+                 A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_3_bus.ground_speed_kn.Data) {
+        rtb_handleIndex = 2;
+      } else {
+        rtb_handleIndex = 1;
+      }
+
+      rtb_v_gnd = v[rtb_handleIndex];
+      v[0] = A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_1_bus.inertial_vertical_speed_ft_s.Data;
+      v[1] = A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_2_bus.inertial_vertical_speed_ft_s.Data;
+      v[2] = A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_3_bus.inertial_vertical_speed_ft_s.Data;
+      if (A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_1_bus.inertial_vertical_speed_ft_s.Data <
+          A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_2_bus.inertial_vertical_speed_ft_s.Data) {
+        if (A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_2_bus.inertial_vertical_speed_ft_s.Data <
+            A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_3_bus.inertial_vertical_speed_ft_s.Data) {
+          rtb_handleIndex = 1;
+        } else if (A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_1_bus.inertial_vertical_speed_ft_s.Data <
+                   A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_3_bus.inertial_vertical_speed_ft_s.Data) {
+          rtb_handleIndex = 2;
+        } else {
+          rtb_handleIndex = 0;
+        }
+      } else if (A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_1_bus.inertial_vertical_speed_ft_s.Data <
+                 A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_3_bus.inertial_vertical_speed_ft_s.Data) {
+        rtb_handleIndex = 0;
+      } else if (A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_2_bus.inertial_vertical_speed_ft_s.Data <
+                 A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_3_bus.inertial_vertical_speed_ft_s.Data) {
+        rtb_handleIndex = 2;
+      } else {
+        rtb_handleIndex = 1;
+      }
+
+      rtb_v_z_bi = v[rtb_handleIndex];
     } else if (rtb_OR && rtb_DataTypeConversion_k && rtb_NOT2) {
       rtb_theta = (A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_2_bus.pitch_angle_deg.Data +
                    A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_3_bus.pitch_angle_deg.Data) / 2.0F;
@@ -523,6 +575,10 @@ void A380PrimComputerGeneralLogic::step()
                        A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_3_bus.pitch_att_rate_deg_s.Data) / 2.0F;
       rtb_phi_dot = (A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_2_bus.roll_att_rate_deg_s.Data +
                      A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_3_bus.roll_att_rate_deg_s.Data) / 2.0F;
+      rtb_v_gnd = (A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_2_bus.ground_speed_kn.Data +
+                   A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_3_bus.ground_speed_kn.Data) / 2.0F;
+      rtb_v_z_bi = (A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_2_bus.inertial_vertical_speed_ft_s.Data +
+                    A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_3_bus.inertial_vertical_speed_ft_s.Data) / 2.0F;
     } else if (rtb_ra1Invalid && rtb_OR6 && rtb_NOT2) {
       rtb_theta = (A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_1_bus.pitch_angle_deg.Data +
                    A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_3_bus.pitch_angle_deg.Data) / 2.0F;
@@ -542,6 +598,10 @@ void A380PrimComputerGeneralLogic::step()
                        A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_3_bus.pitch_att_rate_deg_s.Data) / 2.0F;
       rtb_phi_dot = (A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_1_bus.roll_att_rate_deg_s.Data +
                      A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_3_bus.roll_att_rate_deg_s.Data) / 2.0F;
+      rtb_v_gnd = (A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_1_bus.ground_speed_kn.Data +
+                   A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_3_bus.ground_speed_kn.Data) / 2.0F;
+      rtb_v_z_bi = (A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_1_bus.inertial_vertical_speed_ft_s.Data +
+                    A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_3_bus.inertial_vertical_speed_ft_s.Data) / 2.0F;
     } else if (rtb_ra2Invalid && rtb_OR7) {
       rtb_theta = (A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_1_bus.pitch_angle_deg.Data +
                    A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_2_bus.pitch_angle_deg.Data) / 2.0F;
@@ -561,6 +621,10 @@ void A380PrimComputerGeneralLogic::step()
                        A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_2_bus.pitch_att_rate_deg_s.Data) / 2.0F;
       rtb_phi_dot = (A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_1_bus.roll_att_rate_deg_s.Data +
                      A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_2_bus.roll_att_rate_deg_s.Data) / 2.0F;
+      rtb_v_gnd = (A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_1_bus.ground_speed_kn.Data +
+                   A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_2_bus.ground_speed_kn.Data) / 2.0F;
+      rtb_v_z_bi = (A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_1_bus.inertial_vertical_speed_ft_s.Data +
+                    A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_2_bus.inertial_vertical_speed_ft_s.Data) / 2.0F;
     } else if ((!rtb_OR) && rtb_OR6 && rtb_OR7) {
       rtb_theta = A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_1_bus.pitch_angle_deg.Data;
       rtb_phi = A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_1_bus.roll_angle_deg.Data;
@@ -571,6 +635,8 @@ void A380PrimComputerGeneralLogic::step()
       rtb_n_z = A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_1_bus.body_normal_accel_g.Data;
       rtb_theta_dot = A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_1_bus.pitch_att_rate_deg_s.Data;
       rtb_phi_dot = A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_1_bus.roll_att_rate_deg_s.Data;
+      rtb_v_gnd = A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_1_bus.ground_speed_kn.Data;
+      rtb_v_z_bi = A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_1_bus.inertial_vertical_speed_ft_s.Data;
     } else if (rtb_OR && (!rtb_OR6) && rtb_OR7) {
       rtb_theta = A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_2_bus.pitch_angle_deg.Data;
       rtb_phi = A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_2_bus.roll_angle_deg.Data;
@@ -581,6 +647,8 @@ void A380PrimComputerGeneralLogic::step()
       rtb_n_z = A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_2_bus.body_normal_accel_g.Data;
       rtb_theta_dot = A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_2_bus.pitch_att_rate_deg_s.Data;
       rtb_phi_dot = A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_2_bus.roll_att_rate_deg_s.Data;
+      rtb_v_gnd = A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_2_bus.ground_speed_kn.Data;
+      rtb_v_z_bi = A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_2_bus.inertial_vertical_speed_ft_s.Data;
     } else if (rtb_OR && rtb_OR6 && rtb_NOT2) {
       rtb_theta = A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_3_bus.pitch_angle_deg.Data;
       rtb_phi = A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_3_bus.roll_angle_deg.Data;
@@ -591,6 +659,8 @@ void A380PrimComputerGeneralLogic::step()
       rtb_n_z = A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_3_bus.body_normal_accel_g.Data;
       rtb_theta_dot = A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_3_bus.pitch_att_rate_deg_s.Data;
       rtb_phi_dot = A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_3_bus.roll_att_rate_deg_s.Data;
+      rtb_v_gnd = A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_3_bus.ground_speed_kn.Data;
+      rtb_v_z_bi = A380PrimComputerGeneralLogic_U.in.bus_inputs.ir_3_bus.inertial_vertical_speed_ft_s.Data;
     } else {
       rtb_theta = 0.0F;
       rtb_phi = 0.0F;
@@ -601,6 +671,8 @@ void A380PrimComputerGeneralLogic::step()
       rtb_n_z = 0.0F;
       rtb_theta_dot = 0.0F;
       rtb_phi_dot = 0.0F;
+      rtb_v_gnd = 0.0F;
+      rtb_v_z_bi = 0.0F;
     }
 
     A380PrimComputerGeneralLogic_Y.out.general_logic.slats_locked = (rtb_y_dw != 0U);
@@ -1130,6 +1202,8 @@ void A380PrimComputerGeneralLogic::step()
     A380PrimComputerGeneralLogic_Y.out.general_logic.ir_computation_data.n_z_g = rtb_n_z;
     A380PrimComputerGeneralLogic_Y.out.general_logic.ir_computation_data.theta_dot_deg_s = rtb_theta_dot;
     A380PrimComputerGeneralLogic_Y.out.general_logic.ir_computation_data.phi_dot_deg_s = rtb_phi_dot;
+    A380PrimComputerGeneralLogic_Y.out.general_logic.ir_computation_data.V_gnd_kts = rtb_v_gnd;
+    A380PrimComputerGeneralLogic_Y.out.general_logic.ir_computation_data.V_zbi_ft_min = rtb_v_z_bi;
     A380PrimComputerGeneralLogic_Y.out.general_logic.ra_computation_data_ft = rtb_raComputationValue;
     A380PrimComputerGeneralLogic_Y.out.general_logic.all_ra_failure = (rtb_ra1Invalid && rtb_ra2Invalid &&
       rtb_ra3Invalid);

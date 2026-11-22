@@ -3000,6 +3000,8 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
       this.editCruiseWindEntry(atIndex, entryIdx, entry, checkDraftConfig);
     } else {
       windEntries.push(entry);
+      // Sort the entries by altitude in descending order.
+      windEntries.sort((a, b) => (b.altitude ?? 0) - (a.altitude ?? 0));
     }
     if (!hasDraft) {
       this.syncCruiseWindChange(atIndex);
@@ -3049,6 +3051,8 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         legWindEntries.splice(i, 1);
       }
     }
+    // Sort the entries by altitude in descending order.
+    legWindEntries.sort((a, b) => (b.altitude ?? 0) - (a.altitude ?? 0));
     if (hasDraft) {
       this.syncCruiseWindChange(atIndex);
     } else {

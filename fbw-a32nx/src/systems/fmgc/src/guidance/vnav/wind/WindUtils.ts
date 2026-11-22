@@ -79,7 +79,7 @@ export class WindUtils {
         direction:
           v0.direction === undefined || v1.direction === undefined
             ? undefined
-            : MathUtils.interpolate(x, x0, x1, v0.direction, v1.direction),
+            : WindUtils.interpolateDirection(x, x0, x1, v0.direction, v1.direction),
         magnitude:
           v0.magnitude === undefined || v1.magnitude === undefined
             ? undefined
@@ -87,6 +87,20 @@ export class WindUtils {
       },
       out,
     );
+  }
+
+  /**
+   * Interpolates between two wind directions, turning the shorter way round: halfway between 350° and 010° is 000°,
+   * not 180° as interpolating the numbers would give.
+   * @param x the point to interpolate at, e.g. an altitude
+   * @param x0 the point where the direction is d0
+   * @param x1 the point where the direction is d1
+   * @param d0 the direction at x0, in radians
+   * @param d1 the direction at x1, in radians
+   * @returns the direction at x, in radians from 0 to 2π
+   */
+  private static interpolateDirection(x: number, x0: number, x1: number, d0: number, d1: number): number {
+    return MathUtils.normalise2Pi(d0 + MathUtils.interpolate(x, x0, x1, 0, MathUtils.normalisePi(d1 - d0)));
   }
 
   public static copyEmptyWindVector(result: WindVector) {

@@ -114,13 +114,16 @@ void A380FadecComputer::step()
   real_T rtb_Switch_m;
   int32_T TLA_begin;
   int32_T TLA_end;
+  real32_T rtb_Switch_fctl_aileron_droop_command_deg_Data;
   real32_T rtb_Switch_fctl_aileron_status_word_Data;
+  real32_T rtb_Switch_fctl_capability_score_Data;
   real32_T rtb_Switch_fctl_discrete_status_word_1_Data;
   real32_T rtb_Switch_fctl_elevator_1_position_deg_Data;
   real32_T rtb_Switch_fctl_elevator_2_position_deg_Data;
   real32_T rtb_Switch_fctl_elevator_3_position_deg_Data;
   real32_T rtb_Switch_fctl_elevator_status_word_Data;
   real32_T rtb_Switch_fctl_fctl_law_status_word_Data;
+  real32_T rtb_Switch_fctl_ground_spoiler_command_deg_Data;
   real32_T rtb_Switch_fctl_left_aileron_1_position_deg_Data;
   real32_T rtb_Switch_fctl_left_aileron_2_position_deg_Data;
   real32_T rtb_Switch_fctl_left_inboard_aileron_command_deg_Data;
@@ -140,6 +143,7 @@ void A380FadecComputer::step()
   real32_T rtb_Switch_fctl_left_spoiler_8_command_deg_Data;
   real32_T rtb_Switch_fctl_left_spoiler_position_deg_Data;
   real32_T rtb_Switch_fctl_lower_rudder_command_deg_Data;
+  real32_T rtb_Switch_fctl_lower_rudder_travel_lim_deg_Data;
   real32_T rtb_Switch_fctl_radio_height_1_ft_Data;
   real32_T rtb_Switch_fctl_radio_height_2_ft_Data;
   real32_T rtb_Switch_fctl_right_aileron_1_position_deg_Data;
@@ -164,10 +168,12 @@ void A380FadecComputer::step()
   real32_T rtb_Switch_fctl_rudder_2_position_deg_Data;
   real32_T rtb_Switch_fctl_rudder_pedal_position_deg_Data;
   real32_T rtb_Switch_fctl_rudder_status_word_Data;
+  real32_T rtb_Switch_fctl_speed_brake_command_deg_Data;
   real32_T rtb_Switch_fctl_spoiler_status_word_Data;
   real32_T rtb_Switch_fctl_ths_command_deg_Data;
   real32_T rtb_Switch_fctl_ths_position_deg_Data;
   real32_T rtb_Switch_fctl_upper_rudder_command_deg_Data;
+  real32_T rtb_Switch_fctl_upper_rudder_travel_lim_deg_Data;
   real32_T rtb_Switch_fctl_v_alpha_lim_kn_Data;
   real32_T rtb_Switch_fctl_v_alpha_prot_kn_Data;
   real32_T rtb_Switch_fctl_v_alpha_stall_warn_kn_Data;
@@ -215,13 +221,16 @@ void A380FadecComputer::step()
   real32_T rtb_Switch_fg_yaw_fd_command_1_Data;
   real32_T rtb_Switch_fg_yaw_fd_command_2_Data;
   real32_T rtb_y_pg;
+  uint32_T rtb_Switch_fctl_aileron_droop_command_deg_SSM;
   uint32_T rtb_Switch_fctl_aileron_status_word_SSM;
+  uint32_T rtb_Switch_fctl_capability_score_SSM;
   uint32_T rtb_Switch_fctl_discrete_status_word_1_SSM;
   uint32_T rtb_Switch_fctl_elevator_1_position_deg_SSM;
   uint32_T rtb_Switch_fctl_elevator_2_position_deg_SSM;
   uint32_T rtb_Switch_fctl_elevator_3_position_deg_SSM;
   uint32_T rtb_Switch_fctl_elevator_status_word_SSM;
   uint32_T rtb_Switch_fctl_fctl_law_status_word_SSM;
+  uint32_T rtb_Switch_fctl_ground_spoiler_command_deg_SSM;
   uint32_T rtb_Switch_fctl_left_aileron_1_position_deg_SSM;
   uint32_T rtb_Switch_fctl_left_aileron_2_position_deg_SSM;
   uint32_T rtb_Switch_fctl_left_inboard_elevator_command_deg_SSM;
@@ -240,6 +249,7 @@ void A380FadecComputer::step()
   uint32_T rtb_Switch_fctl_left_spoiler_8_command_deg_SSM;
   uint32_T rtb_Switch_fctl_left_spoiler_position_deg_SSM;
   uint32_T rtb_Switch_fctl_lower_rudder_command_deg_SSM;
+  uint32_T rtb_Switch_fctl_lower_rudder_travel_lim_deg_SSM;
   uint32_T rtb_Switch_fctl_radio_height_1_ft_SSM;
   uint32_T rtb_Switch_fctl_radio_height_2_ft_SSM;
   uint32_T rtb_Switch_fctl_right_aileron_1_position_deg_SSM;
@@ -264,10 +274,12 @@ void A380FadecComputer::step()
   uint32_T rtb_Switch_fctl_rudder_2_position_deg_SSM;
   uint32_T rtb_Switch_fctl_rudder_pedal_position_deg_SSM;
   uint32_T rtb_Switch_fctl_rudder_status_word_SSM;
+  uint32_T rtb_Switch_fctl_speed_brake_command_deg_SSM;
   uint32_T rtb_Switch_fctl_spoiler_status_word_SSM;
   uint32_T rtb_Switch_fctl_ths_command_deg_SSM;
   uint32_T rtb_Switch_fctl_ths_position_deg_SSM;
   uint32_T rtb_Switch_fctl_upper_rudder_command_deg_SSM;
+  uint32_T rtb_Switch_fctl_upper_rudder_travel_lim_deg_SSM;
   uint32_T rtb_Switch_fctl_v_alpha_lim_kn_SSM;
   uint32_T rtb_Switch_fctl_v_alpha_prot_kn_SSM;
   uint32_T rtb_Switch_fctl_v_alpha_stall_warn_kn_SSM;
@@ -481,6 +493,8 @@ void A380FadecComputer::step()
     rtb_Switch_fctl_radio_height_2_ft_Data = A380FadecComputer_U.in.prim_1.fctl.radio_height_2_ft.Data;
     rtb_Switch_fctl_fctl_law_status_word_SSM = A380FadecComputer_U.in.prim_1.fctl.fctl_law_status_word.SSM;
     rtb_Switch_fctl_fctl_law_status_word_Data = A380FadecComputer_U.in.prim_1.fctl.fctl_law_status_word.Data;
+    rtb_Switch_fctl_capability_score_SSM = A380FadecComputer_U.in.prim_1.fctl.capability_score.SSM;
+    rtb_Switch_fctl_capability_score_Data = A380FadecComputer_U.in.prim_1.fctl.capability_score.Data;
     rtb_Switch_fctl_discrete_status_word_1_SSM = A380FadecComputer_U.in.prim_1.fctl.discrete_status_word_1.SSM;
     rtb_Switch_fctl_discrete_status_word_1_Data = A380FadecComputer_U.in.prim_1.fctl.discrete_status_word_1.Data;
     rtb_Switch_fctl_v_alpha_lim_kn_SSM = A380FadecComputer_U.in.prim_1.fctl.v_alpha_lim_kn.SSM;
@@ -489,6 +503,18 @@ void A380FadecComputer::step()
     rtb_Switch_fctl_v_alpha_prot_kn_Data = A380FadecComputer_U.in.prim_1.fctl.v_alpha_prot_kn.Data;
     rtb_Switch_fctl_v_alpha_stall_warn_kn_SSM = A380FadecComputer_U.in.prim_1.fctl.v_alpha_stall_warn_kn.SSM;
     rtb_Switch_fctl_v_alpha_stall_warn_kn_Data = A380FadecComputer_U.in.prim_1.fctl.v_alpha_stall_warn_kn.Data;
+    rtb_Switch_fctl_aileron_droop_command_deg_SSM = A380FadecComputer_U.in.prim_1.fctl.aileron_droop_command_deg.SSM;
+    rtb_Switch_fctl_aileron_droop_command_deg_Data = A380FadecComputer_U.in.prim_1.fctl.aileron_droop_command_deg.Data;
+    rtb_Switch_fctl_upper_rudder_travel_lim_deg_SSM = A380FadecComputer_U.in.prim_1.fctl.upper_rudder_travel_lim_deg.SSM;
+    rtb_Switch_fctl_upper_rudder_travel_lim_deg_Data =
+      A380FadecComputer_U.in.prim_1.fctl.upper_rudder_travel_lim_deg.Data;
+    rtb_Switch_fctl_lower_rudder_travel_lim_deg_SSM = A380FadecComputer_U.in.prim_1.fctl.lower_rudder_travel_lim_deg.SSM;
+    rtb_Switch_fctl_lower_rudder_travel_lim_deg_Data =
+      A380FadecComputer_U.in.prim_1.fctl.lower_rudder_travel_lim_deg.Data;
+    rtb_Switch_fctl_speed_brake_command_deg_SSM = A380FadecComputer_U.in.prim_1.fctl.speed_brake_command_deg.SSM;
+    rtb_Switch_fctl_speed_brake_command_deg_Data = A380FadecComputer_U.in.prim_1.fctl.speed_brake_command_deg.Data;
+    rtb_Switch_fctl_ground_spoiler_command_deg_SSM = A380FadecComputer_U.in.prim_1.fctl.ground_spoiler_command_deg.SSM;
+    rtb_Switch_fctl_ground_spoiler_command_deg_Data = A380FadecComputer_U.in.prim_1.fctl.ground_spoiler_command_deg.Data;
     rtb_Switch_fe_gamma_a_deg_SSM = A380FadecComputer_U.in.prim_1.fe.gamma_a_deg.SSM;
     rtb_Switch_fe_gamma_a_deg_Data = A380FadecComputer_U.in.prim_1.fe.gamma_a_deg.Data;
     rtb_Switch_fe_gamma_t_deg_SSM = A380FadecComputer_U.in.prim_1.fe.gamma_t_deg.SSM;
@@ -725,6 +751,8 @@ void A380FadecComputer::step()
     rtb_Switch_fctl_radio_height_2_ft_Data = A380FadecComputer_U.in.prim_2.fctl.radio_height_2_ft.Data;
     rtb_Switch_fctl_fctl_law_status_word_SSM = A380FadecComputer_U.in.prim_2.fctl.fctl_law_status_word.SSM;
     rtb_Switch_fctl_fctl_law_status_word_Data = A380FadecComputer_U.in.prim_2.fctl.fctl_law_status_word.Data;
+    rtb_Switch_fctl_capability_score_SSM = A380FadecComputer_U.in.prim_2.fctl.capability_score.SSM;
+    rtb_Switch_fctl_capability_score_Data = A380FadecComputer_U.in.prim_2.fctl.capability_score.Data;
     rtb_Switch_fctl_discrete_status_word_1_SSM = A380FadecComputer_U.in.prim_2.fctl.discrete_status_word_1.SSM;
     rtb_Switch_fctl_discrete_status_word_1_Data = A380FadecComputer_U.in.prim_2.fctl.discrete_status_word_1.Data;
     rtb_Switch_fctl_v_alpha_lim_kn_SSM = A380FadecComputer_U.in.prim_2.fctl.v_alpha_lim_kn.SSM;
@@ -733,6 +761,18 @@ void A380FadecComputer::step()
     rtb_Switch_fctl_v_alpha_prot_kn_Data = A380FadecComputer_U.in.prim_2.fctl.v_alpha_prot_kn.Data;
     rtb_Switch_fctl_v_alpha_stall_warn_kn_SSM = A380FadecComputer_U.in.prim_2.fctl.v_alpha_stall_warn_kn.SSM;
     rtb_Switch_fctl_v_alpha_stall_warn_kn_Data = A380FadecComputer_U.in.prim_2.fctl.v_alpha_stall_warn_kn.Data;
+    rtb_Switch_fctl_aileron_droop_command_deg_SSM = A380FadecComputer_U.in.prim_2.fctl.aileron_droop_command_deg.SSM;
+    rtb_Switch_fctl_aileron_droop_command_deg_Data = A380FadecComputer_U.in.prim_2.fctl.aileron_droop_command_deg.Data;
+    rtb_Switch_fctl_upper_rudder_travel_lim_deg_SSM = A380FadecComputer_U.in.prim_2.fctl.upper_rudder_travel_lim_deg.SSM;
+    rtb_Switch_fctl_upper_rudder_travel_lim_deg_Data =
+      A380FadecComputer_U.in.prim_2.fctl.upper_rudder_travel_lim_deg.Data;
+    rtb_Switch_fctl_lower_rudder_travel_lim_deg_SSM = A380FadecComputer_U.in.prim_2.fctl.lower_rudder_travel_lim_deg.SSM;
+    rtb_Switch_fctl_lower_rudder_travel_lim_deg_Data =
+      A380FadecComputer_U.in.prim_2.fctl.lower_rudder_travel_lim_deg.Data;
+    rtb_Switch_fctl_speed_brake_command_deg_SSM = A380FadecComputer_U.in.prim_2.fctl.speed_brake_command_deg.SSM;
+    rtb_Switch_fctl_speed_brake_command_deg_Data = A380FadecComputer_U.in.prim_2.fctl.speed_brake_command_deg.Data;
+    rtb_Switch_fctl_ground_spoiler_command_deg_SSM = A380FadecComputer_U.in.prim_2.fctl.ground_spoiler_command_deg.SSM;
+    rtb_Switch_fctl_ground_spoiler_command_deg_Data = A380FadecComputer_U.in.prim_2.fctl.ground_spoiler_command_deg.Data;
     rtb_Switch_fe_gamma_a_deg_SSM = A380FadecComputer_U.in.prim_2.fe.gamma_a_deg.SSM;
     rtb_Switch_fe_gamma_a_deg_Data = A380FadecComputer_U.in.prim_2.fe.gamma_a_deg.Data;
     rtb_Switch_fe_gamma_t_deg_SSM = A380FadecComputer_U.in.prim_2.fe.gamma_t_deg.SSM;
@@ -969,6 +1009,8 @@ void A380FadecComputer::step()
     rtb_Switch_fctl_radio_height_2_ft_Data = A380FadecComputer_U.in.prim_3.fctl.radio_height_2_ft.Data;
     rtb_Switch_fctl_fctl_law_status_word_SSM = A380FadecComputer_U.in.prim_3.fctl.fctl_law_status_word.SSM;
     rtb_Switch_fctl_fctl_law_status_word_Data = A380FadecComputer_U.in.prim_3.fctl.fctl_law_status_word.Data;
+    rtb_Switch_fctl_capability_score_SSM = A380FadecComputer_U.in.prim_3.fctl.capability_score.SSM;
+    rtb_Switch_fctl_capability_score_Data = A380FadecComputer_U.in.prim_3.fctl.capability_score.Data;
     rtb_Switch_fctl_discrete_status_word_1_SSM = A380FadecComputer_U.in.prim_3.fctl.discrete_status_word_1.SSM;
     rtb_Switch_fctl_discrete_status_word_1_Data = A380FadecComputer_U.in.prim_3.fctl.discrete_status_word_1.Data;
     rtb_Switch_fctl_v_alpha_lim_kn_SSM = A380FadecComputer_U.in.prim_3.fctl.v_alpha_lim_kn.SSM;
@@ -977,6 +1019,18 @@ void A380FadecComputer::step()
     rtb_Switch_fctl_v_alpha_prot_kn_Data = A380FadecComputer_U.in.prim_3.fctl.v_alpha_prot_kn.Data;
     rtb_Switch_fctl_v_alpha_stall_warn_kn_SSM = A380FadecComputer_U.in.prim_3.fctl.v_alpha_stall_warn_kn.SSM;
     rtb_Switch_fctl_v_alpha_stall_warn_kn_Data = A380FadecComputer_U.in.prim_3.fctl.v_alpha_stall_warn_kn.Data;
+    rtb_Switch_fctl_aileron_droop_command_deg_SSM = A380FadecComputer_U.in.prim_3.fctl.aileron_droop_command_deg.SSM;
+    rtb_Switch_fctl_aileron_droop_command_deg_Data = A380FadecComputer_U.in.prim_3.fctl.aileron_droop_command_deg.Data;
+    rtb_Switch_fctl_upper_rudder_travel_lim_deg_SSM = A380FadecComputer_U.in.prim_3.fctl.upper_rudder_travel_lim_deg.SSM;
+    rtb_Switch_fctl_upper_rudder_travel_lim_deg_Data =
+      A380FadecComputer_U.in.prim_3.fctl.upper_rudder_travel_lim_deg.Data;
+    rtb_Switch_fctl_lower_rudder_travel_lim_deg_SSM = A380FadecComputer_U.in.prim_3.fctl.lower_rudder_travel_lim_deg.SSM;
+    rtb_Switch_fctl_lower_rudder_travel_lim_deg_Data =
+      A380FadecComputer_U.in.prim_3.fctl.lower_rudder_travel_lim_deg.Data;
+    rtb_Switch_fctl_speed_brake_command_deg_SSM = A380FadecComputer_U.in.prim_3.fctl.speed_brake_command_deg.SSM;
+    rtb_Switch_fctl_speed_brake_command_deg_Data = A380FadecComputer_U.in.prim_3.fctl.speed_brake_command_deg.Data;
+    rtb_Switch_fctl_ground_spoiler_command_deg_SSM = A380FadecComputer_U.in.prim_3.fctl.ground_spoiler_command_deg.SSM;
+    rtb_Switch_fctl_ground_spoiler_command_deg_Data = A380FadecComputer_U.in.prim_3.fctl.ground_spoiler_command_deg.Data;
     rtb_Switch_fe_gamma_a_deg_SSM = A380FadecComputer_U.in.prim_3.fe.gamma_a_deg.SSM;
     rtb_Switch_fe_gamma_a_deg_Data = A380FadecComputer_U.in.prim_3.fe.gamma_a_deg.Data;
     rtb_Switch_fe_gamma_t_deg_SSM = A380FadecComputer_U.in.prim_3.fe.gamma_t_deg.SSM;
@@ -1546,6 +1600,8 @@ void A380FadecComputer::step()
   A380FadecComputer_Y.out.prim_input.fctl.radio_height_2_ft.Data = rtb_Switch_fctl_radio_height_2_ft_Data;
   A380FadecComputer_Y.out.prim_input.fctl.fctl_law_status_word.SSM = rtb_Switch_fctl_fctl_law_status_word_SSM;
   A380FadecComputer_Y.out.prim_input.fctl.fctl_law_status_word.Data = rtb_Switch_fctl_fctl_law_status_word_Data;
+  A380FadecComputer_Y.out.prim_input.fctl.capability_score.SSM = rtb_Switch_fctl_capability_score_SSM;
+  A380FadecComputer_Y.out.prim_input.fctl.capability_score.Data = rtb_Switch_fctl_capability_score_Data;
   A380FadecComputer_Y.out.prim_input.fctl.discrete_status_word_1.SSM = rtb_Switch_fctl_discrete_status_word_1_SSM;
   A380FadecComputer_Y.out.prim_input.fctl.discrete_status_word_1.Data = rtb_Switch_fctl_discrete_status_word_1_Data;
   A380FadecComputer_Y.out.prim_input.fctl.v_alpha_lim_kn.SSM = rtb_Switch_fctl_v_alpha_lim_kn_SSM;
@@ -1554,6 +1610,23 @@ void A380FadecComputer::step()
   A380FadecComputer_Y.out.prim_input.fctl.v_alpha_prot_kn.Data = rtb_Switch_fctl_v_alpha_prot_kn_Data;
   A380FadecComputer_Y.out.prim_input.fctl.v_alpha_stall_warn_kn.SSM = rtb_Switch_fctl_v_alpha_stall_warn_kn_SSM;
   A380FadecComputer_Y.out.prim_input.fctl.v_alpha_stall_warn_kn.Data = rtb_Switch_fctl_v_alpha_stall_warn_kn_Data;
+  A380FadecComputer_Y.out.prim_input.fctl.aileron_droop_command_deg.SSM = rtb_Switch_fctl_aileron_droop_command_deg_SSM;
+  A380FadecComputer_Y.out.prim_input.fctl.aileron_droop_command_deg.Data =
+    rtb_Switch_fctl_aileron_droop_command_deg_Data;
+  A380FadecComputer_Y.out.prim_input.fctl.upper_rudder_travel_lim_deg.SSM =
+    rtb_Switch_fctl_upper_rudder_travel_lim_deg_SSM;
+  A380FadecComputer_Y.out.prim_input.fctl.upper_rudder_travel_lim_deg.Data =
+    rtb_Switch_fctl_upper_rudder_travel_lim_deg_Data;
+  A380FadecComputer_Y.out.prim_input.fctl.lower_rudder_travel_lim_deg.SSM =
+    rtb_Switch_fctl_lower_rudder_travel_lim_deg_SSM;
+  A380FadecComputer_Y.out.prim_input.fctl.lower_rudder_travel_lim_deg.Data =
+    rtb_Switch_fctl_lower_rudder_travel_lim_deg_Data;
+  A380FadecComputer_Y.out.prim_input.fctl.speed_brake_command_deg.SSM = rtb_Switch_fctl_speed_brake_command_deg_SSM;
+  A380FadecComputer_Y.out.prim_input.fctl.speed_brake_command_deg.Data = rtb_Switch_fctl_speed_brake_command_deg_Data;
+  A380FadecComputer_Y.out.prim_input.fctl.ground_spoiler_command_deg.SSM =
+    rtb_Switch_fctl_ground_spoiler_command_deg_SSM;
+  A380FadecComputer_Y.out.prim_input.fctl.ground_spoiler_command_deg.Data =
+    rtb_Switch_fctl_ground_spoiler_command_deg_Data;
   A380FadecComputer_Y.out.prim_input.fe.gamma_a_deg.SSM = rtb_Switch_fe_gamma_a_deg_SSM;
   A380FadecComputer_Y.out.prim_input.fe.gamma_a_deg.Data = rtb_Switch_fe_gamma_a_deg_Data;
   A380FadecComputer_Y.out.prim_input.fe.gamma_t_deg.SSM = rtb_Switch_fe_gamma_t_deg_SSM;

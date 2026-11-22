@@ -284,6 +284,7 @@ export function computeBC3Message(
   exitMissed: boolean,
   primFgDiscreteWord2: Arinc429WordData,
   primFgDiscreteWord6: Arinc429WordData,
+  thrustLocked: boolean,
 ): BC3Messages {
   const flightPhaseForWarning =
     fwcFlightPhase >= 2 && fwcFlightPhase <= 11 && !(fwcFlightPhase >= 4 && fwcFlightPhase <= 7);
@@ -294,7 +295,7 @@ export function computeBC3Message(
   const fcuAltBlwAc = primFgDiscreteWord6.bitValueOr(16, false);
 
   // All currently unused message are set to false
-  if (fcdcWord1.bitValue(15) && !fcdcWord1.isFailureWarning() && flightPhaseForWarning) {
+  if (fcdcWord1.bitValue(20) && !fcdcWord1.isFailureWarning() && flightPhaseForWarning) {
     return BC3Messages.USE_MAN_PITCH_TRIM;
   } else if (false) {
     return BC3Messages.FOR_GA_SET_TOGA;
@@ -306,7 +307,7 @@ export function computeBC3Message(
     return BC3Messages.TCAS_RA_INHIBITED;
   } else if (trkFpaDeselected && !isAttExcessive) {
     return BC3Messages.TRK_FPA_DESELECTED;
-  } else if (false) {
+  } else if (thrustLocked) {
     return BC3Messages.MOVE_THR_LEVERS;
   } else if (tdReached) {
     return BC3Messages.TD_REACHED;

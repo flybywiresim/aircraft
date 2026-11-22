@@ -8,7 +8,7 @@ struct base_arinc_429
 {
   uint32_T SSM;
   real32_T Data;
-};
+} __attribute__((aligned(8)));
 
 #endif
 
@@ -70,10 +70,16 @@ struct base_prim_fctl_out_bus
   base_arinc_429 radio_height_1_ft;
   base_arinc_429 radio_height_2_ft;
   base_arinc_429 fctl_law_status_word;
+  base_arinc_429 capability_score;
   base_arinc_429 discrete_status_word_1;
   base_arinc_429 v_alpha_lim_kn;
   base_arinc_429 v_alpha_prot_kn;
   base_arinc_429 v_alpha_stall_warn_kn;
+  base_arinc_429 aileron_droop_command_deg;
+  base_arinc_429 upper_rudder_travel_lim_deg;
+  base_arinc_429 lower_rudder_travel_lim_deg;
+  base_arinc_429 speed_brake_command_deg;
+  base_arinc_429 ground_spoiler_command_deg;
 };
 
 #endif
@@ -214,19 +220,21 @@ struct base_elac_ir_computation_data
   real_T n_z_g;
   real_T theta_dot_deg_s;
   real_T phi_dot_deg_s;
+  real_T V_gnd_kts;
+  real_T V_zbi_ft_min;
 };
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_prim_sim_input_
-#define DEFINED_TYPEDEF_FOR_base_prim_sim_input_
+#ifndef DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+#define DEFINED_TYPEDEF_FOR_base_lgciu_bus_
 
-struct base_prim_sim_input
+struct base_lgciu_bus
 {
-  real32_T spd_mach;
-  real32_T hdg_trk;
-  real32_T alt;
-  real32_T vs_fpa;
+  base_arinc_429 discrete_word_1;
+  base_arinc_429 discrete_word_2;
+  base_arinc_429 discrete_word_3;
+  base_arinc_429 discrete_word_4;
 };
 
 #endif
@@ -266,15 +274,15 @@ struct base_sec_out_bus
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_lgciu_bus_
-#define DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+#ifndef DEFINED_TYPEDEF_FOR_base_prim_sim_input_
+#define DEFINED_TYPEDEF_FOR_base_prim_sim_input_
 
-struct base_lgciu_bus
+struct base_prim_sim_input
 {
-  base_arinc_429 discrete_word_1;
-  base_arinc_429 discrete_word_2;
-  base_arinc_429 discrete_word_3;
-  base_arinc_429 discrete_word_4;
+  real32_T spd_mach;
+  real32_T hdg_trk;
+  real32_T alt;
+  real32_T vs_fpa;
 };
 
 #endif
@@ -749,6 +757,7 @@ struct base_prim_flight_envelope_outputs
   real_T gamma_a_deg;
   real_T gamma_t_deg;
   boolean_T pitch_pitch_warning_active;
+  boolean_T bank_bank_warning_active;
   boolean_T low_energy_warning_active;
 };
 
@@ -842,30 +851,43 @@ struct base_prim_surface_status
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_a380_lateral_efcs_law_
-#define DEFINED_TYPEDEF_FOR_a380_lateral_efcs_law_
+#ifndef DEFINED_TYPEDEF_FOR_a380_efcs_law_
+#define DEFINED_TYPEDEF_FOR_a380_efcs_law_
 
-enum class a380_lateral_efcs_law
+enum class a380_efcs_law
   : int32_T {
-  NormalLaw = 0,
-  DirectLaw,
-  None
+  None = 0,
+  NormalLaw,
+  AlternateLaw1A,
+  AlternateLaw1B,
+  AlternateLaw1C,
+  AlternateLaw2A,
+  AlternateLaw2B,
+  DirectLaw
 };
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_a380_pitch_efcs_law_
-#define DEFINED_TYPEDEF_FOR_a380_pitch_efcs_law_
+#ifndef DEFINED_TYPEDEF_FOR_a380_pitch_law_
+#define DEFINED_TYPEDEF_FOR_a380_pitch_law_
 
-enum class a380_pitch_efcs_law
+enum class a380_pitch_law
   : int32_T {
-  NormalLaw = 0,
-  AlternateLaw1A,
-  AlternateLaw1B,
-  AlternateLaw1C,
-  AlternateLaw2,
-  DirectLaw,
-  None
+  None = 0,
+  NzLaw,
+  DirectLaw
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_a380_lateral_law_
+#define DEFINED_TYPEDEF_FOR_a380_lateral_law_
+
+enum class a380_lateral_law
+  : int32_T {
+  None = 0,
+  YStarLaw,
+  DirectLaw
 };
 
 #endif
@@ -878,12 +900,14 @@ struct base_prim_fctl_logic_outputs
   base_prim_surface_status surface_statuses;
   base_prim_lateral_surface_positions lateral_surface_positions;
   base_prim_pitch_surface_positions pitch_surface_positions;
-  a380_lateral_efcs_law lateral_law_capability;
-  a380_lateral_efcs_law active_lateral_law;
-  a380_pitch_efcs_law pitch_law_capability;
-  a380_pitch_efcs_law active_pitch_law;
+  a380_efcs_law law_capability;
+  a380_efcs_law active_law;
+  a380_pitch_law active_pitch_law;
+  a380_lateral_law active_lateral_law;
   boolean_T abnormal_condition_law_active;
+  boolean_T flare_law_override_active;
   boolean_T is_master_prim;
+  uint16_T prim_capability_score;
   boolean_T elevator_1_avail;
   boolean_T elevator_1_engaged;
   boolean_T elevator_2_avail;
@@ -918,6 +942,7 @@ struct base_prim_fctl_logic_outputs
   boolean_T rudder_2_electric_mode_engaged;
   boolean_T aileron_droop_active;
   boolean_T aileron_antidroop_active;
+  real_T aileron_droop_command_deg;
   boolean_T ths_automatic_mode_active;
   real_T ths_manual_mode_c_deg_s;
   boolean_T eha_ebha_elec_mode_inhibited;
@@ -945,6 +970,8 @@ struct base_prim_fctl_logic_outputs
   boolean_T high_speed_prot_active;
   real_T high_speed_prot_lo_thresh_kn;
   real_T high_speed_prot_hi_thresh_kn;
+  real_T upper_rudder_travel_lim_deg;
+  real_T lower_rudder_travel_lim_deg;
 };
 
 #endif

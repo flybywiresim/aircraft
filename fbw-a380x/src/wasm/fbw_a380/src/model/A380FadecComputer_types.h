@@ -8,7 +8,7 @@ struct base_arinc_429
 {
   uint32_T SSM;
   real32_T Data;
-};
+} __attribute__((aligned(8)));
 
 #endif
 
@@ -70,10 +70,16 @@ struct base_prim_fctl_out_bus
   base_arinc_429 radio_height_1_ft;
   base_arinc_429 radio_height_2_ft;
   base_arinc_429 fctl_law_status_word;
+  base_arinc_429 capability_score;
   base_arinc_429 discrete_status_word_1;
   base_arinc_429 v_alpha_lim_kn;
   base_arinc_429 v_alpha_prot_kn;
   base_arinc_429 v_alpha_stall_warn_kn;
+  base_arinc_429 aileron_droop_command_deg;
+  base_arinc_429 upper_rudder_travel_lim_deg;
+  base_arinc_429 lower_rudder_travel_lim_deg;
+  base_arinc_429 speed_brake_command_deg;
+  base_arinc_429 ground_spoiler_command_deg;
 };
 
 #endif

@@ -1299,6 +1299,36 @@ A380PrimComputerGeneralLogic::Parameters_A380PrimComputerGeneralLogic_T A380Prim
             {
               0U,
               0.0F
+            },
+
+            {
+              0U,
+              0.0F
+            },
+
+            {
+              0U,
+              0.0F
+            },
+
+            {
+              0U,
+              0.0F
+            },
+
+            {
+              0U,
+              0.0F
+            },
+
+            {
+              0U,
+              0.0F
+            },
+
+            {
+              0U,
+              0.0F
             }
           },
 
@@ -1534,6 +1564,36 @@ A380PrimComputerGeneralLogic::Parameters_A380PrimComputerGeneralLogic_T A380Prim
 
         {
           {
+            {
+              0U,
+              0.0F
+            },
+
+            {
+              0U,
+              0.0F
+            },
+
+            {
+              0U,
+              0.0F
+            },
+
+            {
+              0U,
+              0.0F
+            },
+
+            {
+              0U,
+              0.0F
+            },
+
+            {
+              0U,
+              0.0F
+            },
+
             {
               0U,
               0.0F
@@ -2818,6 +2878,8 @@ A380PrimComputerGeneralLogic::Parameters_A380PrimComputerGeneralLogic_T A380Prim
         0.0,
         0.0,
         0.0,
+        0.0,
+        0.0,
         0.0
       },
       0.0,
@@ -2869,6 +2931,7 @@ A380PrimComputerGeneralLogic::Parameters_A380PrimComputerGeneralLogic_T A380Prim
       0.0,
       0.0,
       0.0,
+      false,
       false,
       false
     },
@@ -2969,13 +3032,14 @@ A380PrimComputerGeneralLogic::Parameters_A380PrimComputerGeneralLogic_T A380Prim
         0.0,
         0.0
       },
-      a380_lateral_efcs_law::NormalLaw,
-      a380_lateral_efcs_law::NormalLaw,
-      a380_pitch_efcs_law::NormalLaw,
-      a380_pitch_efcs_law::NormalLaw,
+      a380_efcs_law::None,
+      a380_efcs_law::None,
+      a380_pitch_law::None,
+      a380_lateral_law::None,
       false,
       false,
       false,
+      0U,
       false,
       false,
       false,
@@ -3012,6 +3076,8 @@ A380PrimComputerGeneralLogic::Parameters_A380PrimComputerGeneralLogic_T A380Prim
       false,
       0.0,
       false,
+      0.0,
+      false,
       false,
       false,
       false,
@@ -3034,6 +3100,8 @@ A380PrimComputerGeneralLogic::Parameters_A380PrimComputerGeneralLogic_T A380Prim
       0.0,
       0.0,
       false,
+      0.0,
+      0.0,
       0.0,
       0.0
     },
@@ -3611,6 +3679,36 @@ A380PrimComputerGeneralLogic::Parameters_A380PrimComputerGeneralLogic_T A380Prim
         {
           0U,
           0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
+        },
+
+        {
+          0U,
+          0.0F
         }
       },
 
@@ -3848,6 +3946,36 @@ A380PrimComputerGeneralLogic::Parameters_A380PrimComputerGeneralLogic_T A380Prim
 
   {
     {
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
+      {
+        0U,
+        0.0F
+      },
+
       {
         0U,
         0.0F
@@ -4424,13 +4552,14 @@ A380PrimComputerGeneralLogic::Parameters_A380PrimComputerGeneralLogic_T A380Prim
       0.0,
       0.0
     },
-    a380_lateral_efcs_law::None,
-    a380_lateral_efcs_law::None,
-    a380_pitch_efcs_law::None,
-    a380_pitch_efcs_law::None,
+    a380_efcs_law::None,
+    a380_efcs_law::None,
+    a380_pitch_law::None,
+    a380_lateral_law::None,
     false,
     false,
     false,
+    0U,
     false,
     false,
     false,
@@ -4467,6 +4596,8 @@ A380PrimComputerGeneralLogic::Parameters_A380PrimComputerGeneralLogic_T A380Prim
     false,
     0.0,
     false,
+    0.0,
+    false,
     false,
     false,
     false,
@@ -4489,6 +4620,8 @@ A380PrimComputerGeneralLogic::Parameters_A380PrimComputerGeneralLogic_T A380Prim
     0.0,
     0.0,
     false,
+    0.0,
+    0.0,
     0.0,
     0.0
   },
@@ -4742,6 +4875,8 @@ A380PrimComputerGeneralLogic::Parameters_A380PrimComputerGeneralLogic_T A380Prim
       0.0,
       0.0,
       0.0,
+      0.0,
+      0.0,
       0.0
     },
     0.0,
@@ -4873,6 +5008,7 @@ A380PrimComputerGeneralLogic::Parameters_A380PrimComputerGeneralLogic_T A380Prim
     0.0,
     0.0,
     0.0,
+    false,
     false,
     false
   },

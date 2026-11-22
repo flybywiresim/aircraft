@@ -153,7 +153,7 @@ struct base_arinc_429
 {
   uint32_T SSM;
   real32_T Data;
-};
+} __attribute__((aligned(8)));
 
 #endif
 
@@ -215,10 +215,16 @@ struct base_prim_fctl_out_bus
   base_arinc_429 radio_height_1_ft;
   base_arinc_429 radio_height_2_ft;
   base_arinc_429 fctl_law_status_word;
+  base_arinc_429 capability_score;
   base_arinc_429 discrete_status_word_1;
   base_arinc_429 v_alpha_lim_kn;
   base_arinc_429 v_alpha_prot_kn;
   base_arinc_429 v_alpha_stall_warn_kn;
+  base_arinc_429 aileron_droop_command_deg;
+  base_arinc_429 upper_rudder_travel_lim_deg;
+  base_arinc_429 lower_rudder_travel_lim_deg;
+  base_arinc_429 speed_brake_command_deg;
+  base_arinc_429 ground_spoiler_command_deg;
 };
 
 #endif
@@ -376,36 +382,16 @@ struct base_fcu_afs_panel_outputs
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_fcu_efis_logic_outputs_
-#define DEFINED_TYPEDEF_FOR_base_fcu_efis_logic_outputs_
+#ifndef DEFINED_TYPEDEF_FOR_base_fcu_sim_input_
+#define DEFINED_TYPEDEF_FOR_base_fcu_sim_input_
 
-struct base_fcu_efis_logic_outputs
+struct base_fcu_sim_input
 {
-  boolean_T vv_auto_activate;
-  boolean_T vv_auto_deactivate;
-  boolean_T ls_auto_activate;
-  boolean_T wx_auto_activate;
-  boolean_T terr_auto_activate;
-  boolean_T traf_auto_activate;
-  boolean_T vv_on;
-  boolean_T ls_on;
-  boolean_T taxi_on;
-  a380_efis_filter_selection efis_filter;
-  boolean_T cstr_on;
-  boolean_T arpt_on;
-  a380_efis_navaid_selection navaid_1;
-  a380_efis_navaid_selection navaid_2;
-  boolean_T traf_on;
-  a380_surv_filter_selection surv_filter;
-  a380_efis_mode_selection efis_mode;
-  a380_efis_range_selection efis_range;
-  boolean_T baro_std;
-  boolean_T baro_qnh;
-  boolean_T baro_qfe;
-  real32_T baro_value_hpa;
-  real32_T baro_value_inhg;
-  boolean_T baro_preset_active;
-  boolean_T efis_cp_panel_activate;
+  real32_T baro_setting_hpa;
+  int8_T efis_mode;
+  int8_T efis_range;
+  int8_T navaid_1_mode;
+  int8_T navaid_2_mode;
 };
 
 #endif
@@ -438,16 +424,36 @@ struct base_fcu_bus
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_fcu_sim_input_
-#define DEFINED_TYPEDEF_FOR_base_fcu_sim_input_
+#ifndef DEFINED_TYPEDEF_FOR_base_fcu_efis_logic_outputs_
+#define DEFINED_TYPEDEF_FOR_base_fcu_efis_logic_outputs_
 
-struct base_fcu_sim_input
+struct base_fcu_efis_logic_outputs
 {
-  real32_T baro_setting_hpa;
-  int8_T efis_mode;
-  int8_T efis_range;
-  int8_T navaid_1_mode;
-  int8_T navaid_2_mode;
+  boolean_T vv_auto_activate;
+  boolean_T vv_auto_deactivate;
+  boolean_T ls_auto_activate;
+  boolean_T wx_auto_activate;
+  boolean_T terr_auto_activate;
+  boolean_T traf_auto_activate;
+  boolean_T vv_on;
+  boolean_T ls_on;
+  boolean_T taxi_on;
+  a380_efis_filter_selection efis_filter;
+  boolean_T cstr_on;
+  boolean_T arpt_on;
+  a380_efis_navaid_selection navaid_1;
+  a380_efis_navaid_selection navaid_2;
+  boolean_T traf_on;
+  a380_surv_filter_selection surv_filter;
+  a380_efis_mode_selection efis_mode;
+  a380_efis_range_selection efis_range;
+  boolean_T baro_std;
+  boolean_T baro_qnh;
+  boolean_T baro_qfe;
+  real32_T baro_value_hpa;
+  real32_T baro_value_inhg;
+  boolean_T baro_preset_active;
+  boolean_T efis_cp_panel_activate;
 };
 
 #endif
