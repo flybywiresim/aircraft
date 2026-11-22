@@ -60,6 +60,10 @@ export class FmcAircraftInterface {
     'L:A380X_FM_APPROACH_HEADWIND_COMPONENT',
     SimVarValueType.String,
   );
+  private static readonly fmsMachModeRequestedRegisteredSimVar = RegisteredSimVar.create(
+    'L:A32NX_FM_MACH_MODE_REQUESTED',
+    SimVarValueType.Enum,
+  );
   private readonly subs = [] as Subscription[];
   private gameState = GameStateProvider.get();
   // ARINC words
@@ -1094,11 +1098,7 @@ export class FmcAircraftInterface {
 
     // Automatically change fcu mach/speed mode
     if (this.managedSpeedTargetIsMach !== isMach) {
-      if (isMach) {
-        SimVar.SetSimVarValue('K:AP_MANAGED_SPEED_IN_MACH_ON', 'number', 1);
-      } else {
-        SimVar.SetSimVarValue('K:AP_MANAGED_SPEED_IN_MACH_OFF', 'number', 1);
-      }
+      FmcAircraftInterface.fmsMachModeRequestedRegisteredSimVar.set(Number(isMach));
       this.managedSpeedTargetIsMach = isMach;
     }
   }

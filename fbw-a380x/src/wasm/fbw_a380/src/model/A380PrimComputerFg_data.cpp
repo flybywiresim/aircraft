@@ -1068,6 +1068,12 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
   true,
 
   { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
+  true,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
+  false,
+
+  { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
   false,
 
   { 'a', 'a', 'a', 'a', 'a', 'a', 'a' },
@@ -3918,7 +3924,6 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
           0.0,
           false,
           false,
-          false,
           0.0,
           0.0,
           0.0,
@@ -5323,7 +5328,7 @@ A380PrimComputerFg::Parameters_A380PrimComputerFg_T A380PrimComputerFg::A380Prim
     }
   },
 
-  { 'a' },
+  { 'a', 'a' },
 
   {
     {
