@@ -108,8 +108,7 @@ Always start an item with "1."; GitHub will number the rendered list automatical
 1. [A380X/RMP] Fix RMP brightness initialisation - @CameronCarlyon (YouBaconMeCrazy)
 1. [A380X] Make flightdeck lighting panel-state and time-of-day aware. Adjust existing values. @CameronCarlyon (YouBaconMeCrazy)
 1. [FMS] Limit step descent guidance to -1000fpm - @Jonny23787 (Jonathan), @BlueberryKing (BlueberryKing)
-1. [A380X/SD] Correct EL/DC page APU TR text display color - @ksleungac (pzb-85)
-1. [A380X/FMS] Added FMS WIND page - @BravoMike99 (bruno_pt99)
+1. [A380X/SD] Correct EL/DC page APU TR text display color - @ksleungac (pzb-851. [A380X/FMS] Added FMS WIND page - @BravoMike99 (bruno_pt99)
 1. [A380X/FMS] Added "ENTRY NOT IN LIST" message - @BravoMike99 (bruno_pt99)
 1. [A380X/FMS] Fixed minimums of non active flightplans being taken into account - @BravoMike99 (bruno_pt99)
 1. [A380X/FMS] Added wind uplink request - @BravoMike99 (bruno_pt99)
@@ -119,7 +118,13 @@ Always start an item with "1."; GitHub will number the rendered list automatical
 1. [A32NX/FMS] Fixed +/- altitude constraints entered on the F-PLN page being inverted - @shinji1100
 1. [A32NX/FMS] Fixed FM light coming up too often - @saschl
 1. [EFB] Fixed local PDFs not displaying in EFB - @saschl
+1. [A380X/FLIGHT MODEL] Flight model fixes - @donstim (donbikes)
+1. [A32NX/FMS] Fix Vs1g for CONF 1+F and fix Vls for CONF 3 CG=>25%
+1. [A32NX/FCTL] Added new rotation law - @lukecologne (luke)
+1. [A32NX/FCTL] Added new FCDC outputs and moved F/CTL SD page to use FCDC data - @lukecologne (luke)
+1. [A32NX/FCTL] Improvements to the PFD lower area spoiler and THS indications - @lukecologne (luke)
 1. [A32NX/FMS] Implement computation and display of equitime point - @BlueberryKing (BlueberryKing)
+1. [A380X/FMS] Added ETP page - @BravoMike99 (bruno_pt99)
 
 ## 2024.1.0
 
