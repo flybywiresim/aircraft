@@ -88,6 +88,12 @@ export class MfdUiService {
     this.pub.pub('mfd_active_uri', parsedUri);
   }
 
+  public navigateBack() {
+    if (this.canGoBack()) {
+      this.navigateTo('back');
+    }
+  }
+
   /*
    * Whether one can navigate back
    */

@@ -29,35 +29,39 @@
 
 .mfd-title-bar-container {
   display: flex;
-  margin-left: 2px;
-  margin-right: 2px;
+  margin-left: 5px;
+  margin-right: 3px;
+  margin-top: 2px;
 }
 
 .mfd-title-bar-title {
-  flex: 10;
+  width: 586px;
   background-color: $display-dark-grey;
-  padding: 3px 10px 3px 10px;
 }
 
 .mfd-title-bar-text {
   color: #222222;
   font-size: 30px;
+  top: 5px;
+  left: 10px;
 }
 
 .mfd-title-bar-section {
   display: flex;
-  width: 70px;
   background-color: $display-dark-grey;
-  margin-left: 2px;
   justify-content: center;
   align-items: center;
 }
 
 .mfd-title-bar-section.eo {
   width: 70px;
+  position: relative;
+  left: 1.5px;
 }
 
 .mfd-title-bar-section.tmpy {
+  position: relative;
+  left: 3px;
   width: 100px;
 }
 
@@ -84,12 +88,12 @@
 }
 
 .mfd-header-callsign {
-  width: 25%;
-  text-align: left;
-  padding: 4px 10px 0px 10px;
+  position: absolute;
+  right: 129px;
+  top: 2.3px;
   color: $display-white;
   font-family: "Ecam", monospace;
-  font-size: 24px;
+  font-size: 26px;
 }
 
 .mfd-header-page-select-row {

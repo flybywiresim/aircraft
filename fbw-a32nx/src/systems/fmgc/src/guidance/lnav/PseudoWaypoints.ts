@@ -213,9 +213,11 @@ export class PseudoWaypoints implements GuidanceComponent {
       }
     }
 
-    if (this.equitimePoint.isComputed()) {
-      const [etpLla, distanceFromLegTermination, alongLegIndex] = this.equitimePoint.get();
-
+    const etp = this.equitimePoint.get();
+    if (etp !== undefined) {
+      const etpLla = etp[0];
+      const distanceFromLegTermination = etp[1];
+      const alongLegIndex = etp[2];
       newPseudoWaypoints.push({
         ident: PWP_IDENT_ETP,
         alongLegIndex,

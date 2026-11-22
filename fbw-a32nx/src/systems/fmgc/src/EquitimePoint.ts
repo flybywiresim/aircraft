@@ -6,7 +6,6 @@ import { Accessible, AeroMath, ClockEvents, ConsumerValue, EventBus, UnitType, V
 import { FlightPlanInterface } from './flightplanning/FlightPlanInterface';
 import { bearingTo, Coordinates, distanceTo } from 'msfs-geo';
 import { Geometry } from './guidance/Geometry';
-import { FlightPlanIndex } from './flightplanning/FlightPlanManager';
 import { FlightPhaseManagerEvents } from './flightphase/FlightPhaseManager';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { GuidanceController } from './guidance/GuidanceController';
@@ -74,7 +73,7 @@ export class EquitimePoint {
   /**
    * The last time which the ETP was recomputed in miliseconds since epoch.
    */
-  private lastEtpRecomputeTime: number | null = null;
+  private lastEtpRecomputeTime: number = this.clock.get();
 
   private readonly isEtpRecomputingDueToInputChange = Value.create(false);
 
@@ -93,13 +92,13 @@ export class EquitimePoint {
   }
 
   private updateEtp() {
-    const plan = this.flightPlanService.hasActive ? this.flightPlanService.get(FlightPlanIndex.Active) : null;
+    const plan = this.flightPlanService.hasActive ? this.flightPlanService.active : null;
     const origin = plan?.originAirport;
     const dest = plan?.destinationAirport;
     const ref1 = this.referenceFix1;
     const ref2 = this.referenceFix2;
     const ppos = this.navigation.getPpos();
-    const cruiseLevel = plan?.performanceData.cruiseFlightLevel.get();
+    const cruiseLevel = plan?.performanceData.cruiseFlightLevel.get() ?? null;
     const predictions = this.guidanceController.vnavDriver.mcduProfile;
     const { managedCruiseSpeed, managedCruiseSpeedMach } =
       this.guidanceController.verticalProfileComputationParametersObserver.get();
@@ -117,10 +116,7 @@ export class EquitimePoint {
         return;
       }
 
-      if (
-        this.lastEtpRecomputeTime !== null &&
-        time - this.lastEtpRecomputeTime >= EquitimePoint.MINIMUM_RECOMPUTE_INTERVAL + Math.random() * 1000
-      ) {
+      if (time - this.lastEtpRecomputeTime >= EquitimePoint.MINIMUM_RECOMPUTE_INTERVAL + Math.random() * 1000) {
         const cruisePhase = this.flightPhase.get() === FmgcFlightPhase.Cruise;
         const etpSequenced = this.etpSequenced.get();
         const cruiseAltitude = cruiseLevel * 100;
@@ -271,10 +267,6 @@ export class EquitimePoint {
     } else {
       this.result.pposTimeToRef2 = undefined;
     }
-  }
-
-  isComputed(): boolean {
-    return this.result.etp !== undefined;
   }
 
   get(): ReturnType<Geometry['pointFromEndOfPath']> | undefined {
