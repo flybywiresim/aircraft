@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2021-2023 FlyByWire Simulations
+// Copyright (c) 2021-2026 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
@@ -19,6 +19,7 @@ import {
   a320TerrainThresholdPadValue,
   ArincEventBus,
   EfisSide,
+  EfisVectorsPublisher,
 } from '@flybywiresim/fbw-sdk';
 import { NDComponent } from '@flybywiresim/navigation-display';
 
@@ -109,6 +110,7 @@ class NDInstrument implements FsInstrument {
     this.backplane.addPublisher('fg', this.fgDataPublisher);
     this.backplane.addPublisher('fms-arinc', this.fmBusPublisher);
     this.backplane.addPublisher('fms-symbols', this.fmsSymbolsPublisher);
+    this.backplane.addPublisher('efis-vectors', new EfisVectorsPublisher(this.bus, side));
     this.backplane.addPublisher('vor', this.vorBusPublisher);
     this.backplane.addPublisher('tcas', this.tcasBusPublisher);
     this.backplane.addPublisher('dmc', this.dmcPublisher);

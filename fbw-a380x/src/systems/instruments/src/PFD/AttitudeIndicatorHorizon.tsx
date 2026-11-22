@@ -1,7 +1,6 @@
 // @ts-strict-ignore
 import {
   ClockEvents,
-  ConsumerSubject,
   DisplayComponent,
   EventBus,
   FSComponent,
@@ -16,7 +15,7 @@ import {
   Arinc429ConsumerSubject,
   Arinc429LocalVarConsumerSubject,
   Arinc429Register,
-  Arinc429Word,
+  Arinc429WordData,
   ArincEventBus,
 } from '@flybywiresim/fbw-sdk';
 import {
@@ -45,7 +44,7 @@ class HeadingBug extends DisplayComponent<{ bus: EventBus; isCaptainSide: boolea
 
   private selectedHdgTrk = Arinc429LocalVarConsumerSubject.create(null);
 
-  private heading = ConsumerSubject.create(this.sub.on('headingAr'), new Arinc429Word(0));
+  private readonly heading = Arinc429ConsumerSubject.create(this.sub.on('headingAr'));
 
   private readonly trkFpaModeActive = this.fgDiscreteWord5.map((word) => word.bitValueOr(11, true));
 
@@ -336,13 +335,13 @@ export class Horizon extends DisplayComponent<HorizonProps> {
   }
 }
 
-class TailstrikeIndicator extends DisplayComponent<{ bus: EventBus }> {
+class TailstrikeIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
   private tailStrike = FSComponent.createRef<SVGPathElement>();
 
   private needsUpdate = false;
 
   private tailStrikeConditions = {
-    altitude: new Arinc429Word(0),
+    altitude: Arinc429Register.empty() as Arinc429WordData,
     speed: 0,
     tla1: 0,
     tla2: 0,
@@ -356,7 +355,7 @@ class TailstrikeIndicator extends DisplayComponent<{ bus: EventBus }> {
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & ClockEvents>();
+    const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values & ClockEvents>();
 
     sub.on('chosenRa').handle((ra) => {
       this.tailStrikeConditions.altitude = ra;
@@ -419,7 +418,7 @@ class TailstrikeIndicator extends DisplayComponent<{ bus: EventBus }> {
 
     sub
       .on('speedAr')
-      .whenChanged()
+      .whenArinc429Changed()
       .handle((speed) => {
         this.tailStrikeConditions.speed = speed.value;
         this.needsUpdate = true;
@@ -474,13 +473,13 @@ class RadioAltAndDH extends DisplayComponent<{
 
   private daRaGroup = FSComponent.createRef<SVGGElement>();
 
-  private roll = new Arinc429Word(0);
+  private roll: Arinc429WordData = Arinc429Register.empty();
 
   private dh = 0;
 
   private filteredRadioAltitude = 0;
 
-  private radioAltitude = new Arinc429Word(0);
+  private radioAltitude: Arinc429WordData = Arinc429Register.empty();
 
   private transAltAr = Arinc429Register.empty();
 
@@ -639,7 +638,7 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
 
   private rightMainGearCompressed = true;
 
-  private roll = new Arinc429Word(0);
+  private roll: Arinc429WordData = Arinc429Register.empty();
 
   private betaTargetActive = 0;
 
@@ -749,9 +748,9 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
 }
 
 class RisingGround extends DisplayComponent<{ bus: EventBus; filteredRadioAltitude: Subscribable<number> }> {
-  private radioAlt = new Arinc429Word(0);
+  private radioAlt: Arinc429WordData = Arinc429Register.empty();
 
-  private lastPitch = new Arinc429Word(0);
+  private lastPitch: Arinc429WordData = Arinc429Register.empty();
 
   private horizonGroundRectangle = FSComponent.createRef<SVGGElement>();
 
