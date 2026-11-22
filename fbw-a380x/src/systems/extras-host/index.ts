@@ -1,4 +1,4 @@
-// Copyright (c) 2022-2025 FlyByWire Simulations
+// Copyright (c) 2022-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { Clock, EventBus, HEventPublisher, InstrumentBackplane, SimVarValueType } from '@microsoft/msfs-sdk';
@@ -26,6 +26,7 @@ import { A380XKeyInterceptor } from './modules/key_interceptor/KeyInterceptor';
 import { VersionCheck } from './modules/version_check/VersionCheck';
 import { AircraftSync } from './modules/aircraft_sync/AircraftSync';
 import { LightSync } from './modules/light_sync/LightSync';
+import { VirtualCrew } from './modules/virtual_crew/VirtualCrew';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/NavigationDatabaseService';
 import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
 
@@ -106,6 +107,8 @@ class ExtrasHost extends BaseInstrument {
 
   private readonly gsxSync = new GsxSyncA380X(this.bus);
 
+  private readonly virtualCrew = new VirtualCrew(this.bus);
+
   /**
    * "mainmenu" = 0
    * "loading" = 1
@@ -152,6 +155,7 @@ class ExtrasHost extends BaseInstrument {
     this.backplane.addInstrument('Clock', this.clock);
     this.backplane.addInstrument('LightSync', this.lightSync);
     this.backplane.addInstrument('GsxSync', this.gsxSync);
+    this.backplane.addInstrument('VirtualCrew', this.virtualCrew);
 
     console.log('A380X_EXTRASHOST: Created');
   }

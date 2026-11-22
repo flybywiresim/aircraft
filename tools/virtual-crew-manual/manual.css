@@ -1,0 +1,245 @@
+/* Print style of the A380X virtual crew user manual, colours of the flyPad */
+:root {
+  --navy: #0e131b;
+  --navy-light: #1f2937;
+  --cyan: #00c2cc;
+  --cyan-dark: #00838a;
+  --text: #1c2430;
+  --muted: #5b6573;
+  --rule: #d9dee5;
+  --stripe: #f4f6f8;
+  --amber: #d97706;
+  --green: #4d9a06;
+}
+
+@page {
+  size: A4;
+  margin: 18mm 16mm 20mm 16mm;
+  @bottom-left {
+    content: 'A380X Virtual Crew - User Manual';
+    font: 8pt 'Inter', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    color: #5b6573;
+  }
+  @bottom-right {
+    content: counter(page);
+    font: 8pt 'Inter', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    color: #5b6573;
+  }
+}
+
+@page :first {
+  margin: 0;
+  @bottom-left { content: none; }
+  @bottom-right { content: none; }
+}
+
+html {
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+body {
+  margin: 0;
+  background: #ffffff;
+  color: var(--text);
+  font: 10pt/1.5 'Inter', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Cover */
+.cover {
+  box-sizing: border-box;
+  height: 297mm;
+  padding: 0 18mm;
+  background: var(--navy);
+  color: #ffffff;
+  page-break-after: always;
+  position: relative;
+  overflow: hidden;
+}
+.cover-band {
+  height: 8mm;
+  margin: 0 -18mm 40mm -18mm;
+  background: var(--cyan);
+}
+.cover-kicker {
+  margin: 0;
+  color: var(--cyan);
+  font-size: 14pt;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.cover h1 {
+  margin: 4mm 0 2mm 0;
+  font-size: 40pt;
+  line-height: 1.1;
+  border: none;
+  color: #ffffff;
+}
+.cover-subtitle {
+  margin: 0 0 18mm 0;
+  font-size: 20pt;
+  color: #cbd5e1;
+}
+.cover-image {
+  width: 100%;
+  border: 1px solid #334155;
+  border-radius: 3mm;
+}
+.cover-date {
+  position: absolute;
+  bottom: 16mm;
+  left: 18mm;
+  margin: 0;
+  color: #94a3b8;
+}
+
+/* Contents */
+.contents {
+  page-break-after: always;
+}
+.contents ul {
+  padding-left: 0;
+  list-style: none;
+  font-size: 12pt;
+  line-height: 2;
+}
+.contents a {
+  color: var(--text);
+  text-decoration: none;
+}
+
+/* Headings */
+h2 {
+  margin: 0 0 4mm 0;
+  padding-bottom: 2mm;
+  border-bottom: 1mm solid var(--cyan);
+  color: var(--navy);
+  font-size: 20pt;
+  page-break-before: always;
+  page-break-after: avoid;
+}
+.contents h2 {
+  page-break-before: avoid;
+}
+h3 {
+  margin: 7mm 0 2mm 0;
+  color: var(--navy);
+  font-size: 13pt;
+  page-break-after: avoid;
+}
+h3::before {
+  content: '';
+  display: inline-block;
+  width: 2.2mm;
+  height: 2.2mm;
+  margin-right: 2mm;
+  vertical-align: middle;
+  background: var(--cyan);
+}
+
+p,
+li {
+  orphans: 3;
+  widows: 3;
+}
+
+a {
+  color: var(--cyan-dark);
+}
+
+code {
+  padding: 0.2mm 1mm;
+  border-radius: 1mm;
+  background: var(--stripe);
+  font: 8.5pt 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace;
+}
+
+strong {
+  color: var(--navy);
+}
+
+/* Tables */
+table {
+  width: 100%;
+  margin: 3mm 0 5mm 0;
+  border-collapse: collapse;
+  font-size: 8.5pt;
+  line-height: 1.4;
+}
+thead {
+  display: table-header-group;
+}
+th {
+  padding: 1.8mm 2mm;
+  background: var(--navy);
+  color: #ffffff;
+  text-align: left;
+  font-weight: 600;
+}
+td {
+  padding: 1.6mm 2mm;
+  border-bottom: 0.3mm solid var(--rule);
+  vertical-align: top;
+}
+tr {
+  page-break-inside: avoid;
+}
+tbody tr:nth-child(even) td {
+  background: var(--stripe);
+}
+
+/* Screenshots */
+figure {
+  margin: 4mm 0 6mm 0;
+  page-break-inside: avoid;
+  text-align: center;
+}
+figure img {
+  max-width: 100%;
+  max-height: 100mm;
+  border: 0.4mm solid #334155;
+  border-radius: 2mm;
+}
+figcaption {
+  margin-top: 1.5mm;
+  color: var(--muted);
+  font-size: 8.5pt;
+  font-style: italic;
+}
+
+/* Notes, tips and warnings */
+.alert {
+  margin: 4mm 0;
+  padding: 2.5mm 4mm;
+  border-left: 1.2mm solid var(--cyan);
+  border-radius: 1mm;
+  background: #e8f9fa;
+  page-break-inside: avoid;
+}
+.alert p {
+  margin: 0.5mm 0;
+}
+.alert-title {
+  color: var(--cyan-dark);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 8.5pt;
+  letter-spacing: 0.05em;
+}
+.alert-tip {
+  border-left-color: var(--green);
+  background: #eef7e6;
+}
+.alert-tip .alert-title {
+  color: var(--green);
+}
+.alert-warning,
+.alert-caution {
+  border-left-color: var(--amber);
+  background: #fdf3e3;
+}
+.alert-warning .alert-title,
+.alert-caution .alert-title {
+  color: var(--amber);
+}
