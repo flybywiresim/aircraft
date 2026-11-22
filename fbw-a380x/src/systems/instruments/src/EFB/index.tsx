@@ -1,12 +1,16 @@
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// Copyright (c) 2023-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import React from 'react';
 import { render } from '@instruments/common/index';
 import { AircraftContext, EfbWrapper, syncSettingsFromPersistentStorage } from '@flybywiresim/flypad';
 import { A380FailureDefinitions } from '../../../failures';
+import { A380XLandingPerformanceCalculator } from '@shared/performance/a380x_landing';
+import { A380XTakeoffPerformanceCalculator } from '@shared/performance/a380x_takeoff';
 import { AutomaticCallOutsPage } from './Pages/AutomaticCallOutsPage';
 import { a380xSyncedSettings } from './settingsSync';
+import { A380OfpPublisher } from './A380OfpPublisher';
+import { A380TakeoffRequestResponder, publishA380Takeoff } from './A380TakeoffPublisher';
 
 import './Efb.scss';
 import { EventBus } from '@microsoft/msfs-sdk';
@@ -21,9 +25,15 @@ render(
   <AircraftContext.Provider
     value={{
       performanceCalculators: {
-        takeoff: null,
-        landing: null,
+        takeoff: new A380XTakeoffPerformanceCalculator(),
+        landing: new A380XLandingPerformanceCalculator(),
       },
+      performanceDisclaimer: 'A380X performance figures are simulator estimates. Cross-check with SimBrief Dispatch.',
+      landingWeightLimits: { minKg: 300_000, maxKg: 395_000 },
+      landingReverseThrustDefault: true,
+      performanceCgLimits: { minPercentMac: 23, maxPercentMac: 48 },
+      takeoffFmsIntegration: true,
+      onTakeoffCalculated: publishA380Takeoff,
       pushbackPage: {
         turnIndicatorTuningDefault: 1.35,
       },
@@ -78,6 +88,9 @@ render(
       hashSeed: 380,
     }}
   >
-    <EfbWrapper failures={A380FailureDefinitions} aircraftSetup={aircraftEfbSetup} eventBus={new EventBus()} />
+    <EfbWrapper failures={A380FailureDefinitions} aircraftSetup={aircraftEfbSetup} eventBus={new EventBus()}>
+      <A380OfpPublisher />
+      <A380TakeoffRequestResponder />
+    </EfbWrapper>
   </AircraftContext.Provider>,
 );

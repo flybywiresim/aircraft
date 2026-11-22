@@ -83,7 +83,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
     it === 0 ? RadioButtonColor.Green : RadioButtonColor.Cyan,
   );
 
-  private readonly wxrFailed = Subject.create<boolean>(true);
+  private readonly wxrFailed = Subject.create<boolean>(false);
 
   private readonly wxrElevnTiltSelectedIndex = Subject.create<number | null>(0);
 
@@ -148,6 +148,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
     );
 
     this.subs.push(this.xpdrState.sub(() => this.xpdrStatusChanged(), true));
+    this.wxrAuto.set(Boolean(SimVar.GetSimVarValue('L:A380X_WXR_AUTO', SimVarValueType.Bool)));
     this.subs.push(this.xpdrSetAltReportingRequest.sub(() => this.xpdrStatusChanged(), true));
 
     this.subs.push(sub.on('mfd_tcas_alert_level').handle((val) => this.tcasTaraSelectedIndex.set(2 - val)));
@@ -242,14 +243,14 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
     }
 
     if (!this.wxrFailed.get()) {
-      // FIXME replace with appropriate events
       this.wxrElevnTiltSelectedIndex.set(0);
       this.wxrAuto.set(true);
-      this.wxrPredWsAuto.set(true);
-      this.wxrTurbAuto.set(true);
-      this.wxrGainAuto.set(true);
+      SimVar.SetSimVarValue('L:A380X_WXR_AUTO', SimVarValueType.Bool, true);
+      this.wxrPredWsAuto.set(false);
+      this.wxrTurbAuto.set(false);
+      this.wxrGainAuto.set(false);
       this.wxrModeWx.set(true);
-      this.wxrOnVd.set(true);
+      this.wxrOnVd.set(false);
     }
 
     if (!this.tawsTerrFailed.get()) {
@@ -385,14 +386,17 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
                     disabled={this.wxrFailed}
                     labelFalse={'OFF'}
                     labelTrue={'AUTO'}
-                    onChanged={() => {}}
+                    onChanged={(value) => {
+                      this.wxrAuto.set(value);
+                      SimVar.SetSimVarValue('L:A380X_WXR_AUTO', SimVarValueType.Bool, value);
+                    }}
                   />
                 </div>
                 <div class="mfd-surv-controls-wxr-grid-cell">
                   <div class="mfd-surv-label">PRED W/S</div>
                   <SurvButton
                     state={this.wxrPredWsAuto}
-                    disabled={this.wxrFailed}
+                    disabled={Subject.create(true)}
                     labelFalse={'OFF'}
                     labelTrue={'AUTO'}
                     onChanged={() => {}}
@@ -402,7 +406,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
                   <div class="mfd-surv-label">TURB</div>
                   <SurvButton
                     state={this.wxrTurbAuto}
-                    disabled={this.wxrFailed}
+                    disabled={Subject.create(true)}
                     labelFalse={'OFF'}
                     labelTrue={'AUTO'}
                     onChanged={() => {}}
@@ -412,7 +416,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
                   <div class="mfd-surv-label">GAIN</div>
                   <SurvButton
                     state={this.wxrGainAuto}
-                    disabled={this.wxrFailed}
+                    disabled={Subject.create(true)}
                     labelFalse={'MAN'}
                     labelTrue={'AUTO'}
                     onChanged={() => {}}
@@ -422,7 +426,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
                   <div class="mfd-surv-label">MODE</div>
                   <SurvButton
                     state={this.wxrModeWx}
-                    disabled={this.wxrFailed}
+                    disabled={Subject.create(true)}
                     labelFalse={'MAP'}
                     labelTrue={'WX'}
                     onChanged={() => {}}
@@ -432,7 +436,7 @@ export class MfdSurvControls extends DisplayComponent<MfdSurvControlsProps> {
                   <div class="mfd-surv-label">WX ON VD</div>
                   <SurvButton
                     state={this.wxrOnVd}
-                    disabled={this.wxrFailed}
+                    disabled={Subject.create(true)}
                     labelFalse={'OFF'}
                     labelTrue={'AUTO'}
                     onChanged={() => {}}
