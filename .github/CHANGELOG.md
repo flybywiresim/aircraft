@@ -120,6 +120,9 @@ Always start an item with "1."; GitHub will number the rendered list automatical
 1. [EFB] Fixed local PDFs not displaying in EFB - @saschl
 1. [A380X/FLIGHT MODEL] Flight model fixes - @donstim (donbikes)
 1. [A32NX/FMS] Fix Vs1g for CONF 1+F and fix Vls for CONF 3 CG=>25%
+1. [A32NX/FCTL] Added new rotation law - @lukecologne (luke)
+1. [A32NX/FCTL] Added new FCDC outputs and moved F/CTL SD page to use FCDC data - @lukecologne (luke)
+1. [A32NX/FCTL] Improvements to the PFD lower area spoiler and THS indications - @lukecologne (luke)
 
 ## 2024.1.0
 

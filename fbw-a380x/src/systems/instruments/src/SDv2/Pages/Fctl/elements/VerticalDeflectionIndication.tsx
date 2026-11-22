@@ -8,8 +8,8 @@ import {
 } from '@microsoft/msfs-sdk';
 
 const SCALE_HEIGHT = 116;
-export const MAX_VERTICAL_DEFLECTION = 20;
-export const MIN_VERTICAL_DEFLECTION = -30;
+const MAX_VERTICAL_DEFLECTION = 20;
+const MIN_VERTICAL_DEFLECTION = -30;
 
 interface VerticalDeflectionIndicationProps {
   x?: number;
@@ -18,6 +18,7 @@ interface VerticalDeflectionIndicationProps {
   deflectionInfoValid: Subscribable<boolean>;
   deflection: Subscribable<number>;
   showAileronDroopSymbol?: Subscribable<boolean>;
+  aileronDroopPosition?: Subscribable<number>;
   onGround: Subscribable<boolean>;
 }
 
@@ -50,16 +51,21 @@ export class VerticalDeflectionIndication extends DisplayComponent<VerticalDefle
     this.props.deflectionInfoValid,
   );
 
+  private readonly droopSymbolPosition = MappedSubject.create(
+    ([aileronDroopPosition]) => deflectionToYOffset(aileronDroopPosition) + SCALE_HEIGHT / 2,
+    SubscribableUtils.toSubscribable(this.props.aileronDroopPosition ?? 0, true),
+  );
+
   render() {
     return (
-      <g transform={`translate(${this.props.x} ${this.props.y})`}>
+      <g transform={`translate(${this.props.x ?? 0} ${this.props.y ?? 0})`}>
         <path class="Grey Fill" d="m0,0 v 116 h15 v-116 z" />
 
         <circle
           class="SW2 White"
           visibility={this.droopSymbolVisibility}
           cx={7.5}
-          cy={deflectionToYOffset(5) + SCALE_HEIGHT / 2}
+          cy={this.droopSymbolPosition}
           r={3.75}
         />
 
@@ -90,9 +96,9 @@ export class VerticalDeflectionIndication extends DisplayComponent<VerticalDefle
         />
 
         <text
-          x={-1}
+          x={0}
           y={70}
-          class="Amber F32"
+          class="Amber F28"
           visibility={this.props.deflectionInfoValid.map((deflectionInfoValid) =>
             !deflectionInfoValid ? 'inherit' : 'hidden',
           )}
