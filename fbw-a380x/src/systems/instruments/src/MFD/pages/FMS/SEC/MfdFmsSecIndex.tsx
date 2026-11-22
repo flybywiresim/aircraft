@@ -26,9 +26,9 @@ import { IconButton } from '../../../../MsfsAvionicsCommon/UiWidgets/IconButton'
 import { FlightPlanFlags } from '@fmgc/flightplanning/plans/FlightPlanFlags';
 import { CpnyFplnButtonUtils } from '../../../shared/CpnyFplnButtonUtils';
 import { FlightPlanInterface } from '@fmgc/flightplanning/FlightPlanInterface';
-import { DateTimeFormatters } from '@flybywiresim/fbw-sdk';
 import { showReturnButtonUriExtra } from '../../../shared/utils';
 import { FmsFlightPlanPage } from '../../common/FmsFlightPlanPage';
+import { TimeFormatters } from '@flybywiresim/fbw-sdk';
 
 interface MfdFmsSecIndexProps extends AbstractMfdPageProps {}
 
@@ -303,7 +303,7 @@ export class MfdFmsSecIndexTab extends DestroyableComponent<MfdFmsSecIndexTabPro
         creationSource = ` (ATC F-PLN${wasModified ? '-MODIFIED' : ''})`;
       }
       if (exists && timeCreated) {
-        return `CREATED\xa0\xa0${DateTimeFormatters.milisecondsTohhmm(timeCreated)}${creationSource}`;
+        return `CREATED\xa0\xa0${TimeFormatters.milisecondsTohhmm(timeCreated)}${creationSource}`;
       }
       return '';
     },

@@ -1,0 +1,449 @@
+@import "../../../../../MsfsAvionicsCommon/definitions";
+
+
+$etp-rect-dist-time-left-pos: 11px;
+$etp-airport-lines-vertical-position: 182px;
+
+.mfd-fpln-etp-ppos-rect {
+  position: absolute;
+  left: 271px;
+  top: 153px;
+  height: 59.5px;
+  width: 226.2px;
+  border: 1.5px solid $display-grey;
+}
+
+.mfd-fpln-etp-ppos-text {
+  position: relative;
+  left: 75.4px;
+  top: 17px;
+}
+
+.mfd-fpln-etp-ppos-airport-horizontal-line {
+    border: 1px solid $display-grey;
+    background-color: $display-grey;
+    width: 129px;
+    height: 1px;
+}
+
+.mfd-fpln-etp-ppos-airport-horizontal-line.first {
+     position: absolute;
+     top: $etp-airport-lines-vertical-position;
+     left: 142px;
+}
+
+.mfd-fpln-etp-ppos-airport-horizontal-line.second {
+     position: absolute;
+     top: $etp-airport-lines-vertical-position;
+     left: 496px;
+}
+
+.mfd-fpln-etp-ppos-airport-vertical-line {
+    border: 1px solid $display-grey;
+    background-color: $display-grey;
+    width: 1px;
+    height: 64px;
+}
+
+.mfd-fpln-etp-ppos-airport-vertical-line.first {
+    position: absolute;
+    top: $etp-airport-lines-vertical-position;
+    left: 141.5px;
+}
+
+.mfd-fpln-etp-ppos-airport-vertical-line.second {
+     position: absolute;
+     top: $etp-airport-lines-vertical-position;
+     left: 625px;
+}
+
+.mfd-fpln-etp-ppos-dist-line {
+    position: absolute;
+    left: 382.5px;
+    top: 211.5px;
+    border: 1px solid $display-grey;
+    background-color: $display-grey;
+    width: 1px;
+    height: 55px
+}
+
+.mfd-fpln-etp-ppos-time-dist-rect {
+    position: absolute;
+    left: 279.5px;
+    top: 266.5px;
+    height: 82px;
+    width: 209px;
+    border: 1.5px solid $display-grey;
+}
+
+.etp-ppos-dist-header {
+  position: relative;
+  left: 9.8px;
+  top: 2.5px;
+}
+
+.etp-ppos-dist-value {
+  position: relative;
+  left: 29px;
+  top: 5px;
+}
+
+.etp-ppos-dist-unit {
+  position: relative;
+  left: 28px;
+  top: 3px;
+}
+
+.etp-ppos-time-header {
+   position: absolute;
+   left: 9px;
+    top: 48.3px;
+}
+.etp-ppos-time-value {
+  position: absolute;
+  left: 74px;
+  top: 45px;
+}
+
+$etp-mfd-fix-box-width: 228.8px;
+
+.mfd-fpln-etp-brg-dist-utc-ref-box {
+  display: flex;
+  flex-direction: column;
+  height: 121.5px;
+  border: 1.5px solid $display-grey;
+  width: $etp-mfd-fix-box-width;
+}
+
+.mfd-fpln-etp-brg-dist-utc-ref-box-data-container-left {
+  padding-left: 19px;
+}
+
+.mfd-fpln-etp-brg-dist-utc-ref-box-data-container-right  {
+  padding-left: 22px;
+}
+
+.mfd-etp-ref-info-container {
+  position: absolute;
+}
+
+$etp-ref-info-container-y-pos: 245px;
+
+.mfd-etp-ref-info-container.left {
+  top: $etp-ref-info-container-y-pos;
+  left: 27.3px;
+}
+
+.mfd-etp-ref-info-container.right {
+  top: 244.5px;
+  left: 511px;
+}
+
+.etp-ref-info-to-brg-header {
+  position: relative;
+  top: 8.7px;
+}
+
+.etp-ref-info-to-brg-value {
+ position: relative;
+ left: 26.2px;
+ top: 5px;
+}
+
+.etp-ref-info-to-brg-unit {
+ position: relative;
+ left: 37.8px;
+ top: 8.5px;
+}
+
+.etp-ref-info-to-dist-header {
+   position: relative;
+   top: 15.7px;
+}
+
+.etp-ref-info-to-dist-value {
+  position: relative;
+  top: 12.2px;
+  left: 12px;
+}
+
+.etp-ref-info-to-dist-unit {
+    position: relative;
+	  top: 15.7px;
+    left: 26px
+}
+
+.etp-ref-info-to-time-header {
+  position: relative;
+  top: 22.7px;
+}
+
+.etp-ref-info-to-time-value {
+    position: relative;
+    top: 19px;
+    left: 6px;
+}
+
+.etp-ppos-ref-line {
+  position : absolute;
+  left: 113.5px;
+  border: 1px solid $display-grey;
+  background-color: $display-grey;
+  width: 1px;
+  height: 25px;
+}
+
+.etp-triangle-pointing-down {
+  width: 0px;
+  height: 0px;
+  border-left: 9.2px solid transparent;
+	border-right: 9.2px solid transparent;
+	border-top: 13px solid $display-grey;
+}
+
+.etp-triangle-pointing-up {
+  width: 0px;
+  height: 0px;
+  border-left: 9.2px solid transparent;
+	border-right: 9.2px solid transparent;
+	border-bottom: 13px solid $display-grey;
+}
+
+.etp-triangle-pointing-down.mfd-fpln-etp-ppos-line-etp-triangle {
+  position: absolute;
+  top: 127.2px;
+  left: 105.4px;
+
+}
+
+.etp-triangle-pointing-down.mfd-fpln-etp-ppos-info-line-triangle {
+  position: absolute;
+  left: 374.3px;
+  top: 757.4px;
+}
+
+.etp-ref-fix-container {
+  position: absolute;
+  top: 180px;
+  height: 155.5px;
+  width: $etp-mfd-fix-box-width;
+  border: 1.5px solid $display-grey;
+}
+
+.etp-ref-fix-container.left {
+  left: -0.5px;
+}
+
+.etp-ref-fix-container.right {
+  left: 0.4px;
+}
+
+.etp-ref-fix-header-container {
+  position: absolute;
+  top: 159.7px;
+  left: 24px;
+  width: 179px;
+  height: 25px;
+  background-color:$display-background;
+  z-index: 1;
+}
+
+.etp-ref-fix-header {
+  position: absolute;
+  top: 0.3px;
+}
+
+.etp-ref-fix-header.left {
+  left: 61.6px;
+}
+
+.etp-ref-fix-header.right {
+  left: 62.1px;
+}
+
+$etp-crz-text-y-pos: 65px;
+
+.mfd-fpln-etp-crz-text {
+  position: absolute;
+  top: $etp-crz-text-y-pos;
+  left: 33px;
+}
+
+.mfd-fpln-etp-fl-text {
+  position: absolute;
+  top: 66.5px;
+  left: 92.5px;
+  font-size: 21px !important;
+}
+
+.mfd-fpln-etp-wind-text {
+  position: absolute;
+  top: $etp-crz-text-y-pos;
+  left: 134.1px;
+}
+
+.mfd-fpln-etp-brg-dist-from-etp-box {
+  position: absolute;
+  top: 370px;
+  height: 122px;
+  width: 229px;
+}
+
+.mfd-fpln-etp-brg-dist-from-etp-box.left {
+  left: -1px;
+}
+
+.mfd-fpln-etp-brg-dist-from-etp.right {
+  left: 0.4px;
+}
+
+.etp-ref-info-from-etp-trk-header {
+  position: relative;
+  top: 9px;
+}
+
+.etp-ref-info-from-etp-trk-value {
+  position: relative;
+  left: 32.5px;
+  top: 5.2px;
+}
+
+.etp-ref-info-from-etp-trk-unit {
+  position: relative;
+  left: 38.5px;
+  top: 8.7px;
+}
+
+.etp-ref-info-from-etp-dist-header {
+  position: relative;
+  top: 16px;
+}
+
+.etp-ref-info-from-etp-dist-value {
+  position: relative;
+  top: 12.5px;
+  left: 19.7px;
+}
+
+.etp-ref-info-from-etp-dist-unit {
+  position: relative;
+  top: 15.7px;
+  left: 25.7px;
+}
+
+.etp-ref-info-from-etp-time-header {
+  position: relative;
+  top: 23.3px;
+}
+
+.etp-ref-info-from-etp-time-value {
+  position: relative;
+  top: 19.7px;
+  left: 6px;
+}
+
+.etp-triangle-pointing-up.from-etp {
+  position: absolute;
+  top: 343.5px;
+}
+
+.etp-triangle-pointing-up.from-etp.left {
+  left: 105px;
+}
+
+.etp-triangle-pointing-up.from-etp.right {
+  left: 105.5px;
+}
+
+.etp-ppos-ref-line.from-etp {
+  top: 334.5px;
+  height: 36px;
+
+}
+
+.etp-ppos-ref-line.from-etp.left {
+    left: 113.2px;
+}
+
+.etp-ppos-ref-line.from-etp.right {
+  left: 113.7px;
+}
+
+
+.mfd-etp-from-etp-vertical-line {
+  position: absolute;
+  top: 491px;
+  border: 1px solid $display-grey;
+  background-color: $display-grey;
+  width: 1px;
+  height: 87px;
+}
+
+.mfd-etp-from-etp-vertical-line.left {
+  left: 112.8px;
+}
+
+.mfd-etp-from-etp-vertical-line.right {
+  left: 114.5px;
+}
+
+.mfd-etp-from-etp-horizontal-line {
+  height: 1px;
+  border: 1px solid $display-grey;
+  background-color: $display-grey;
+  width: 77px;
+  top: 576.3px;
+  position: absolute;
+}
+
+.mfd-etp-from-etp-horizontal-line.left {
+  left: 113px;
+}
+.mfd-etp-from-etp-horizontal-line.right {
+  left: 39px;
+}
+
+.mfd-fpln-etp-ppos-line-etp {
+  position: absolute;
+  left: 382.4px;
+  border: 1px solid $display-grey;
+  background-color: $display-grey;
+  height: 432px;
+  top: 348px;
+}
+
+.mfd-fpln-etp-info {
+  border: 1.5px solid $display-grey;
+  position: absolute;
+  width: 333.5px;
+  height: 90.5px;
+  top: 779.5px;
+  left: 217.3px;
+}
+
+.mfd-fpln-etp-info.no-border {
+  border: none;
+}
+
+.mfd-fpln-etp-info-etp-text {
+  position: absolute;
+  left: 143px;
+  top: 11.5px;
+}
+
+.mfd-fpln-etp-waypoint-info-container {
+  position: absolute;
+  top: 47.5px;
+  left: 22.5px;
+}
+
+.mfd-fpln-etp-waypoint-info-distance {
+  position: relative;
+  left: 1px;
+}
+
+.mfd-fpln-etp-msg {
+  position: absolute;
+  left: 67px;
+  top: 31px;
+}

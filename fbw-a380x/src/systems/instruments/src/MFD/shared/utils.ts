@@ -78,6 +78,7 @@ export const activeFlightPlanFuelAndLoadUri = fmsActivePagePrefix + fuelAndLoadP
 export const activeFlightPlanHoldUri = fmsActivePagePrefix + lateralRevisionHoldPage;
 export const fixInfoUri = fmsActivePagePrefix + 'f-pln-fix-info';
 export const dirToUri = fmsActivePagePrefix + 'f-pln-direct-to';
+export const etpUri = fmsActivePagePrefix + 'fpln-etp';
 
 /** Adds ENTRY NOT IN LIST scratchpad message. */
 export function onEntryNotInList(fmc: FmcServiceInterface): void {

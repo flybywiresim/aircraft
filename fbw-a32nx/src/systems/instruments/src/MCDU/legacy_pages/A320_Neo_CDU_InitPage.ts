@@ -7,11 +7,10 @@ import { NXFictionalMessages, NXSystemMessages } from '../messages/NXSystemMessa
 import { CDUAvailableFlightPlanPage } from './A320_Neo_CDU_AvailableFlightPlanPage';
 import { CDUIRSInit } from './A320_Neo_CDU_IRSInit';
 import { CDUWindPage } from './A320_Neo_CDU_WindPage';
-import { NXUnits } from '@flybywiresim/fbw-sdk';
+import { NXUnits, TimeFormatters } from '@flybywiresim/fbw-sdk';
 import { getZfw, getZfwcg } from '../legacy/A32NX_Core/A32NX_PayloadManager';
 import { Keypad } from '../legacy/A320_Neo_CDU_Keypad';
 import { LegacyFmsPageInterface, SimbriefOfpState } from '../legacy/LegacyFmsPageInterface';
-import { FmsFormatters } from '../legacy/FmsFormatters';
 import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/uplink/SimBriefUplinkAdapter';
 import { FlightPlanIndex } from '@fmgc/flightplanning/FlightPlanManager';
 import { AeroMath, Wait } from '@microsoft/msfs-sdk';
@@ -665,10 +664,10 @@ export class CDUInitPage {
       plan.performanceData.isFinalHoldingTimePilotEntered.get();
 
     if (plan.performanceData.pilotFinalHoldingTime.get() !== null || !isRouteFinalEntered) {
-      finalTimeCell.update(FmsFormatters.minutesTohhmm(plan.performanceData.finalHoldingTime.get()), Column.cyan);
+      finalTimeCell.update(TimeFormatters.minutesTohhmm(plan.performanceData.finalHoldingTime.get()), Column.cyan);
       finalCellDivider.updateAttributes(Column.cyan);
     } else if (predictions.finalHoldingTime !== null && Number.isFinite(predictions.finalHoldingTime)) {
-      finalTimeCell.update(FmsFormatters.minutesTohhmm(predictions.finalHoldingTime), Column.cyan, Column.small);
+      finalTimeCell.update(TimeFormatters.minutesTohhmm(predictions.finalHoldingTime), Column.cyan, Column.small);
       finalCellDivider.updateAttributes(Column.cyan, Column.small);
     }
 
@@ -703,7 +702,7 @@ export class CDUInitPage {
         altnWeightCell.update(NXUnits.kgToUser(predictions.alternateFuel).toFixed(1), Column.cyan, Column.small);
 
         if (predictions.alternateTime !== null && Number.isFinite(predictions.alternateTime)) {
-          altnTimeCell.update(FmsFormatters.minutesTohhmm(predictions.alternateTime), Column.green, Column.small);
+          altnTimeCell.update(TimeFormatters.minutesTohhmm(predictions.alternateTime), Column.green, Column.small);
           altnCellDivider.updateAttributes(Column.green, Column.small);
         }
       }
@@ -718,7 +717,7 @@ export class CDUInitPage {
 
       if (predictions.tripFuel !== null && predictions.tripTime !== null) {
         tripWeightCell.update(NXUnits.kgToUser(predictions.tripFuel).toFixed(1), Column.green, Column.small);
-        tripTimeCell.update(FmsFormatters.minutesTohhmm(predictions.tripTime), Column.green, Column.small);
+        tripTimeCell.update(TimeFormatters.minutesTohhmm(predictions.tripTime), Column.green, Column.small);
         tripCellDivider.updateAttributes(Column.green, Column.small);
       }
 
@@ -747,7 +746,7 @@ export class CDUInitPage {
       if (predictions.extraFuel !== null && Number.isFinite(predictions.extraFuel)) {
         extraWeightCell.update(NXUnits.kgToUser(predictions.extraFuel).toFixed(1), Column.green, Column.small);
         if (predictions.extraFuel >= 0 && predictions.extraTime !== null) {
-          extraTimeCell.update(FmsFormatters.minutesTohhmm(predictions.extraTime), Column.green, Column.small);
+          extraTimeCell.update(TimeFormatters.minutesTohhmm(predictions.extraTime), Column.green, Column.small);
           extraCellDivider.updateAttributes(Column.green, Column.small);
         }
       }

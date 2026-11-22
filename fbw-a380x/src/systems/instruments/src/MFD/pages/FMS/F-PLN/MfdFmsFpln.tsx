@@ -60,7 +60,7 @@ import {
 } from '@fmgc/flightplanning/data/wind';
 import { ReadonlyFlightPlanElement } from '@fmgc/flightplanning/legs/ReadonlyFlightPlanLeg';
 import { FlightPlanOperationEvents } from '@fmgc/events/FlightPlanOperationEvents';
-import { dirToUri, fixInfoUri, showReturnButtonUriExtra } from '../../../shared/utils';
+import { dirToUri, etpUri, fixInfoUri, showReturnButtonUriExtra } from '../../../shared/utils';
 
 interface MfdFmsFplnProps extends AbstractMfdPageProps {}
 
@@ -1242,11 +1242,7 @@ export class MfdFmsFpln extends FmsFlightPlanPage<MfdFmsFplnProps> {
                 },
                 {
                   label: 'EQUI-TIME POINT',
-                  disabled: true,
-                  action: () =>
-                    this.props.mfd.uiService.navigateTo(
-                      `fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-equi-time-point`,
-                    ),
+                  action: () => this.props.mfd.uiService.navigateTo(etpUri),
                 },
                 {
                   label: 'FIX INFO',

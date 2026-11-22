@@ -38,15 +38,15 @@ export class ActivePageTitleBar extends DisplayComponent<ActivePageTitleBarProps
     v && this.props.isFmsSubsystemPage ? 'visible' : 'hidden',
   );
 
-  private readonly penaltyVisibility = (this.props.penaltyIsActive ?? Subject.create(false)).map((v) =>
-    v && this.props.isFmsSubsystemPage ? 'visible' : 'hidden',
+  private readonly penaltyDisplay = (this.props.penaltyIsActive ?? Subject.create(false)).map((v) =>
+    v && this.props.isFmsSubsystemPage ? 'inline' : 'none',
   );
 
   private readonly titleBarMargin = this.props.isFmsSubsystemPage ? '2px' : '0px'; // As the bars are still rendered, removing the margin removes the black bars.
 
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
-    this.subs.push(this.offsetText, this.penaltyVisibility, this.engineOutVisibility, this.temporaryVisibility);
+    this.subs.push(this.offsetText, this.penaltyDisplay, this.engineOutVisibility, this.temporaryVisibility);
   }
 
   public destroy(): void {
@@ -64,7 +64,7 @@ export class ActivePageTitleBar extends DisplayComponent<ActivePageTitleBarProps
             {this.props.activePage}
             {this.offsetText}
           </span>
-          <span class="mfd-title-bar-text label penalty" style={{ visibility: this.penaltyVisibility }}>
+          <span class="mfd-title-bar-text label penalty" style={{ display: this.penaltyDisplay }}>
             PENALTY
           </span>
         </div>

@@ -123,6 +123,8 @@ Always start an item with "1."; GitHub will number the rendered list automatical
 1. [A32NX/FCTL] Added new rotation law - @lukecologne (luke)
 1. [A32NX/FCTL] Added new FCDC outputs and moved F/CTL SD page to use FCDC data - @lukecologne (luke)
 1. [A32NX/FCTL] Improvements to the PFD lower area spoiler and THS indications - @lukecologne (luke)
+1. [A32NX/FMS] Implement computation and display of equitime point - @BlueberryKing (BlueberryKing)
+1. [A380X/FMS] Added ETP page - @BravoMike99 (bruno_pt99)
 
 ## 2024.1.0
 

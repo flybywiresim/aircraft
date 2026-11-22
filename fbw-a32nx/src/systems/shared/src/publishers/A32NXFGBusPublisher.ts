@@ -145,6 +145,12 @@ interface A32NXFgBusBaseEvents {
    * Next applicable altitude constraint
    */
   fmgc_altitude_constraint: number;
+
+  /**
+   * Arinc 429 word in knots
+   * Selected speed by the FMGC.
+   */
+  fmgc_selected_speed: number;
 }
 
 type IndexedTopics = keyof A32NXFgBusBaseEvents;
@@ -225,6 +231,14 @@ export class A32NXFgBusPublisher extends SimVarPublisher<A32nxFgBusPublisherEven
         'fmgc_altitude_constraint',
         {
           name: 'L:A32NX_FMGC_#index#_FM_ALTITUDE_CONSTRAINT',
+          indexed: true,
+          type: SimVarValueType.Enum,
+        },
+      ],
+      [
+        'fmgc_selected_speed',
+        {
+          name: 'L:A32NX_FMGC_#index#_PFD_SELECTED_SPEED',
           indexed: true,
           type: SimVarValueType.Enum,
         },
