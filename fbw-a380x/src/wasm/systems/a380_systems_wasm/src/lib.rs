@@ -79,7 +79,9 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
         (ElectricalBusType::DirectCurrentHot(4), 15),
         (ElectricalBusType::DirectCurrentGndFltService, 17),
     ])?
-    .with_auxiliary_power_unit(Variable::named("OVHD_APU_START_PB_IS_AVAILABLE"), 8, 21)?
+    // APU fuel valve 34 is the APU low pressure valve (valve 8 is the feed
+    // tank 4 forward inlet valve which is controlled by the FQMS).
+    .with_auxiliary_power_unit(Variable::named("OVHD_APU_START_PB_IS_AVAILABLE"), 34, 21)?
     .with_engine_anti_ice(4)?
     .with_wing_anti_ice()?
     .with_fuel_pumps(1..=21, true)?
