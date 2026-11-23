@@ -75,6 +75,8 @@ export interface InputFieldProps<T, U = T, S = T extends U ? true : false> exten
 
   /** If true, text is rendered as white when input field is inactive, otherwise as green */
   whiteInactive?: Subscribable<boolean>;
+
+  oskTarget?: MutableSubscribable<HTMLElement | null>;
 }
 
 export type ConditionalInputFieldProps<T, U, S extends boolean> = S extends true
@@ -334,6 +336,7 @@ export class InputField<
     if (!this.isFocused.get() && !this.isValidating.get() && !this.disabled.get() && !this.inactive.get()) {
       if (this.props.interactionMode.get() === InteractionMode.Touchscreen) {
         Coherent.trigger('FOCUS_INPUT_FIELD', this.guid, '', '', this.readValue.get(), false);
+        this.props.oskTarget?.set(this.containerRef.instance);
       }
       this.isFocused.set(true);
 
@@ -356,7 +359,15 @@ export class InputField<
 
   private onFocusHandler = this.onFocus.bind(this);
 
+  private releaseOskTarget() {
+    if (this.props.oskTarget?.get() === this.containerRef.getOrDefault()) {
+      this.props.oskTarget?.set(null);
+    }
+  }
+
   public async onBlur(validateAndUpdate: boolean = true) {
+    this.releaseOskTarget();
+
     if (!this.disabled.get() && !this.inactive.get() && this.isFocused.get()) {
       if (this.props.interactionMode.get() === InteractionMode.Touchscreen) {
         Coherent.trigger('UNFOCUS_INPUT_FIELD', this.guid);
@@ -389,6 +400,8 @@ export class InputField<
       this.editing.set(false);
     }
   }
+
+  private onBlurHandler = this.onBlur.bind(this, true);
 
   private populatePlaceholders() {
     const [formatted, unitLeading, unitTrailing] = this.props.dataEntryFormat.format(null);
@@ -561,13 +574,13 @@ export class InputField<
 
     if (!this.props.handleFocusBlurExternally) {
       this.textInputRef.instance.addEventListener('focus', this.onFocusHandler);
-      this.textInputRef.instance.addEventListener('blur', this.onBlur.bind(this, true));
+      this.textInputRef.instance.addEventListener('blur', this.onBlurHandler);
       this.spanningDivRef.instance.addEventListener('click', this.onFocusTextInputHandler);
       this.leadingUnitRef.instance.addEventListener('click', this.onFocusTextInputHandler);
       this.trailingUnitRef.instance.addEventListener('click', this.onFocusTextInputHandler);
     }
 
-    this.props.hEventConsumer.handle((key) => {
+    const hEventSub = this.props.hEventConsumer.handle((key) => {
       if (!this.isFocused.get() || this.props.fixedValuesDropDown) {
         return;
       }
@@ -620,6 +633,7 @@ export class InputField<
         // Unsupported atm
       }
     });
+    hEventSub.withLifecycle(this.defaultLifecycle);
 
     // preparation for automatic un-focusing if the node isn't in view anymore. Model changes needed FIXME
     /* if (this.props.inViewEvent) {
@@ -647,11 +661,13 @@ export class InputField<
 
     if (!this.props.handleFocusBlurExternally) {
       this.textInputRef.getOrDefault()?.removeEventListener('focus', this.onFocusHandler);
-      this.textInputRef.getOrDefault()?.removeEventListener('blur', this.onBlur.bind(this, true));
+      this.textInputRef.getOrDefault()?.removeEventListener('blur', this.onBlurHandler);
       this.spanningDivRef.getOrDefault()?.removeEventListener('click', this.onFocusTextInputHandler);
       this.leadingUnitRef.getOrDefault()?.removeEventListener('click', this.onFocusTextInputHandler);
       this.trailingUnitRef.getOrDefault()?.removeEventListener('click', this.onFocusTextInputHandler);
     }
+
+    this.releaseOskTarget();
 
     this.props.dataEntryFormat?.destroy?.();
 

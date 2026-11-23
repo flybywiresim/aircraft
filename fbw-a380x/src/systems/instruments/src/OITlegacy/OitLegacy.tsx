@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// Copyright (c) 2023-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useEffect, useState } from 'react';
@@ -10,8 +10,10 @@ import {
   EventBusContextProvider,
   FailuresOrchestratorProvider,
   fetchSimbriefDataAction,
+  KeyboardWrapper,
   ModalProvider,
   Navigation,
+  OSK_OIT_LAYOUT,
   PowerContext,
   PowerStates,
   setAirframeInfo,
@@ -19,6 +21,7 @@ import {
   setFlypadInfo,
   store,
   useAppDispatch,
+  useAppSelector,
   useEventBus,
   useNavigraphAuthInfo,
 } from '@flybywiresim/flypad';
@@ -162,6 +165,7 @@ const showOfpSimvar = `L:A32NX_OIS_${getDisplayIndex()}_SHOW_OFP`;
 
 export const OitEfbPageWrapper: React.FC<OitEfbWrapperProps> = () => {
   const dispatch = useAppDispatch();
+  const { offsetY } = useAppSelector((state) => state.keyboard);
 
   const [showCharts] = useSimVar(showChartSimvar, 'Bool', 100);
   const [showOfp] = useSimVar(showOfpSimvar, 'Bool', 100);
@@ -257,12 +261,13 @@ export const OitEfbPageWrapper: React.FC<OitEfbWrapperProps> = () => {
             backgroundColor: '#000',
           }}
         >
-          <div className="flex flex-row">
+          <div className="flex flex-row" style={{ transform: offsetY ? `translateY(-${offsetY}px)` : undefined }}>
             <div className="h-screen w-screen p-2.5 pt-0">
               {showCharts === 1 && !reloadAircraft && <Navigation />}
               {showOfp === 1 && <Dispatch />}
             </div>
           </div>
+          <KeyboardWrapper layout={OSK_OIT_LAYOUT} />
         </div>
       )}
     </>

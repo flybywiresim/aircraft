@@ -1,0 +1,60 @@
+// Copyright (c) 2026 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
+.osk-container {
+  @apply bg-theme-body text-theme-text text-3xl;
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  box-sizing: border-box;
+  z-index: 50;
+  --osk-key-gap: 6px;
+  padding: 5px 2px;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  user-select: none;
+}
+
+.osk-key {
+  @apply bg-theme-accent;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 73px;
+  border-radius: 7px;
+
+  svg {
+    width: 32px;
+    height: 32px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  &:active,
+  &.osk-key-active {
+    @apply bg-theme-highlight text-theme-body;
+  }
+
+  &.osk-key-active svg {
+    fill: currentColor;
+  }
+}
+
+.osk-row:first-child .osk-key {
+  height: 63px;
+}
+
+// Follows the curve of the tablet's screen corners
+.osk-row:last-child {
+  .osk-key:first-child {
+    border-bottom-left-radius: 26px;
+  }
+
+  .osk-key:last-child {
+    border-bottom-right-radius: 26px;
+  }
+}

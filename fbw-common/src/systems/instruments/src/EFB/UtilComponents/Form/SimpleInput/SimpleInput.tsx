@@ -1,13 +1,11 @@
 // @ts-strict-ignore
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// Copyright (c) 2023-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import { usePersistentNumberProperty, getRootElement, useSimVar } from '@flybywiresim/fbw-sdk-react';
 import React, { useEffect, useRef, useState, PropsWithChildren } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { useAppDispatch } from '../../../Store/store';
-import { setOffsetY } from '../../../Store/features/keyboard';
-import { KeyboardWrapper } from '../../KeyboardWrapper';
+import { hideOnScreenKeyboard, showOnScreenKeyboard } from '../../KeyboardWrapper';
 
 interface SimpleInputProps {
   placeholder?: string;
@@ -37,21 +35,14 @@ export const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
 
   const [autoOSK] = usePersistentNumberProperty('EFB_AUTO_OSK', 0);
 
-  const keyboard = useRef<any>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const [OSKOpen, setOSKOpen] = useState(false);
+  const oskKeyHandlerRef = useRef<(key: string, text: string) => void>();
 
   const [isLookingAtLeftEfb] = useSimVar('IS CAMERA RAY INTERSECT WITH NODE:1', 'boolean');
   const [isLookingAtRightEfb] = useSimVar('IS CAMERA RAY INTERSECT WITH NODE:2', 'boolean');
 
-  const dispatch = useAppDispatch();
-
-  useEffect(() => {
-    if (keyboard.current) {
-      keyboard.current.setInput(displayValue);
-    }
-  }, [OSKOpen]);
+  useEffect(() => () => hideOnScreenKeyboard(oskKeyHandlerRef), []);
 
   useEffect(() => {
     if (props.value === undefined || props.value === '') {
@@ -94,10 +85,6 @@ export const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
     }
 
     props.onChange?.(originalValue);
-
-    if (keyboard.current) {
-      keyboard.current.setInput(originalValue);
-    }
     setDisplayValue(originalValue);
   };
 
@@ -108,18 +95,7 @@ export const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
     }
 
     if (autoOSK) {
-      setOSKOpen(true);
-
-      if (inputRef.current) {
-        // 450 is just a guesstimate of the keyboard height
-        const spaceBeforeKeyboard = 1000 - 450;
-
-        if (inputRef.current.getBoundingClientRect().bottom > spaceBeforeKeyboard) {
-          const offset = inputRef.current.getBoundingClientRect().bottom - spaceBeforeKeyboard;
-
-          dispatch(setOffsetY(offset));
-        }
-      }
+      showOnScreenKeyboard(oskKeyHandlerRef, event.currentTarget);
     }
   };
 
@@ -129,13 +105,11 @@ export const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
 
     setDisplayValue(constrainedValue);
     setFocused(false);
-    setOSKOpen(false);
+    hideOnScreenKeyboard(oskKeyHandlerRef);
 
     if (!props.disabled) {
       props.onBlur?.(constrainedValue);
     }
-
-    dispatch(setOffsetY(0));
   };
 
   const getConstrainedValue = (value: string): string => {
@@ -178,6 +152,19 @@ export const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
     }
   };
 
+  oskKeyHandlerRef.current = (key: string, text: string) => {
+    if (key === 'BACKSPACE') {
+      onChange(displayValue.slice(0, -1));
+    } else if (key === 'ENT' || key === 'DISMISS') {
+      blurInputField();
+    } else if (key === 'TAB') {
+      const inputs = Array.from(getRootElement().querySelectorAll<HTMLInputElement>('input:not([disabled])'));
+      inputs[(inputs.indexOf(inputRef.current) + 1) % inputs.length]?.focus();
+    } else if (text) {
+      onChange(`${displayValue}${text}`);
+    }
+  };
+
   useEffect(() => {
     if (focused) {
       Coherent.trigger('FOCUS_INPUT_FIELD', guid, '', '', '', false);
@@ -198,41 +185,32 @@ export const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
   }, [isLookingAtLeftEfb, isLookingAtRightEfb]);
 
   // unfocus the search field when user presses enter
-  getRootElement().addEventListener('keypress', (event: KeyboardEvent) => {
-    // 'keyCode' is deprecated but 'key' is not supported in MSFS
-    if (event.keyCode === 13) {
-      blurInputField();
-    }
-  });
+  useEffect(() => {
+    const onKeyPress = (event: KeyboardEvent) => {
+      // 'keyCode' is deprecated but 'key' is not supported in MSFS
+      if (event.keyCode === 13) {
+        blurInputField();
+      }
+    };
+    const root = getRootElement();
+    root.addEventListener('keypress', onKeyPress);
+
+    return () => root.removeEventListener('keypress', onKeyPress);
+  }, []);
 
   return (
-    <>
-      <input
-        className={`px-3 py-1.5 ${props.fontSizeClassName ?? 'text-lg'} rounded-md border-2 border-theme-accent bg-theme-accent
-                    text-theme-text transition duration-100 placeholder:text-theme-unselected focus-within:border-theme-highlight focus-within:outline-none
-                    ${props.className}
-                    ${props.disabled && 'cursor-not-allowed opacity-50'}`}
-        value={displayValue}
-        placeholder={props.placeholder}
-        onChange={(e) => onChange(e.target.value)}
-        onFocus={onFocus}
-        onBlur={onFocusOut}
-        disabled={props.disabled}
-        ref={inputRef}
-      />
-      {OSKOpen && (
-        <KeyboardWrapper
-          keyboardRef={keyboard}
-          onChangeAll={(v) => onChange(v.default)}
-          blurInput={blurInputField}
-          setOpen={setOSKOpen}
-          onKeyDown={(e) => {
-            if (e === '{bksp}') {
-              onChange(displayValue.slice(0, displayValue.length - 1));
-            }
-          }}
-        />
-      )}
-    </>
+    <input
+      className={`px-3 py-1.5 ${props.fontSizeClassName ?? 'text-lg'} rounded-md border-2 border-theme-accent bg-theme-accent
+                  text-theme-text transition duration-100 placeholder:text-theme-unselected focus-within:border-theme-highlight focus-within:outline-none
+                  ${props.className}
+                  ${props.disabled && 'cursor-not-allowed opacity-50'}`}
+      value={displayValue}
+      placeholder={props.placeholder}
+      onChange={(e) => onChange(e.target.value)}
+      onFocus={onFocus}
+      onBlur={onFocusOut}
+      disabled={props.disabled}
+      ref={inputRef}
+    />
   );
 };

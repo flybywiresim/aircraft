@@ -1,4 +1,4 @@
-//  Copyright (c) 2025 FlyByWire Simulations
+//  Copyright (c) 2025-2026 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
 import {
@@ -7,19 +7,22 @@ import {
   DisplayComponent,
   EventBus,
   FSComponent,
+  MappedSubject,
   MappedSubscribable,
+  Subject,
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
 
 import './style.scss';
 import { OitDisplayUnit, OitDisplayUnitID } from './OitDisplayUnit';
-import { FailuresConsumer } from '@flybywiresim/fbw-sdk';
+import { FailuresConsumer, NXDataStore } from '@flybywiresim/fbw-sdk';
+import { OnScreenKeyboard, OSK_OIT_LAYOUT } from '@flybywiresim/msfs-avionics-common';
 import { OisLaptop } from './OisLaptop';
 import { OitFltOpsContainer } from './OitFltOpsContainer';
 import { OitUiService } from './OitUiService';
 import { OitAvncsContainer } from './OitAvncsContainer';
-import { OitSimvars } from './OitSimvarPublisher';
+import { InternalKbdKeyEvent, OitSimvars } from './OitSimvarPublisher';
 import { AnsuOps } from './System/AnsuOps';
 
 export interface AbstractOitFltOpsPageProps extends ComponentProps {
@@ -62,16 +65,58 @@ export class OIT extends DisplayComponent<OitProps> {
 
   private readonly displayUnitRef = FSComponent.createRef<OitDisplayUnit>();
 
+  private readonly oskRef = FSComponent.createRef<OnScreenKeyboard>();
+
+  private readonly oskTarget = Subject.create<HTMLElement | null>(null);
+
+  private readonly autoOsk = Subject.create(false);
+
+  private readonly oskField = MappedSubject.create(
+    ([target, autoOsk]) => (autoOsk ? target : null),
+    this.oskTarget,
+    this.autoOsk,
+  );
+
+  private readonly oskVisible = this.oskField.map((field) => field !== null);
+
+  private readonly contentTransform = Subject.create('');
+
+  private readonly kbdKeyPublisher = this.props.bus.getPublisher<InternalKbdKeyEvent>();
+
+  private readonly kbdSide = this.props.captOrFo === 'CAPT' ? 'L' : 'R';
+
+  private cancelAutoOskSub: (() => void) | undefined;
+
   public onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.subscriptions.push(this.oisDomainSwitch, this.avncsOrFltOps);
+    this.subscriptions.push(
+      this.oisDomainSwitch,
+      this.avncsOrFltOps,
+      this.oskField,
+      this.oskVisible,
+      this.oskField.sub((field) => {
+        this.contentTransform.set('');
+        const offset = field ? this.oskRef.instance.coveredHeight(field) : 0;
+        this.contentTransform.set(offset > 0 ? `translateY(-${offset}px)` : '');
+      }),
+    );
+
+    this.cancelAutoOskSub = NXDataStore.getAndSubscribeLegacy(
+      'EFB_AUTO_OSK',
+      (_, value) => this.autoOsk.set(value === '1'),
+      '0',
+    );
   }
+
+  private readonly onOskKey = (key: string) =>
+    this.kbdKeyPublisher.pub('kbdKeyEvent', [this.kbdSide, key === 'DISMISS' ? 'ENT' : key]);
 
   destroy(): void {
     for (const s of this.subscriptions) {
       s.destroy();
     }
+    this.cancelAutoOskSub?.();
 
     super.destroy();
   }
@@ -85,20 +130,24 @@ export class OIT extends DisplayComponent<OitProps> {
         failuresConsumer={this.props.failuresConsumer}
         avncsOrFltOps={this.avncsOrFltOps}
       >
-        <OitFltOpsContainer
-          bus={this.props.bus}
-          laptop={this.props.laptop}
-          displayUnitRef={this.displayUnitRef}
-          captOrFo={this.props.captOrFo}
-          avncsOrFltOps={this.avncsOrFltOps}
-        />
-        <OitAvncsContainer
-          bus={this.props.bus}
-          ansu={this.props.avncsAnsu}
-          displayUnitRef={this.displayUnitRef}
-          captOrFo={this.props.captOrFo}
-          avncsOrFltOps={this.avncsOrFltOps}
-        />
+        <div style={{ transform: this.contentTransform }}>
+          <OitFltOpsContainer
+            bus={this.props.bus}
+            laptop={this.props.laptop}
+            displayUnitRef={this.displayUnitRef}
+            captOrFo={this.props.captOrFo}
+            avncsOrFltOps={this.avncsOrFltOps}
+            oskTarget={this.oskTarget}
+          />
+          <OitAvncsContainer
+            bus={this.props.bus}
+            ansu={this.props.avncsAnsu}
+            displayUnitRef={this.displayUnitRef}
+            captOrFo={this.props.captOrFo}
+            avncsOrFltOps={this.avncsOrFltOps}
+          />
+        </div>
+        <OnScreenKeyboard ref={this.oskRef} layout={OSK_OIT_LAYOUT} visible={this.oskVisible} onKey={this.onOskKey} />
       </OitDisplayUnit>
     );
   }

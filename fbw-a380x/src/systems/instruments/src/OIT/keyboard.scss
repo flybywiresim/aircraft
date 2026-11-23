@@ -1,0 +1,36 @@
+// Copyright (c) 2026 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
+@import "../MsfsAvionicsCommon/definitions.scss";
+
+.osk-container {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  box-sizing: border-box;
+  z-index: 100;
+  --osk-key-gap: 6px;
+  padding: 0 calc(var(--osk-key-gap) / 2) var(--osk-key-gap);
+  background: $display-background;
+}
+
+.osk-key {
+  @extend .mfd-button;
+  box-sizing: border-box;
+  height: 56px;
+  padding: 0;
+
+  svg {
+    width: 32px;
+    height: 32px;
+    fill: none;
+    stroke: $display-white;
+    stroke-width: 2.5;
+  }
+
+  &:active {
+    background-color: $display-dark-grey;
+    border: 2px inset $display-light-grey;
+  }
+}

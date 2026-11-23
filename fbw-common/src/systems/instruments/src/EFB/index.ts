@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// Copyright (c) 2023-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 export * from './AircraftContext';
@@ -29,6 +29,7 @@ export * from './UtilComponents/Card/Card';
 export * from './UtilComponents/Form/Select';
 export * from './UtilComponents/Form/SimpleInput/SimpleInput';
 export * from './UtilComponents/Form/Toggle';
+export * from './UtilComponents/KeyboardWrapper';
 export * from './UtilComponents/Modals/Modals';
 export * from './UtilComponents/Navbar';
 export * from './UtilComponents/Progress/Progress';
