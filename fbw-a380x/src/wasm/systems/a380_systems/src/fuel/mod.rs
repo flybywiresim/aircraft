@@ -581,33 +581,33 @@ impl A380FuelSystem {
             // Right Outer Forward Inlet Valve
             A380FuelValve::RightOuterForwardTransferValve => (14, (ElectricalBusType::DirectCurrentNamed("502PP"), None)),
             // Feed Tank 1 Aft Inlet Valve
-            A380FuelValve::FeedTank1AftTransferValve => (15, (ElectricalBusType::DirectCurrentNamed("501PP"), None)),
+            A380FuelValve::FeedTank1AftTransferValve => (15, (ElectricalBusType::Sub("501PP"), None)),
             // Feed Tank 2 Aft Inlet Valve
-            A380FuelValve::FeedTank2AftTransferValve => (16, (ElectricalBusType::DirectCurrentNamed("501PP"), None)),
+            A380FuelValve::FeedTank2AftTransferValve => (16, (ElectricalBusType::Sub("501PP"), None)),
             // Feed Tank 3 Aft Inlet Valve
-            A380FuelValve::FeedTank3AftTransferValve => (17, (ElectricalBusType::DirectCurrentNamed("501PP"), None)),
+            A380FuelValve::FeedTank3AftTransferValve => (17, (ElectricalBusType::Sub("501PP"), None)),
             // Feed Tank 4 Aft Inlet Valve
-            A380FuelValve::FeedTank4AftTransferValve => (18, (ElectricalBusType::DirectCurrentNamed("501PP"), None)),
+            A380FuelValve::FeedTank4AftTransferValve => (18, (ElectricalBusType::Sub("501PP"), None)),
             // Left Inner Aft Inlet Valve
-            A380FuelValve::LeftInnerAftTransferValve => (19, (ElectricalBusType::DirectCurrentNamed("503PP"), None)),
+            A380FuelValve::LeftInnerAftTransferValve => (19, (ElectricalBusType::Sub("503PP"), None)),
             // Left Mid Aft Inlet Valve
-            A380FuelValve::LeftMidAftTransferValve => (20, (ElectricalBusType::DirectCurrentNamed("501PP"), None)),
+            A380FuelValve::LeftMidAftTransferValve => (20, (ElectricalBusType::Sub("501PP"), None)),
             // Left Outer Aft Inlet Valve
-            A380FuelValve::LeftOuterAftTransferValve => (21, (ElectricalBusType::DirectCurrentNamed("501PP"), None)),
+            A380FuelValve::LeftOuterAftTransferValve => (21, (ElectricalBusType::Sub("501PP"), None)),
             // Right Inner Aft Inlet Valve
-            A380FuelValve::RightInnerAftTransferValve => (22, (ElectricalBusType::DirectCurrentNamed("503PP"), None)),
+            A380FuelValve::RightInnerAftTransferValve => (22, (ElectricalBusType::Sub("503PP"), None)),
             // Right Mid Aft Inlet Valve
-            A380FuelValve::RightMidAftTransferValve => (23, (ElectricalBusType::DirectCurrentNamed("503PP"), None)),
+            A380FuelValve::RightMidAftTransferValve => (23, (ElectricalBusType::Sub("503PP"), None)),
             // Right Outer Aft Inlet Valve
-            A380FuelValve::RightOuterAftTransferValve => (24, (ElectricalBusType::DirectCurrentNamed("501PP"), None)),
+            A380FuelValve::RightOuterAftTransferValve => (24, (ElectricalBusType::Sub("501PP"), None)),
             // Trim Tank Inlet Valve 1, TODO: power source switching
             A380FuelValve::TrimTankInletValve1 => (25, (ElectricalBusType::DirectCurrentNamed("502PP"), None)),
             // Trim Tank Inlet Valve 2
             A380FuelValve::TrimTankInletValve2 => (26, (ElectricalBusType::DirectCurrentNamed("502PP"), None)),
             // Trim Line Forward Isolation Valve, TODO: power source switching
-            A380FuelValve::TrimLineIsolationValveFwd => (27, (ElectricalBusType::DirectCurrentNamed("503PP"), None)),
+            A380FuelValve::TrimLineIsolationValveFwd => (27, (ElectricalBusType::Sub("503PP"), None)),
             // Trim Line Aft Isolation Valve
-            A380FuelValve::TrimLineIsolationValveAft => (28, (ElectricalBusType::DirectCurrentNamed("503PP"), None)),
+            A380FuelValve::TrimLineIsolationValveAft => (28, (ElectricalBusType::Sub("503PP"), None)),
             // Cross Feed Valve 1
             A380FuelValve::CrossFeedValve1 => (
                 29,
@@ -667,7 +667,7 @@ impl A380FuelSystem {
                 ),
             ),
             // Left Refuel Valve
-            A380FuelValve::GalleryAuxRefuelValveLeft => (37, (ElectricalBusType::DirectCurrentNamed("503PP"), None)),
+            A380FuelValve::GalleryAuxRefuelValveLeft => (37, (ElectricalBusType::Sub("503PP"), None)),
             // Right Refuel Valve
             A380FuelValve::GalleryAuxRefuelValveRight => (38, (ElectricalBusType::DirectCurrentNamed("502PP"), None)),
             // Transfer Defuel Valve
