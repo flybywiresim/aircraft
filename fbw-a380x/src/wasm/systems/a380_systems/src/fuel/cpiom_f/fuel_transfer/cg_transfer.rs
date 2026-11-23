@@ -1,7 +1,7 @@
 use crate::fuel::{
     cpiom_f::{
         fuel_transfer::FuelTransfer, FuelQuantityProvider, TankMode, TransferGalleryConnections,
-        FEED_TANKS, INNER_TANKS, MID_TANKS,
+        FEED_TANKS, INNER_TANKS, MID_TANKS, TRIM_TANK,
     },
     A380FuelTankType,
 };
@@ -59,21 +59,40 @@ impl FuelTransfer for CGTransfer {
     ) {
         if self.active && gallery_connections.is_aft_gallery_usable() {
             // TODO: balance tanks (by filling up lowest tanks first)
-            // TODO: what if feed tanks are full?
-            let target_tanks: &[A380FuelTankType] = if !tank_quantities.tanks_empty(INNER_TANKS) {
-                &INNER_TANKS
-            } else if !tank_quantities.tanks_empty(MID_TANKS) {
-                &MID_TANKS
-            } else {
-                &FEED_TANKS
-            };
+            if tank_quantities.tank_empty(TRIM_TANK) {
+                // Without fuel in the trim tank there is no source for a CG
+                // transfer.
+                return;
+            }
 
-            gallery_connections.set_aft_gallery_modes(
-                target_tanks
-                    .iter()
-                    .map(|t| (*t, TankMode::Target))
-                    .chain([(A380FuelTankType::Trim, TankMode::Source)]),
-            );
+            // Select the first target group in priority order that already
+            // contains fuel (the feed tanks are the final fallback) and still
+            // has capacity. Full tanks are never targeted. If no receiving
+            // tank has capacity left, the transfer is inhibited.
+            let candidate_groups: [&[A380FuelTankType]; 3] =
+                [&INNER_TANKS, &MID_TANKS, &FEED_TANKS];
+            let target_tanks = candidate_groups
+                .into_iter()
+                .enumerate()
+                .find(|(index, group)| {
+                    let is_final_fallback = *index + 1 == candidate_groups.len();
+                    // A group is only eligible when every one of its tanks
+                    // has capacity left (the tanks of a group are filled
+                    // symmetrically).
+                    group.iter().all(|tank| !tank_quantities.tank_full(*tank))
+                        && (is_final_fallback
+                            || !tank_quantities.tanks_empty(group.iter().copied()))
+                })
+                .map(|(_, group)| group);
+
+            if let Some(target_tanks) = target_tanks {
+                gallery_connections.set_aft_gallery_modes(
+                    target_tanks
+                        .iter()
+                        .map(|t| (*t, TankMode::Target))
+                        .chain([(TRIM_TANK, TankMode::Source)]),
+                );
+            }
         }
     }
 }
@@ -193,6 +212,7 @@ mod tests {
     fn set_gallery_modes_targets_inner_tanks_when_inner_have_fuel() {
         let mut provider = MockFuelQuantityProvider::default();
         provider.with_quantity(A380FuelTankType::LeftInner, Mass::new::<pound>(100.));
+        provider.with_quantity(A380FuelTankType::Trim, Mass::new::<pound>(100.));
         let mut connections = TransferGalleryTankConnections::default();
         let cg_transfer = CGTransfer { active: true };
 
@@ -221,6 +241,7 @@ mod tests {
     fn set_gallery_modes_falls_back_to_mid_tanks_when_inner_are_empty() {
         let mut provider = MockFuelQuantityProvider::default();
         provider.with_quantity(A380FuelTankType::LeftMid, Mass::new::<pound>(100.));
+        provider.with_quantity(A380FuelTankType::Trim, Mass::new::<pound>(100.));
         let mut connections = TransferGalleryTankConnections::default();
         let cg_transfer = CGTransfer { active: true };
 
@@ -246,7 +267,8 @@ mod tests {
 
     #[test]
     fn set_gallery_modes_falls_back_to_feed_tanks_when_inner_and_mid_are_empty() {
-        let provider = MockFuelQuantityProvider::default();
+        let mut provider = MockFuelQuantityProvider::default();
+        provider.with_quantity(A380FuelTankType::Trim, Mass::new::<pound>(100.));
         let mut connections = TransferGalleryTankConnections::default();
         let cg_transfer = CGTransfer { active: true };
 
@@ -286,6 +308,86 @@ mod tests {
 
         assert_eq!(
             connections.aft_gallery[A380FuelTankType::LeftInner],
+            TankMode::None
+        );
+    }
+
+    #[test]
+    fn set_gallery_modes_does_nothing_when_trim_tank_is_empty() {
+        let mut provider = MockFuelQuantityProvider::default();
+        provider.with_quantity(A380FuelTankType::LeftInner, Mass::new::<pound>(100.));
+        provider.with_quantity(A380FuelTankType::RightInner, Mass::new::<pound>(100.));
+        let mut connections = TransferGalleryTankConnections::default();
+        let cg_transfer = CGTransfer { active: true };
+
+        cg_transfer.set_gallery_modes(&mut connections, &provider);
+
+        assert!(!connections.aft_gallery_in_use);
+        assert_eq!(
+            connections.aft_gallery[A380FuelTankType::LeftInner],
+            TankMode::None
+        );
+        assert_eq!(
+            connections.aft_gallery[A380FuelTankType::Trim],
+            TankMode::None
+        );
+    }
+
+    #[test]
+    fn set_gallery_modes_falls_back_to_mid_tanks_when_inner_are_full() {
+        let mut provider = MockFuelQuantityProvider::default();
+        provider.with_quantity(A380FuelTankType::LeftInner, Mass::new::<pound>(10_000.));
+        provider.with_quantity(A380FuelTankType::RightInner, Mass::new::<pound>(10_000.));
+        provider.with_quantity(A380FuelTankType::LeftMid, Mass::new::<pound>(100.));
+        provider.with_quantity(A380FuelTankType::RightMid, Mass::new::<pound>(100.));
+        provider.with_quantity(A380FuelTankType::Trim, Mass::new::<pound>(100.));
+        let mut connections = TransferGalleryTankConnections::default();
+        let cg_transfer = CGTransfer { active: true };
+
+        cg_transfer.set_gallery_modes(&mut connections, &provider);
+
+        assert_eq!(
+            connections.aft_gallery[A380FuelTankType::LeftInner],
+            TankMode::None
+        );
+        assert_eq!(
+            connections.aft_gallery[A380FuelTankType::LeftMid],
+            TankMode::Target
+        );
+        assert_eq!(
+            connections.aft_gallery[A380FuelTankType::RightMid],
+            TankMode::Target
+        );
+        assert_eq!(
+            connections.aft_gallery[A380FuelTankType::Trim],
+            TankMode::Source
+        );
+    }
+
+    #[test]
+    fn set_gallery_modes_inhibits_when_no_receiving_tank_has_capacity() {
+        let mut provider = MockFuelQuantityProvider::default();
+        for tank in [
+            A380FuelTankType::LeftInner,
+            A380FuelTankType::RightInner,
+            A380FuelTankType::LeftMid,
+            A380FuelTankType::RightMid,
+            A380FuelTankType::FeedOne,
+            A380FuelTankType::FeedTwo,
+            A380FuelTankType::FeedThree,
+            A380FuelTankType::FeedFour,
+            A380FuelTankType::Trim,
+        ] {
+            provider.with_quantity(tank, Mass::new::<pound>(10_000.));
+        }
+        let mut connections = TransferGalleryTankConnections::default();
+        let cg_transfer = CGTransfer { active: true };
+
+        cg_transfer.set_gallery_modes(&mut connections, &provider);
+
+        assert!(!connections.aft_gallery_in_use);
+        assert_eq!(
+            connections.aft_gallery[A380FuelTankType::Trim],
             TankMode::None
         );
     }
