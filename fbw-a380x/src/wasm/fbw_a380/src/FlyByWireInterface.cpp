@@ -222,7 +222,7 @@ void FlyByWireInterface::loadConfiguration() {
   // --------------------------------------------------------------------------
   // load values - autothrust
   autothrustThrustLimitReversePercentageToga =
-      INITypeConversion::getDouble(iniStructure, "AUTOTHRUST", "THRUST_LIMIT_REVERSE_PERCENTAGE_TOGA", 0.813);
+      INITypeConversion::getDouble(iniStructure, "AUTOTHRUST", "THRUST_LIMIT_REVERSE_PERCENTAGE_TOGA", -0.813);
 
   // print configuration into console
   std::printf("WASM: AUTOTHRUST : THRUST_LIMIT_REVERSE_PERCENTAGE_TOGA    = %g\n", autothrustThrustLimitReversePercentageToga);
