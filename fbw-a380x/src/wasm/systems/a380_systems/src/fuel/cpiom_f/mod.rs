@@ -1069,6 +1069,10 @@ impl A380FuelQuantityManagementSystem {
         self.fuel_valve_closed_words = Default::default();
         self.fms_zero_fuel_weights = Default::default();
         self.fms_zero_fuel_weight_cgs = Default::default();
+        self.fms_remaining_times = Default::default();
+        self.fms_zero_fuel_weight.clear();
+        self.fms_zero_fuel_weight_cg.clear();
+        self.fms_remaining_time.clear();
         self.fqms_status_word = Default::default();
     }
 

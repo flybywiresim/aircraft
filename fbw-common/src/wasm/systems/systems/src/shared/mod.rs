@@ -722,6 +722,13 @@ impl<T> MemorizedValue<T> {
     pub fn value(&self) -> Option<&T> {
         self.value.as_ref()
     }
+
+    /// Forgets the stored value and resets the expiration timer, so the value
+    /// is no longer retained.
+    pub fn clear(&mut self) {
+        self.delay.set_output(false);
+        self.value = None;
+    }
 }
 impl<T: Copy> MemorizedValue<T> {
     pub fn copied(&self) -> Option<T> {
