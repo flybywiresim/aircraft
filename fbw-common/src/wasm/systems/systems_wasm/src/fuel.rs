@@ -89,12 +89,31 @@ pub(super) fn fuel_valves(
 
                 let valve_powered_variable =
                     Variable::Aspect(format!("FUEL_VALVE_{valve_index}_IS_POWERED"));
-                builder.init_variable(valve_powered_variable.clone(), 1.);
-                builder.on_change(
+
+                // Mirror the actual simulator circuit switch state so the
+                // toggle event below only corrects mismatches instead of
+                // blindly flipping the switch, which would invert the state
+                // when a flight is restored with the circuit already off.
+                let circuit_switch_on_variable =
+                    Variable::aspect(&format!("FUEL_VALVE_{valve_index}_CIRCUIT_SWITCH_ON"));
+                builder.copy(
+                    Variable::aircraft("CIRCUIT SWITCH ON", "Bool", circuit_id as _),
+                    circuit_switch_on_variable.clone(),
+                );
+
+                // The NaN starting value forces an initial comparison once
+                // the actual circuit state has become available.
+                builder.on_change_with_starting_values(
                     ExecuteOn::PostTick,
-                    vec![valve_powered_variable],
-                    Box::new(move |_, _| {
-                        trigger_key_event(KEY_ELECTRICAL_CIRCUIT_TOGGLE, circuit_id);
+                    vec![valve_powered_variable, circuit_switch_on_variable],
+                    vec![1., f64::NAN],
+                    Box::new(move |_, values| {
+                        // Both values are booleans; an exact comparison is intended.
+                        #[allow(clippy::float_cmp)]
+                        let state_mismatch = values[0] != values[1];
+                        if state_mismatch {
+                            trigger_key_event(KEY_ELECTRICAL_CIRCUIT_TOGGLE, circuit_id);
+                        }
                     }),
                 );
             }
