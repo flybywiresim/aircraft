@@ -124,6 +124,7 @@ Always start an item with "1."; GitHub will number the rendered list automatical
 1. [A32NX/FCTL] Added new FCDC outputs and moved F/CTL SD page to use FCDC data - @lukecologne (luke)
 1. [A32NX/FCTL] Improvements to the PFD lower area spoiler and THS indications - @lukecologne (luke)
 1. [ND] Added dashes for GS or TAS on ND when word is NCD - @eagle941 (pythonist)
+1. [OSK] Rebuild onscreen keyboard component in FSComponent. Add dedicated OIT OSK. - @CameronCarlyon (YouBaconMeCrazy)
 
 ## 2024.1.0
 

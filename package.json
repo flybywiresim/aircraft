@@ -174,7 +174,6 @@
     "react-redux": "^7.2.6",
     "react-router": "~5.2.0",
     "react-router-dom": "~5.2.0",
-    "react-simple-keyboard": "^3.3.11",
     "react-toastify": "^8.1.0",
     "react-zoom-pan-pinch": "^2.1.2",
     "redux": "^4.1.1",
@@ -183,7 +182,6 @@
     "safe-stable-stringify": "^2.3.1",
     "sass": "^1.45.1",
     "semver": "^7.3.8",
-    "simple-keyboard-layouts": "^3.1.32",
     "use-events": "^1.4.2",
     "uuid": "^9.0.0",
     "ws": "^7.4.5"

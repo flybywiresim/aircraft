@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// Copyright (c) 2023-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useRef } from 'react';
@@ -17,7 +17,6 @@ import { ButtonType, SettingItem, SettingsPage, SettingGroup } from '../Settings
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { SelectInput } from '../../UtilComponents/Form/SelectInput/SelectInput';
-import { keyboardLayoutOptions } from '../../UtilComponents/KeyboardWrapper';
 import { languageOptions, tt } from '../../Localization/translation';
 
 export const FlyPadPage = () => {
@@ -34,7 +33,6 @@ export const FlyPadPage = () => {
   );
   const [usingColoredMetar, setUsingColoredMetar] = usePersistentNumberProperty('EFB_USING_COLOREDMETAR', 1);
   const [language, setLanguage] = usePersistentProperty('EFB_LANGUAGE', 'en');
-  const [keyboardLayout, setKeyboardLayout] = usePersistentProperty('EFB_KEYBOARD_LAYOUT_IDENT', 'english');
   const [batteryLifeEnabled, setBatteryLifeEnabled] = usePersistentNumberProperty('EFB_BATTERY_LIFE_ENABLED', 1);
 
   // the tt() is a special case to update the page with the correct language after user
@@ -84,19 +82,6 @@ export const FlyPadPage = () => {
             value: option.langCode,
             displayValue: `${option.alias}`,
             tooltip: `${option.langName}`,
-          }))}
-          maxHeight={32}
-        />
-      </SettingItem>
-
-      <SettingItem name={tt('Settings.flyPad.OnscreenKeyboardLayout', language)}>
-        <SelectInput
-          className="w-64"
-          value={keyboardLayout}
-          onChange={(value) => setKeyboardLayout(value as string)}
-          options={keyboardLayoutOptions.map((option) => ({
-            value: option.name,
-            displayValue: option.alias,
           }))}
           maxHeight={32}
         />

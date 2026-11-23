@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-// Copyright (c) 2023-2025 FlyByWire Simulations
+// Copyright (c) 2023-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useContext, useEffect, useState } from 'react';
@@ -41,6 +41,7 @@ import { FailuresOrchestratorProvider } from './failures-orchestrator-provider';
 import { AlertModal, ModalContainer, ModalProvider, useModals } from './UtilComponents/Modals/Modals';
 import { FbwLogo } from './UtilComponents/FbwLogo';
 import { Tooltip } from './UtilComponents/TooltipWrapper';
+import { KeyboardWrapper, OSK_EFB_LAYOUT } from './UtilComponents/KeyboardWrapper';
 import { StatusBar } from './StatusBar/StatusBar';
 import { ToolBar } from './ToolBar/ToolBar';
 import { Dashboard } from './Dashboard/Dashboard';
@@ -461,6 +462,7 @@ export const Efb: React.FC<EfbProps> = ({ aircraftChecklistsProp }) => {
                 </div>
               </div>
             </div>
+            <KeyboardWrapper layout={OSK_EFB_LAYOUT} />
           </PowerContext.Provider>
         </NavigraphAuthProvider>
       );

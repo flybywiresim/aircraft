@@ -1,93 +1,58 @@
-// @ts-strict-ignore
-// Copyright (c) 2023-2024 FlyByWire Simulations
+// Copyright (c) 2023-2026 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import React, { useEffect, useRef, useState } from 'react';
-import Keyboard, { KeyboardInput } from 'react-simple-keyboard';
-import '../Assets/Keyboard.scss';
-import SimpleKeyboardLayouts from 'simple-keyboard-layouts';
-import { usePersistentProperty } from '@flybywiresim/fbw-sdk-react';
-import { useAppSelector } from '../Store/store';
+import React, { useEffect, useRef } from 'react';
+import { FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+// Imported directly to avoid bundling unrelated FSComponent code into React instruments
+import {
+  OnScreenKeyboard,
+  OnScreenKeyboardLayout,
+  OnScreenKeyboardProps,
+} from '../../MsfsAvionicsCommon/UiWidgets/OnScreenKeyboard';
+import { store } from '../Store/store';
+import { setOffsetY } from '../Store/features/keyboard';
 
-interface KeyboardWrapperProps {
-  onChangeAll: (inputObj: KeyboardInput, e?: MouseEvent) => any;
-  keyboardRef: any;
-  setOpen: (value: boolean) => void;
-  blurInput: () => void;
-  onKeyDown?: (buttonName: string) => void;
-}
+export { OSK_EFB_LAYOUT, OSK_OIT_LAYOUT } from '../../MsfsAvionicsCommon/UiWidgets/OnScreenKeyboard';
 
-export const keyboardLayoutOptions = [
-  // Standard
-  { name: 'english', alias: 'English' },
-  // Alternatives
-  { name: 'arabic', alias: 'العربية' },
-  { name: 'chinese', alias: '中文键盘' },
-  { name: 'czech', alias: 'Čeština' },
-  { name: 'french', alias: 'Français' },
-  { name: 'german', alias: 'Deutsch' },
-  { name: 'greek', alias: 'Ελληνικά' },
-  { name: 'hebrew', alias: 'עִבְרִית' },
-  { name: 'hindi', alias: 'हिंदी' },
-  { name: 'italian', alias: 'Italiano' },
-  { name: 'japanese', alias: '日本語' },
-  { name: 'korean', alias: '한국어' },
-  { name: 'norwegian', alias: 'Norsk' },
-  { name: 'polish', alias: 'Polski' },
-  { name: 'russian', alias: 'Русский' },
-  { name: 'spanish', alias: 'Español' },
-  { name: 'swedish', alias: 'Svenska' },
-  { name: 'thai', alias: 'ไทย' },
-  { name: 'turkish', alias: 'Türkçe' },
-];
+type KeyHandler = { current?: (key: string, text: string) => void };
 
-export const KeyboardWrapper = ({ onChangeAll, keyboardRef, setOpen, blurInput, onKeyDown }: KeyboardWrapperProps) => {
-  const [currentLayoutIdentifier] = usePersistentProperty('EFB_KEYBOARD_LAYOUT_IDENT', 'english');
-  const [currentLayout] = useState(() => new SimpleKeyboardLayouts().get(currentLayoutIdentifier));
-  const [currentLayoutName, setCurrentLayoutName] = useState('default');
+const activeKeyHandler = Subject.create<KeyHandler | null>(null);
 
-  const { offsetY } = useAppSelector((state) => state.keyboard);
-  const [offsetX, setOffsetX] = useState(0);
-  const [verticalDeviation, setVerticalDeviation] = useState(0);
-  const keyboardWrapperRef = useRef<HTMLDivElement>(null);
+let mountedKeyboard: OnScreenKeyboard | null = null;
 
-  const onKeyPress = (button: string) => {
-    if (button === '{shift}' || button === '{lock}') {
-      setCurrentLayoutName(currentLayoutName === 'default' ? 'shift' : 'default');
-    }
-    if (button === '{enter}') {
-      blurInput();
-      setOpen(false);
-    }
-    onKeyDown?.(button);
-  };
+export const showOnScreenKeyboard = (handler: KeyHandler, field: Element) => {
+  activeKeyHandler.set(handler);
+  store.dispatch(setOffsetY(mountedKeyboard?.coveredHeight(field) ?? 0));
+};
+
+export const hideOnScreenKeyboard = (handler: KeyHandler) => {
+  if (activeKeyHandler.get() === handler) {
+    activeKeyHandler.set(null);
+    store.dispatch(setOffsetY(0));
+  }
+};
+
+export const KeyboardWrapper = ({ layout }: { layout: OnScreenKeyboardLayout }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!keyboardWrapperRef.current) {
-      return;
-    }
+    const keyboardRef = FSComponent.createRef<OnScreenKeyboard>();
+    const visible = activeKeyHandler.map((handler) => handler !== null);
+    const props: OnScreenKeyboardProps = {
+      ref: keyboardRef,
+      layout,
+      visible,
+      onKey: (key, text) => activeKeyHandler.get()?.current?.(key, text),
+    };
+    FSComponent.render(FSComponent.buildComponent(OnScreenKeyboard, props) as VNode, containerRef.current);
+    mountedKeyboard = keyboardRef.instance;
 
-    const { left, bottom } = keyboardWrapperRef.current.getBoundingClientRect();
-    setVerticalDeviation(window.innerHeight - bottom);
-    setOffsetX(-left);
+    return () => {
+      mountedKeyboard = null;
+      keyboardRef.instance.destroy();
+      visible.destroy();
+    };
   }, []);
 
-  return (
-    <div
-      className="fixed bottom-0 z-50 m-0 w-[1430px] shadow-lg"
-      style={{ transform: `translate(${offsetX}px, ${verticalDeviation - offsetY}px)` }}
-      ref={keyboardWrapperRef}
-    >
-      <Keyboard
-        keyboardRef={(r) => {
-          keyboardRef.current = r;
-        }}
-        layoutName={currentLayoutName}
-        preventMouseDownDefault
-        onChangeAll={onChangeAll}
-        onKeyPress={onKeyPress}
-        {...currentLayout}
-      />
-    </div>
-  );
+  return <div ref={containerRef} />;
 };

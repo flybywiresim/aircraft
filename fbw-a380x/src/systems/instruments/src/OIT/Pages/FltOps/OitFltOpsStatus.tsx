@@ -1,4 +1,4 @@
-//  Copyright (c) 2025 FlyByWire Simulations
+//  Copyright (c) 2025-2026 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
 import { ArraySubject, DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
@@ -81,6 +81,7 @@ export class OitFltOpsStatus extends DisplayComponent<OitFltOpsStatusPageProps> 
                   interactionMode={this.props.container.interactionMode}
                   overrideEmptyMandatoryPlaceholder="[]"
                   errorHandler={() => {}}
+                  oskTarget={this.props.container.oskTarget}
                 />
                 <div style="flex-grow: 1" />
               </div>
@@ -98,6 +99,7 @@ export class OitFltOpsStatus extends DisplayComponent<OitFltOpsStatusPageProps> 
                   interactionMode={this.props.container.interactionMode}
                   overrideEmptyMandatoryPlaceholder="[]"
                   errorHandler={() => {}}
+                  oskTarget={this.props.container.oskTarget}
                 />
                 <div class="oit-label bigger" style="width: 100px; padding-left: 40px;">
                   TO
@@ -112,6 +114,7 @@ export class OitFltOpsStatus extends DisplayComponent<OitFltOpsStatusPageProps> 
                   interactionMode={this.props.container.interactionMode}
                   overrideEmptyMandatoryPlaceholder="[]"
                   errorHandler={() => {}}
+                  oskTarget={this.props.container.oskTarget}
                 />
                 <div style="flex-grow: 1" />
               </div>

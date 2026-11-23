@@ -1,4 +1,4 @@
-//  Copyright (c) 2025 FlyByWire Simulations
+//  Copyright (c) 2025-2026 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
 import {
@@ -8,6 +8,7 @@ import {
   FSComponent,
   MappedSubject,
   MappedSubscribable,
+  MutableSubscribable,
   NodeReference,
   SimVarValueType,
   Subject,
@@ -34,6 +35,7 @@ interface OitFltOpsContainerProps {
   readonly displayUnitRef: NodeReference<OitDisplayUnit>;
   readonly captOrFo: 'CAPT' | 'FO';
   readonly avncsOrFltOps: Subscribable<OisDomain>;
+  readonly oskTarget: MutableSubscribable<HTMLElement | null>;
 }
 
 export abstract class OitFltOpsContainer extends DisplayComponent<OitFltOpsContainerProps> {
@@ -58,6 +60,7 @@ export abstract class OitFltOpsContainer extends DisplayComponent<OitFltOpsConta
 
   public readonly hEventConsumer = this.props.bus.getSubscriber<InternalKbdKeyEvent>().on('kbdKeyEvent');
   public readonly interactionMode = Subject.create<InteractionMode>(InteractionMode.Touchscreen);
+  public readonly oskTarget = this.props.oskTarget;
 
   private readonly topRef = FSComponent.createRef<HTMLDivElement>();
 
@@ -124,6 +127,12 @@ export abstract class OitFltOpsContainer extends DisplayComponent<OitFltOpsConta
           this.uiService.resetFltOpsSession();
         }
       }, true),
+      this.hideContent.sub((hidden) => {
+        const focused = document.activeElement;
+        if (hidden && focused instanceof HTMLElement && this.topRef.instance.contains(focused)) {
+          focused.blur();
+        }
+      }),
       this.overlaySub,
       this.laptopHealthy,
       this.hideContent,
