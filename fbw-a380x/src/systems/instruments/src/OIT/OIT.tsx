@@ -96,7 +96,6 @@ export class OIT extends DisplayComponent<OitProps> {
       this.oskField,
       this.oskVisible,
       this.oskField.sub((field) => {
-        // Measured unshifted, as moving between fields with the keyboard up would otherwise include the old shift
         this.contentTransform.set('');
         const offset = field ? this.oskRef.instance.coveredHeight(field) : 0;
         this.contentTransform.set(offset > 0 ? `translateY(-${offset}px)` : '');
@@ -110,7 +109,6 @@ export class OIT extends DisplayComponent<OitProps> {
     );
   }
 
-  // Treat dismiss as Enter so the typed value is kept (ESC would discard)
   private readonly onOskKey = (key: string) =>
     this.kbdKeyPublisher.pub('kbdKeyEvent', [this.kbdSide, key === 'DISMISS' ? 'ENT' : key]);
 

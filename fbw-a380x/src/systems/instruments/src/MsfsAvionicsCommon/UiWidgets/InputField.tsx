@@ -76,7 +76,6 @@ export interface InputFieldProps<T, U = T, S = T extends U ? true : false> exten
   /** If true, text is rendered as white when input field is inactive, otherwise as green */
   whiteInactive?: Subscribable<boolean>;
 
-  /** Set to this field's element while it's being edited */
   oskTarget?: MutableSubscribable<HTMLElement | null>;
 }
 
