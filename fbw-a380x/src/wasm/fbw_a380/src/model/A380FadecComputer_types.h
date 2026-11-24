@@ -75,6 +75,11 @@ struct base_prim_fctl_out_bus
   base_arinc_429 v_alpha_lim_kn;
   base_arinc_429 v_alpha_prot_kn;
   base_arinc_429 v_alpha_stall_warn_kn;
+  base_arinc_429 aileron_droop_command_deg;
+  base_arinc_429 upper_rudder_travel_lim_deg;
+  base_arinc_429 lower_rudder_travel_lim_deg;
+  base_arinc_429 speed_brake_command_deg;
+  base_arinc_429 ground_spoiler_command_deg;
 };
 
 #endif
@@ -170,6 +175,19 @@ enum class SignStatusMatrix
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_athr_data_computed_
+#define DEFINED_TYPEDEF_FOR_athr_data_computed_
+
+struct athr_data_computed
+{
+  boolean_T TLA_in_active_range;
+  boolean_T is_FLX_active;
+  boolean_T ATHR_disabled;
+  real_T time_since_touchdown;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_eec_
 #define DEFINED_TYPEDEF_FOR_base_eec_
 
@@ -188,19 +206,6 @@ struct base_eec
   base_arinc_429 selected_n2_actual_percent;
   base_arinc_429 selected_n1_actual_percent;
   base_arinc_429 ecu_maintenance_word_6;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_athr_data_computed_
-#define DEFINED_TYPEDEF_FOR_athr_data_computed_
-
-struct athr_data_computed
-{
-  boolean_T TLA_in_active_range;
-  boolean_T is_FLX_active;
-  boolean_T ATHR_disabled;
-  real_T time_since_touchdown;
 };
 
 #endif
