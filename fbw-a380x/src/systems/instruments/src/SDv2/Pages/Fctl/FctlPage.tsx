@@ -13,12 +13,20 @@ import { RudderTrim } from './elements/RudderTrim';
 import { Spoiler, SpoilerSide } from './elements/Spoiler';
 import { SdPageProps } from '../../SD';
 import { SDSimvars } from '../../SDSimvarPublisher';
+import { FcdcBusBaseEvents } from '@shared/publishers/FcdcPublisher';
+import { Arinc429LocalVarConsumerSubject } from '@flybywiresim/fbw-sdk';
 
 export class FctlPage extends DestroyableComponent<SdPageProps> {
   private readonly onGround = ConsumerSubject.create(
     this.props.bus.getSubscriber<SDSimvars>().on('lgciu1LeftGearCompressed'),
     false,
   ); // TODO: Use better logic
+
+  private readonly fcdcDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(
+    this.props.bus.getSubscriber<FcdcBusBaseEvents>().on('fcdc_discrete_word_1'),
+  );
+
+  private readonly bcmActive = this.fcdcDiscreteWord1.map((word) => word.bitValueOr(19, false));
 
   private readonly topSvgDisplay = this.props.visible.map((v) => (v ? 'inline' : 'none'));
 
@@ -69,6 +77,15 @@ export class FctlPage extends DestroyableComponent<SdPageProps> {
 
         <Prims x={0} y={0} bus={this.props.bus} />
         <Secs x={0} y={78} bus={this.props.bus} />
+
+        <text
+          x={215}
+          y={32}
+          class={'Green F36'}
+          visibility={this.bcmActive.map((active) => (active ? 'inherit' : 'hidden'))}
+        >
+          BKUP CTL ACTIVE
+        </text>
 
         <Slats x={609} y={9} bus={this.props.bus} />
         <Flaps x={609} y={78} bus={this.props.bus} />

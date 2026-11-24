@@ -295,7 +295,7 @@ export function computeBC3Message(
   const fcuAltBlwAc = primFgDiscreteWord6.bitValueOr(16, false);
 
   // All currently unused message are set to false
-  if (fcdcWord1.bitValue(15) && !fcdcWord1.isFailureWarning() && flightPhaseForWarning) {
+  if (fcdcWord1.bitValue(20) && !fcdcWord1.isFailureWarning() && flightPhaseForWarning) {
     return BC3Messages.USE_MAN_PITCH_TRIM;
   } else if (false) {
     return BC3Messages.FOR_GA_SET_TOGA;

@@ -26,6 +26,7 @@ import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { EcamLimitations, EcamMemos } from '../MsfsAvionicsCommon/EcamMessages';
 import { FwcDataEvents, SecDataEvents } from '@flybywiresim/msfs-avionics-common';
 import { SfccEvents } from '../MsfsAvionicsCommon/providers/SfccPublisher';
+import { PrimFctlBusBaseEvents } from '@shared/publishers/PrimFctlPublisher';
 
 export class LowerArea extends DisplayComponent<{
   bus: ArincEventBus;
@@ -49,30 +50,10 @@ export class LowerArea extends DisplayComponent<{
 const circlePath = (r: number, cx: number, cy: number) =>
   `M ${cx} ${cy} m ${r} 0 a ${r} ${r} 0 1 0 ${-2 * r} 0 a ${r} ${r} 0 1 0 ${2 * r} 0`;
 
-const SPOILERS_HIDE_DEFLECTION_BELOW_DEG = 5.15;
-
 class SlatsFlapsDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
   private readonly sub = this.props.bus.getArincSubscriber<
     ClockEvents & Arinc429Values & PFDSimvars & FwcDataEvents & SfccEvents
   >();
-
-  // FIXME don't use commanded position from just one spoiler + figure out whether it's averaged, or max-ed
-  private readonly spoilersCommandedPosition = ConsumerSubject.create(
-    this.sub.on('spoilersCommanded').whenChanged(),
-    0,
-  );
-
-  private readonly spoilersArmed = ConsumerSubject.create(this.sub.on('spoilersArmed').whenChanged(), false);
-
-  private readonly spoilerExtensionVisible = MappedSubject.create(
-    ([pos, armed]) => (pos > SPOILERS_HIDE_DEFLECTION_BELOW_DEG || armed ? 'visible' : 'hidden'),
-    this.spoilersCommandedPosition,
-    this.spoilersArmed,
-  );
-
-  private readonly speedBrakesStillExtended = Subject.create(false);
-
-  private readonly speedBrakesPosDisagree = Subject.create(false);
 
   private slatsPath = Subject.create('');
 
@@ -355,10 +336,6 @@ class SlatsFlapsDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
     }, true);
   }
 
-  spoilersLogFn(x: number) {
-    return Math.min(90, 90 / (1 + Math.exp(-x + 17) ** 0.28));
-  }
-
   render(): VNode {
     return (
       <g>
@@ -491,39 +468,96 @@ class SlatsFlapsDisplay extends DisplayComponent<{ bus: ArincEventBus }> {
           d="M 15.2 195.5 h 12.4 l 4.1 0.2 l -0.1 -2.6 l -4 -0.9 l -2 -0.3 l -3 -0.1 l -3.5 0.1 l -3.8 0.8 z"
         />
 
-        <g visibility={this.spoilerExtensionVisible}>
-          <path
-            d="M 25.3 187.5 l 2.1 -3"
-            class={this.speedBrakesPosDisagree.map((it) =>
-              it ? 'NormalStroke Amber CornerRound' : 'NormalStroke White CornerRound',
-            )}
-          />
-          <path
-            d="M 27.5 189 l 3.1 -1.8"
-            class={this.speedBrakesPosDisagree.map((it) =>
-              it ? 'NormalStroke Amber CornerRound' : 'NormalStroke White CornerRound',
-            )}
-          />
-          <path
-            d={this.spoilersCommandedPosition.map(
-              (p) =>
-                `M 23 191.6 l ${5 * Math.cos(this.spoilersLogFn(p) * MathUtils.DEGREES_TO_RADIANS)} ${-5 * Math.sin(this.spoilersLogFn(p) * MathUtils.DEGREES_TO_RADIANS)}`,
-            )}
-            class={this.speedBrakesStillExtended.map((it) =>
-              it ? 'NormalStroke Amber CornerRound' : 'NormalStroke Green CornerRound',
-            )}
-            visibility={this.spoilersCommandedPosition.map((p) =>
-              p >= SPOILERS_HIDE_DEFLECTION_BELOW_DEG ? 'inherit' : 'hidden',
-            )}
-          />
-          <path
-            d="M 21.6 183.5 h 3 l -1.5 3 z"
-            class="Fill Stroke NormalStroke Cyan CornerRound"
-            visibility={this.spoilersArmed.map((a) => (a ? 'inherit' : 'hidden'))}
-          />
-        </g>
+        <SpoilersIndicator bus={this.props.bus} />
         <GearIndicator bus={this.props.bus} />
         <RudderTrimIndicator bus={this.props.bus} />
+      </g>
+    );
+  }
+}
+
+const SPOILERS_HIDE_DEFLECTION_BELOW_DEG = -0.1;
+
+class SpoilersIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
+  private readonly sub = this.props.bus.getArincSubscriber<PrimFctlBusBaseEvents>();
+
+  private readonly speedBrakeCommand = Arinc429LocalVarConsumerSubject.create(this.sub.on('prim_speed_brake_command'));
+
+  private readonly speedBrakeDisplayPosition = this.speedBrakeCommand.map((cmd) => {
+    const deflection = cmd.valueOr(0);
+    const maxDeflection = -45;
+
+    let normalizedDeflection;
+    if (deflection > maxDeflection * 0.75) {
+      normalizedDeflection = (deflection / (maxDeflection * 0.75)) * 0.5;
+    } else {
+      normalizedDeflection = (deflection / (maxDeflection * 0.25)) * 0.5 - 1;
+    }
+
+    return normalizedDeflection * -70;
+  });
+
+  private readonly groundSpoilerCommand = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('prim_ground_spoiler_command'),
+  );
+
+  private readonly groundSpoilerDisplayPosition = this.groundSpoilerCommand.map((cmd) => (cmd.valueOr(0) / 50) * 97);
+
+  private readonly spoilersDisplayPosition = MappedSubject.create(
+    ([speedBrakeDisplayPosition, groundSpoilerDisplayPosition]) =>
+      MathUtils.round(Math.min(speedBrakeDisplayPosition, groundSpoilerDisplayPosition), 0.1),
+    this.speedBrakeDisplayPosition,
+    this.groundSpoilerDisplayPosition,
+  );
+
+  private readonly primDiscreteWord1 = Arinc429LocalVarConsumerSubject.create(
+    this.sub.on('prim_discrete_status_word_1'),
+  );
+
+  private readonly groundSpoilersArmed = this.primDiscreteWord1.map((word) => word.bitValueOr(28, false));
+
+  private readonly speedBrakeLeverExtended = this.primDiscreteWord1.map((word) => word.bitValueOr(27, false));
+
+  private readonly spoilerIndicationsVisible = MappedSubject.create(
+    ([pos, speedBrakeLeverExtended, groundSpoilersArmed]) =>
+      pos < SPOILERS_HIDE_DEFLECTION_BELOW_DEG || speedBrakeLeverExtended || groundSpoilersArmed ? 'visible' : 'hidden',
+    this.spoilersDisplayPosition,
+    this.speedBrakeLeverExtended,
+    this.groundSpoilersArmed,
+  );
+
+  private readonly speedBrakesStillExtended = Subject.create(false);
+
+  private readonly speedBrakesPosDisagree = Subject.create(false);
+
+  render(): VNode {
+    return (
+      <g visibility={this.spoilerIndicationsVisible}>
+        <path
+          class={this.speedBrakesStillExtended.map((it) =>
+            it ? 'ThickStroke Amber CornerRound' : 'NormalStroke Green CornerRound',
+          )}
+          d="M 23.3 191.8 l 3 0.2 l 4.5 0.8"
+          transform={this.spoilersDisplayPosition.map((pos) => `rotate(${pos} 23.3 191.8)`)}
+        />
+
+        <path
+          d="M 25.8 186.8 l 1 -1.8"
+          class={this.speedBrakesPosDisagree.map((it) =>
+            it ? 'NormalStroke Amber CornerRound' : 'NormalStroke White CornerRound',
+          )}
+        />
+        <path
+          d="M 28.4 189.2 l 1.8 -1"
+          class={this.speedBrakesPosDisagree.map((it) =>
+            it ? 'NormalStroke Amber CornerRound' : 'NormalStroke White CornerRound',
+          )}
+        />
+        <path
+          d="M 23.1 186.6 l -0.8 -2.5 h 1.6 z"
+          class="Fill Stroke NormalStroke Cyan CornerRound"
+          visibility={this.groundSpoilersArmed.map((a) => (a ? 'inherit' : 'hidden'))}
+        />
       </g>
     );
   }
