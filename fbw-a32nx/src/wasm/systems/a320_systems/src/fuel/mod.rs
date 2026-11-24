@@ -47,7 +47,7 @@ impl From<usize> for A320FuelTankType {
 }
 
 pub struct A320Fuel {
-    fuel_system: FuelSystem<5, 5>,
+    fuel_system: FuelSystem<5, 5, 0>,
 }
 impl A320Fuel {
     pub const A320_FUEL: [FuelInfo<'static>; 5] = [
@@ -127,7 +127,7 @@ impl A320Fuel {
         let fuel_pumps =
             Self::FUEL_PUMPS.map(|(id, properties)| FuelPump::new(context, id, properties));
         A320Fuel {
-            fuel_system: FuelSystem::new(context, fuel_tanks, fuel_pumps),
+            fuel_system: FuelSystem::new(context, fuel_tanks, fuel_pumps, []),
         }
     }
 

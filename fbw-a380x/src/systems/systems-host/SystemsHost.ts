@@ -16,7 +16,6 @@ import {
   Subject,
 } from '@microsoft/msfs-sdk';
 import { LegacyGpws } from './Misc/LegacyGpws';
-import { LegacyFuel } from './CpiomF/LegacyFuel';
 import { LegacySoundManager } from './Misc/LegacySoundManager';
 import { LegacyTcasComputer } from './Misc/tcas/components/LegacyTcasComputer';
 import { VhfRadio } from './Misc/Communications/VhfRadio';
@@ -112,7 +111,7 @@ class SystemsHost extends BaseInstrument {
     this.failuresConsumer,
   );
   // MSFS only supports 1
-  // private readonly xpdr2 = new Transponder(2, 144, this.acBus2Powered, this.failuresConsumer);
+  // private readonly xpdr2 = new Transponder(2, 136, this.acBus2Powered, this.failuresConsumer);
 
   private readonly simVarHandling = new SimVarHandling(this.bus);
   private readonly atsu = new AtsuSystem(this.bus);
@@ -190,9 +189,6 @@ class SystemsHost extends BaseInstrument {
     this.fws2Failed,
   );
 
-  //FIXME add some deltatime functionality to backplane instruments so we dont have to pass SystemHost
-  private readonly legacyFuel = new LegacyFuel(this.bus, this);
-
   /**
    * "mainmenu" = 0
    * "loading" = 1
@@ -212,7 +208,6 @@ class SystemsHost extends BaseInstrument {
     this.backplane.addInstrument('Amu2', this.amu2, true);
     this.backplane.addInstrument('SimAudioManager', this.simAudioManager);
     this.backplane.addInstrument('Xpndr1', this.xpdr1, true);
-    this.backplane.addInstrument('LegacyFuel', this.legacyFuel);
     this.backplane.addInstrument('BtvDistanceUpdater', this.btv);
     this.backplane.addInstrument('EfisTawsBridge', this.efisTawsBridge);
     this.backplane.addPublisher('RmpAmuBusPublisher', this.rmpAmuBusPublisher);

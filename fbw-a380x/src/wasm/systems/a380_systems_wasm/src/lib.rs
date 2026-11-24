@@ -79,10 +79,13 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
         (ElectricalBusType::DirectCurrentHot(4), 15),
         (ElectricalBusType::DirectCurrentGndFltService, 17),
     ])?
-    .with_auxiliary_power_unit(Variable::named("OVHD_APU_START_PB_IS_AVAILABLE"), 8, 21)?
+    // APU fuel valve 34 is the APU low pressure valve (valve 8 is the feed
+    // tank 4 forward inlet valve which is controlled by the FQMS).
+    .with_auxiliary_power_unit(Variable::named("OVHD_APU_START_PB_IS_AVAILABLE"), 34, 21)?
     .with_engine_anti_ice(4)?
     .with_wing_anti_ice()?
-    .with_fuel_pumps(1..=21)?
+    .with_fuel_pumps(1..=21, true)?
+    .with_fuel_valves(1..=41, 87..=127, true)?
     .with_failures([
         (21_000, FailureType::RapidDecompression),
         (21_001, FailureType::CabinFan(1)),
@@ -464,7 +467,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 9)?
     .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 10)?
     .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 11)?
-    .provides_aircraft_variable("FUELSYSTEM LINE FUEL FLOW", "gallons per hour", 141)?
+    .provides_aircraft_variable("FUELSYSTEM LINE FUEL FLOW", "gallons per hour", 112)? // APU fuel line
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 0)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 1)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 2)?

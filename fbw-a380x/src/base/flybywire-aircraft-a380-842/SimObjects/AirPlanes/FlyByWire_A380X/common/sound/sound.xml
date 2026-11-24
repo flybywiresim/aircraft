@@ -904,39 +904,39 @@
 
         <!-- Miscellaneous ==========================================================================================  -->
 
-        <Sound WwiseData="true" WwiseEvent="wiper_slowL" NodeName="SOUND_WIPER_L" SimVar="CIRCUIT POWER SETTING" Units="percent" Index="141" Continuous="true">
+        <Sound WwiseData="true" WwiseEvent="wiper_slowL" NodeName="SOUND_WIPER_L" SimVar="CIRCUIT POWER SETTING" Units="percent" Index="129" Continuous="true">
             <Range LowerBound="75" UpperBound="75" />
-            <Requires SimVar="CIRCUIT ON" Units="Bool" Index="141">
+            <Requires SimVar="CIRCUIT ON" Units="Bool" Index="129">
             <Range LowerBound="1" />
             </Requires>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="wiper_fastL" NodeName="SOUND_WIPER_L" SimVar="CIRCUIT POWER SETTING" Units="percent" Index="141" Continuous="true">
+        <Sound WwiseData="true" WwiseEvent="wiper_fastL" NodeName="SOUND_WIPER_L" SimVar="CIRCUIT POWER SETTING" Units="percent" Index="129" Continuous="true">
             <Range LowerBound="100" />
-            <Requires SimVar="CIRCUIT ON" Units="Bool" Index="141">
+            <Requires SimVar="CIRCUIT ON" Units="Bool" Index="129">
             <Range LowerBound="1" />
             </Requires>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="wiper_parkL" NodeName="SOUND_WIPER_L" SimVar="CIRCUIT ON" Units="Bool" Index="141" Continuous="false">
+        <Sound WwiseData="true" WwiseEvent="wiper_parkL" NodeName="SOUND_WIPER_L" SimVar="CIRCUIT ON" Units="Bool" Index="129" Continuous="false">
             <Range UpperBound="0" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="wiper_slowR" NodeName="WIPER_BASE_R" SimVar="CIRCUIT POWER SETTING" Units="percent" Index="143" Continuous="true">
+        <Sound WwiseData="true" WwiseEvent="wiper_slowR" NodeName="WIPER_BASE_R" SimVar="CIRCUIT POWER SETTING" Units="percent" Index="131" Continuous="true">
             <Range LowerBound="75" UpperBound="75" />
-            <Requires SimVar="CIRCUIT ON" Units="Bool" Index="143">
+            <Requires SimVar="CIRCUIT ON" Units="Bool" Index="131">
             <Range LowerBound="1" />
             </Requires>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="wiper_fastR" NodeName="WIPER_BASE_R" SimVar="CIRCUIT POWER SETTING" Units="percent" Index="143" Continuous="true">
+        <Sound WwiseData="true" WwiseEvent="wiper_fastR" NodeName="WIPER_BASE_R" SimVar="CIRCUIT POWER SETTING" Units="percent" Index="131" Continuous="true">
             <Range LowerBound="100" />
-            <Requires SimVar="CIRCUIT ON" Units="Bool" Index="143">
+            <Requires SimVar="CIRCUIT ON" Units="Bool" Index="131">
             <Range LowerBound="1" />
             </Requires>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="wiper_parkR" NodeName="WIPER_BASE_R" SimVar="CIRCUIT ON" Units="Bool" Index="143" Continuous="false">
+        <Sound WwiseData="true" WwiseEvent="wiper_parkR" NodeName="WIPER_BASE_R" SimVar="CIRCUIT ON" Units="Bool" Index="131" Continuous="false">
             <Range UpperBound="0" />
         </Sound>
 

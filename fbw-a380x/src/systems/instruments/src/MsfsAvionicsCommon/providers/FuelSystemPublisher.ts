@@ -31,10 +31,6 @@ export interface BaseFuelSystemEvents {
   fuel_line_flow: number;
   /** The quantity of fuel in the selected tank (by tank index), in gallons. */
   fuel_tank_quantity: number;
-  /** The state of the trigger (by index) as boolean */
-  fuel_trigger_status: boolean;
-  /** The setting of the junction (by index) as boolean */
-  fuel_junction_setting: number;
   /** Whether refuel has been started as boolean */
   fuel_refuel_started_by_user: boolean;
   /** Desired fuel target for fuelling in kilograms */
@@ -49,9 +45,7 @@ type IndexedTopics =
   | 'fuel_engine_pressure'
   | 'fuel_line_pressure'
   | 'fuel_line_flow'
-  | 'fuel_tank_quantity'
-  | 'fuel_trigger_status'
-  | 'fuel_junction_setting';
+  | 'fuel_tank_quantity';
 
 type FuelSystemIndexedEvents = {
   [P in keyof Pick<BaseFuelSystemEvents, IndexedTopics> as IndexedEventType<P>]: BaseFuelSystemEvents[P];
@@ -88,14 +82,6 @@ export class FuelSystemPublisher extends SimVarPublisher<FuelSystemEvents> {
       ],
       ['fuel_line_flow', { name: 'FUELSYSTEM LINE FUEL FLOW:#index#', type: SimVarValueType.GPH, indexed: true }],
       ['fuel_tank_quantity', { name: 'FUELSYSTEM TANK QUANTITY:#index#', type: SimVarValueType.GAL, indexed: true }],
-      [
-        'fuel_trigger_status',
-        { name: 'FUELSYSTEM TRIGGER STATUS:#index#', type: SimVarValueType.Bool, indexed: true, map: (v) => !!v },
-      ],
-      [
-        'fuel_junction_setting',
-        { name: 'FUELSYSTEM JUNCTION SETTING:#index#', type: SimVarValueType.Number, indexed: true },
-      ],
       [
         'fuel_refuel_started_by_user',
         { name: 'L:A32NX_REFUEL_STARTED_BY_USR', type: SimVarValueType.Bool, indexed: false, map: (v) => !!v },
