@@ -482,6 +482,11 @@ impl FuelTestBed {
         assert!(!commanded, "{command_name} should be false");
     }
 
+    /// Reads the FQMS open command for a valve
+    pub(super) fn fqms_valve_open_command(&mut self, valve: A380FuelValve) -> bool {
+        self.read_by_name(&valve_command_name(valve))
+    }
+
     /// Reports the electrical power state of a valve as seen by the fuel system.
     /// This is purely electrical and therefore independent from the FQMS self
     /// test, which makes it usable as a positive signal that bus power is back.

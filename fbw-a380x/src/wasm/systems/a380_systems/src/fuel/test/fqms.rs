@@ -244,6 +244,32 @@ fn fqms_reverts_to_failure_warning_when_power_is_lost_after_the_self_test() {
 }
 
 #[test]
+fn unpowered_fqms_stops_pumps_but_lets_valves_hold_their_position() {
+    // Bring the FQMS up with a running transfer: pumps and transfer valves
+    // are commanded on.
+    let mut test_bed = transfer_test_bed().and_run_past_fqms_self_test();
+    let valve = A380FuelValve::FeedTank1ForwardTransferValve;
+    test_bed.assert_fqms_pump_targeted(A380FuelPump::LeftInnerFwd);
+    test_bed.assert_fqms_valve_targeted(valve);
+
+    // Losing FQMS power drops the pump relay ground, so the pumps must stop.
+    // Valves are driven by two independent signals (open and close); with
+    // both signals inactive the valve holds its current position, so the
+    // FQMS must not issue a close command for a valve it opened.
+    test_bed.set_fqms_powered(false);
+    for _ in 0..3 {
+        test_bed.run();
+    }
+
+    test_bed.assert_fqms_pump_not_targeted(A380FuelPump::LeftInnerFwd);
+    test_bed.assert_fqms_pump_not_targeted(A380FuelPump::RightInnerFwd);
+    assert!(
+        test_bed.fqms_valve_open_command(valve),
+        "the FQMS must not command valves closed when it stops operating"
+    );
+}
+
+#[test]
 fn transfers_fail_over_from_fqdc_1_to_fqdc_2_while_running() {
     // Start fully healthy so that the FQMS runs on FQDC 1 (the 501PP sub bus).
     let mut test_bed = transfer_test_bed().and_run_past_fqms_self_test();

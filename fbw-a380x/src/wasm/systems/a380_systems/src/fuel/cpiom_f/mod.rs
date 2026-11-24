@@ -981,6 +981,17 @@ impl A380FuelQuantityManagementSystem {
 
         if !self.self_test_finished.output() {
             self.reset();
+            // Fuel pumps are operated by relays that require a continuous
+            // ground signal from the FQMS, so an FQMS that is not operating
+            // must drop all pump commands and the pumps stop. Fuel valves
+            // are driven by two independent signals (open and close): when
+            // the FQMS stops operating, both signals go inactive and the
+            // valve holds its current position. This is modelled by
+            // releasing the pump commands while leaving the valve commands
+            // untouched.
+            for (pump, _) in EnumMap::<A380FuelPump, bool>::default() {
+                fuel_system.set_fuel_pump_command(pump, false);
+            }
             return;
         }
 
