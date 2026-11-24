@@ -2579,8 +2579,9 @@ void A380PrimComputerFg::step()
     A380PrimComputerFg_MATLABFunction_c((rtb_y_kg != 0U), A380PrimComputerFg_P.PulseNode2_isRisingEdge_h, &rtb_y_k,
       &A380PrimComputerFg_DWork.sf_MATLABFunction_nm);
     rtb_Compare_o1 = rtb_NOT1_k_tmp;
-    rtb_AND2_ci = (A380PrimComputerFg_U.in.general_logic.ra_computation_data_ft >=
-                   A380PrimComputerFg_P.CompareToConstant_const_n);
+    rtb_AND2_ci = ((A380PrimComputerFg_U.in.general_logic.ra_computation_data_ft >=
+                    A380PrimComputerFg_P.CompareToConstant_const_n) ||
+                   A380PrimComputerFg_U.in.general_logic.all_ra_failure);
     rtb_AND4_a = (rtb_y_k && rtb_NOT1_k_tmp && rtb_AND2_ci && ((A380PrimComputerFg_P.EnumeratedConstant_Value_i !=
       A380PrimComputerFg_U.in.data.adcn_inputs.fms.active_fms_flight_phase) &&
       (A380PrimComputerFg_U.in.data.adcn_inputs.fms.active_fms_flight_phase !=
