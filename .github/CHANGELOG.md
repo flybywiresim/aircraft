@@ -124,6 +124,7 @@ Always start an item with "1."; GitHub will number the rendered list automatical
 1. [A32NX/FCTL] Added new FCDC outputs and moved F/CTL SD page to use FCDC data - @lukecologne (luke)
 1. [A32NX/FCTL] Improvements to the PFD lower area spoiler and THS indications - @lukecologne (luke)
 1. [ND] Added dashes for GS or TAS on ND when word is NCD - @eagle941 (pythonist)
+1. [A32NX/FMS] Limited waypoint altitude constraint entries to 39700 ft - @shinji1100
 
 ## 2024.1.0
 
