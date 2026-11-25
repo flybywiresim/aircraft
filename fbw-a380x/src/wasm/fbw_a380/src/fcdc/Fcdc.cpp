@@ -137,7 +137,7 @@ FcdcBus Fcdc::getBusOutputs() {
   output.efcsStatus1.setBit(15, systemLaw == SystemLaw::AlternateLaw2A);
   output.efcsStatus1.setBit(16, systemLaw == SystemLaw::AlternateLaw2B);
   output.efcsStatus1.setBit(18, systemLaw == SystemLaw::DirectLaw);
-  output.efcsStatus1.setBit(19, false);
+  output.efcsStatus1.setBit(19, discreteInputs.bcmEnergized && discreteInputs.bcmActive);
   output.efcsStatus1.setBit(20,
                             bitFromValueOr(busInputs.prims[masterPrimIndex].fctl.discrete_status_word_1, 12, true));  // Manual Pitch Trim
   output.efcsStatus1.setBit(23, prim1Fault);
