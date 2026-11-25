@@ -47,4 +47,6 @@ class Bcm {
   double zetaCommand = 0;
 
   double etaCommand = 0;
+
+  double thsRateCommand = 0;
 };

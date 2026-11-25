@@ -783,7 +783,7 @@ class FlyByWireInterface {
 
   bool updateFcuShim();
 
-  bool updateServoSolenoidStatus();
+  bool updateServoSolenoidStatus(double sampleTime);
 
   bool updateSpoilers(double sampleTime);
 

@@ -50,5 +50,5 @@ struct BcmAnalogOutputs {
 
   double lowerRudCmd;
 
-  double thsCmd;
+  double thsRateCmd;
 };

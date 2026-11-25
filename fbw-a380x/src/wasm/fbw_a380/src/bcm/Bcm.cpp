@@ -23,6 +23,9 @@ void Bcm::update(double deltaTime, bool faultActive, bool bcsYellowPowered, bool
   xiCommandLeft = std::fmax(std::fmin(-xiCommand, 20), -30);
   xiCommandRight = std::fmax(std::fmin(xiCommand, 20), -30);
 
+  const auto absRateC = 0.25;
+  thsRateCommand = discreteInputs.pitchTrimDownPressed ? absRateC : (discreteInputs.pitchTrimUpPressed ? -absRateC : 0);
+
   updateOutputs();
 }
 
@@ -58,7 +61,7 @@ void Bcm::updateOutputs() {
   analogOutputs.rightAilCmd = xiCommandRight;
   analogOutputs.upperRudCmd = zetaCommand;
   analogOutputs.lowerRudCmd = zetaCommand;
-  analogOutputs.thsCmd = 0;
+  analogOutputs.thsRateCmd = thsRateCommand;
 }
 
 const BcmDiscreteOutputs& Bcm::getDiscreteOutputs() {

@@ -148,7 +148,7 @@ bool FlyByWireInterface::update(double sampleTime) {
     result &= updateFadec(calculatedSampleTime, i);
   }
 
-  result &= updateServoSolenoidStatus();
+  result &= updateServoSolenoidStatus(calculatedSampleTime);
 
   // update recording data
   result &= updateBaseData(calculatedSampleTime);
@@ -2852,7 +2852,7 @@ bool FlyByWireInterface::updateFcuShim() {
   return true;
 }
 
-bool FlyByWireInterface::updateServoSolenoidStatus() {
+bool FlyByWireInterface::updateServoSolenoidStatus(double sampleTime) {
   auto bcmAnalogOutputs = bcm.getAnalogOutputs();
   auto bcmActive = bcm.getDiscreteOutputs().bcmActive;
 
@@ -2952,10 +2952,15 @@ bool FlyByWireInterface::updateServoSolenoidStatus() {
   idRightOutboardElevatorCommandedPosition[1]->set(primsAnalogOutputs[0].elevator_3_pos_order_deg +
                                                    secsAnalogOutputs[0].elevator_3_pos_order_deg);
 
+  // This hack is necessary because the hydraulics expects position commands, while the computers only output servovalve commands,
+  // which are rate commands, and the BCM doesn't know about the THS position.
+  SimData simData = simConnectInterface.getSimData();
+  const auto bcmThsCommand = bcmActive ? (-simData.eta_trim_deg + bcmAnalogOutputs.thsRateCmd * sampleTime) : 0;
+
   idTHSSolenoidEnergized[0]->set(primsDiscreteOutputs[2].ths_active_mode || secsDiscreteOutputs[2].ths_active_mode);
   idTHSCommandedPosition[0]->set(primsAnalogOutputs[2].ths_pos_order_deg + secsAnalogOutputs[2].ths_pos_order_deg);
-  idTHSSolenoidEnergized[1]->set(primsDiscreteOutputs[0].ths_active_mode || secsDiscreteOutputs[0].ths_active_mode);
-  idTHSCommandedPosition[1]->set(primsAnalogOutputs[0].ths_pos_order_deg + secsAnalogOutputs[0].ths_pos_order_deg);
+  idTHSSolenoidEnergized[1]->set(primsDiscreteOutputs[0].ths_active_mode || secsDiscreteOutputs[0].ths_active_mode || bcmActive);
+  idTHSCommandedPosition[1]->set(primsAnalogOutputs[0].ths_pos_order_deg + secsAnalogOutputs[0].ths_pos_order_deg + bcmThsCommand);
 
   idUpperRudderHydraulicModeSolenoidEnergized[0]->set(primsDiscreteOutputs[0].rudder_1_hydraulic_active_mode ||
                                                       secsDiscreteOutputs[0].rudder_1_hydraulic_active_mode || bcmActive);
