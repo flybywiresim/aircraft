@@ -40,7 +40,6 @@ export interface ButtonProps extends ComponentProps {
   onClick: () => void;
   scrollToMenuItem?: Subscribable<number>;
   dropdownMenuRightAligned?: boolean;
-  /** Lets the KCCU or OIT keyboard move through the menu while it's open. Only needed with menuItems. */
   hEventConsumer?: Consumer<[EfisSide, string]>;
 }
 
@@ -184,7 +183,7 @@ export class Button extends DisplayComponent<ButtonProps> {
             this.dropdownMenuRef.instance.style.top = `${Math.round(-boundingRect.height)}px`;
           }
 
-          // Put back the open state, as the items can change while the menu is open
+          // Restore the open state, as the items can change while the menu is open
           this.dropdownMenuRef.instance.style.display = this.dropdownIsOpened.get() ? 'block' : 'none';
           this.buttonRef.instance.classList.toggle('opened', this.dropdownIsOpened.get());
         }, true),

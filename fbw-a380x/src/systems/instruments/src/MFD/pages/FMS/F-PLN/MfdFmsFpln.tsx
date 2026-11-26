@@ -809,7 +809,7 @@ export class MfdFmsFpln extends FmsFlightPlanPage<MfdFmsFplnProps> {
     );
 
     this.subs.push(
-      // Resumed without replay, so the page doesn't scroll on a key pressed before it opened
+      // Paused then resumed, so the last key isn't replayed
       sub
         .on('kccuKeyEvent')
         .handle((k) => {

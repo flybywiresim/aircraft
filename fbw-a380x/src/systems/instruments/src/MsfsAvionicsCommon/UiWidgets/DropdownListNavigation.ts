@@ -4,14 +4,9 @@
 import { Consumer, MutableSubscribable, Subscription } from '@microsoft/msfs-sdk';
 import { EfisSide } from '@flybywiresim/fbw-sdk';
 
-/**
- * Lets the KCCU or OIT keyboard move through an open dropdown list: UP and DOWN move a highlight, ENT picks the
- * highlighted option and ESC closes the list. Also picks options on click and closes the list on a press outside it.
- */
 export class DropdownListNavigation {
   private static readonly OPEN_CLASS = 'mfd-dropdown-open';
 
-  /** Whether a dropdown list is open within this element. */
   public static isOpenWithin(element: Element): boolean {
     return element.getElementsByClassName(DropdownListNavigation.OPEN_CLASS).length > 0;
   }
@@ -25,12 +20,8 @@ export class DropdownListNavigation {
   private readonly highlightedElements: HTMLCollectionOf<Element>;
 
   /**
-   * @param container the whole dropdown, outside which a press closes the list
-   * @param config.keys key events, for a list that takes focus while it's open, as an input field does. Without them,
-   * the owner passes keys to `handleKey` itself.
-   * @param config.close closes the list keeping any typed entry: on ENT with nothing highlighted, or when focus or a
-   * press goes elsewhere
-   * @param config.highlightOnOpen the index of the option to highlight when the list opens
+   * @param config.keys if set, the list takes focus while open. Otherwise the owner calls `handleKey`.
+   * @param config.close closes the list keeping any typed text, unlike ESC
    */
   constructor(
     private readonly isOpen: MutableSubscribable<boolean>,
@@ -49,13 +40,12 @@ export class DropdownListNavigation {
     this.openSub = isOpen.sub((open) => (open ? this.onOpened() : this.onClosed()));
   }
 
-  /** @returns whether the open list used the key */
   public handleKey(key: string): boolean {
     if (!this.isOpen.get()) {
       return false;
     }
 
-    // Widgets aren't destroyed with their page, so a list still open when its page went must stop taking keys
+    // Widgets outlive their page, so close a list whose page has gone
     if (!document.body.contains(this.container)) {
       this.isOpen.set(false);
       return false;
@@ -95,7 +85,7 @@ export class DropdownListNavigation {
   private onOpened(): void {
     this.container.classList.add(DropdownListNavigation.OPEN_CLASS);
     if (this.config.keys) {
-      // Resumed without replay, as the bus would otherwise hand a new subscription the last key pressed
+      // Paused then resumed, so the last key isn't replayed
       this.keySub = this.config.keys.handle((key) => this.handleKey(key[1]), true).resume();
       this.container.tabIndex = -1;
       this.container.focus();
@@ -130,10 +120,10 @@ export class DropdownListNavigation {
 
   private readonly onBlur = (): void => this.close();
 
-  // Keeps focus where it is, so pressing an option or the list's own button doesn't close the list before the click
+  // Keeps focus, or the list would close before the click
   private readonly onContainerMouseDown = (e: MouseEvent): void => e.preventDefault();
 
-  // A press that something has already handled, such as an on-screen keyboard key, leaves the list open
+  // Presses already handled, such as on-screen keyboard keys, leave the list open
   private readonly onDocumentMouseDown = (e: MouseEvent): void => {
     if (!e.defaultPrevented && !this.container.contains(e.target as Node)) {
       this.close();
@@ -163,7 +153,6 @@ export class DropdownListNavigation {
     }
   }
 
-  // With nothing highlighted, start from what's in view, so a list opened scrolled down doesn't jump back to the top.
   private edgeOfView(step: -1 | 1): number {
     const top = Math.floor(this.list.scrollTop);
     const bottom = Math.ceil(this.list.scrollTop) + this.list.clientHeight;

@@ -78,7 +78,6 @@ export interface MfdDisplayInterface {
 
   openMessageList(): void;
 
-  /** Whether a dropdown list is open on this MFD, in which case UP and DOWN move through it */
   hasOpenList(): boolean;
 }
 
@@ -98,7 +97,7 @@ export class MfdComponent
     return this.#uiService;
   }
 
-  // Both MFDs share one bus, so each passes on only its own KCCU's keys
+  // Both MFDs share one bus, so only pass on this side's keys
   public readonly hEventConsumer: Consumer<[EfisSide, string]> = new BasicConsumer<[EfisSide, string]>(
     (handler, paused) =>
       this.props.bus.getSubscriber<InternalKccuKeyEvent>().on('kccuKeyEvent').handle(handler, paused),
@@ -323,7 +322,7 @@ export class MfdComponent
       return;
     }
 
-    // End any edit or open list before its page goes, as its widgets aren't destroyed and would keep taking keys
+    // Widgets outlive their page, so end any edit or open list first
     const focused = document.activeElement;
     if (focused instanceof HTMLElement && this.topRef.instance.contains(focused)) {
       focused.blur();

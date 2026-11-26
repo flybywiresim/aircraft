@@ -30,7 +30,6 @@ interface PageSelectorDropdownMenuProps extends ComponentProps {
   containerStyle?: string;
   labelStyle?: string;
   dropdownMenuStyle?: string;
-  /** Lets the KCCU or OIT keyboard move through the open menu. Not needed with a single menu item. */
   hEventConsumer?: Consumer<[EfisSide, string]>;
 }
 export class PageSelectorDropdownMenu extends DisplayComponent<PageSelectorDropdownMenuProps> {

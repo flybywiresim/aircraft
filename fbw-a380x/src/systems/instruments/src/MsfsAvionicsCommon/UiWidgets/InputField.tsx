@@ -43,7 +43,7 @@ export interface InputFieldProps<T, U = T, S = T extends U ? true : false> exten
   onModified?: (newValue: U | null) => void | Promise<unknown>;
   /** Called for every character that is being typed */
   onInput?: (newValue: string) => void;
-  /** Offered each KCCU or keyboard key before the field, focused or not. Returns true if it used the key. */
+  /** Gets every key first, focused or not. Returns true if it used the key. */
   onKey?: (key: string) => boolean;
   /**
    * Function which modifies data within flight plan. Called during validation phase, after data entry format has been checked
