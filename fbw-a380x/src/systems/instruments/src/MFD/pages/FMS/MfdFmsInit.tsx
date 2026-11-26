@@ -440,6 +440,7 @@ export class MfdFmsInit extends FmsFlightPlanPage<MfdFmsInitProps> {
               />
               <div style="flex-grow: 1" />
               <Button
+                hEventConsumer={this.props.mfd.hEventConsumer}
                 label={this.cpnyFplnButtonLabel}
                 disabled={this.cpnyFplnButtonDisabled}
                 onClick={() => this.props.fmcService.master.cpnyFplnRequest(this.loadedFlightPlanIndex.get())}
@@ -703,6 +704,7 @@ export class MfdFmsInit extends FmsFlightPlanPage<MfdFmsInitProps> {
               />
               <div style="flex-grow: 1" />
               <CpnyWindRequestButton
+                hEventConsumer={this.props.mfd.hEventConsumer}
                 fmc={this.props.fmcService.master}
                 flightPlanIndex={this.loadedFlightPlanIndex}
                 tmpyExists={this.tmpyActive}

@@ -218,7 +218,8 @@
   padding: 5px 16px;
 }
 
-.mfd-dropdown-menu-element:hover {
+.mfd-dropdown-menu-element:hover,
+.mfd-dropdown-menu-element.highlighted {
   border: 3px solid $display-cyan;
 }
 

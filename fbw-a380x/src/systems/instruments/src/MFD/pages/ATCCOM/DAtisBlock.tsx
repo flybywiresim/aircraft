@@ -260,6 +260,7 @@ export class DAtisBlock extends DisplayComponent<DAtisBlockProps> {
               containerStyle="position: absolute; left: 469px; top: 7px;"
             />
             <Button
+              hEventConsumer={this.props.mfd.hEventConsumer}
               label="UPDATE<br/>OR PRINT"
               disabled={false}
               onClick={() => {}}

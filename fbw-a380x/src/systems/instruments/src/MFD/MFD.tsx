@@ -1,9 +1,10 @@
-//  Copyright (c) 2024-2025 FlyByWire Simulations
+//  Copyright (c) 2024-2026 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
 import './pages/common/style.scss';
 
 import {
+  BasicConsumer,
   ClockEvents,
   ComponentProps,
   Consumer,
@@ -21,6 +22,7 @@ import {
 import { DatabaseItem, EfisSide, logTroubleshootingError, Waypoint } from '@flybywiresim/fbw-sdk';
 
 import { MouseCursor } from '../MsfsAvionicsCommon/UiWidgets/MouseCursor';
+import { DropdownListNavigation } from '../MsfsAvionicsCommon/UiWidgets/DropdownListNavigation';
 
 import { MfdMsgList } from './pages/FMS/MfdMsgList';
 import { ActiveUriInformation, MfdUiService } from './pages/common/MfdUiService';
@@ -75,6 +77,9 @@ export interface MfdDisplayInterface {
   interactionMode: Subscribable<InteractionMode>;
 
   openMessageList(): void;
+
+  /** Whether a dropdown list is open on this MFD, in which case UP and DOWN move through it */
+  hasOpenList(): boolean;
 }
 
 export class MfdComponent
@@ -93,7 +98,17 @@ export class MfdComponent
     return this.#uiService;
   }
 
-  public readonly hEventConsumer = this.props.bus.getSubscriber<InternalKccuKeyEvent>().on('kccuKeyEvent');
+  // Both MFDs share one bus, so each passes on only its own KCCU's keys
+  public readonly hEventConsumer: Consumer<[EfisSide, string]> = new BasicConsumer<[EfisSide, string]>(
+    (handler, paused) =>
+      this.props.bus.getSubscriber<InternalKccuKeyEvent>().on('kccuKeyEvent').handle(handler, paused),
+    undefined,
+    (key, _state, next) => {
+      if (key[0] === this.side) {
+        next(key);
+      }
+    },
+  );
 
   public readonly interactionMode = Subject.create<InteractionMode>(InteractionMode.Touchscreen);
 
@@ -149,6 +164,10 @@ export class MfdComponent
 
   public openMessageList() {
     this.messageListOpened.set(true);
+  }
+
+  public hasOpenList(): boolean {
+    return DropdownListNavigation.isOpenWithin(this.topRef.instance);
   }
 
   /**
@@ -302,6 +321,12 @@ export class MfdComponent
   private activeUriChanged(uri: ActiveUriInformation) {
     if (!this.props.fmcService.master) {
       return;
+    }
+
+    // End any edit or open list before its page goes, as its widgets aren't destroyed and would keep taking keys
+    const focused = document.activeElement;
+    if (focused instanceof HTMLElement && this.topRef.instance.contains(focused)) {
+      focused.blur();
     }
 
     // Remove and destroy old header

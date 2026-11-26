@@ -809,13 +809,21 @@ export class MfdFmsFpln extends FmsFlightPlanPage<MfdFmsFplnProps> {
     );
 
     this.subs.push(
-      sub.on('kccuKeyEvent').handle((k) => {
-        if (k[0] === this.props.mfd.side && k[1] === 'UP') {
-          this.displayFplnFromLineIndex.set(this.displayFplnFromLineIndex.get() - 1);
-        } else if (k[0] === this.props.mfd.side && k[1] === 'DOWN') {
-          this.displayFplnFromLineIndex.set(Math.min(this.displayFplnFromLineIndex.get() + 1, this.lineData.length));
-        }
-      }),
+      // Resumed without replay, so the page doesn't scroll on a key pressed before it opened
+      sub
+        .on('kccuKeyEvent')
+        .handle((k) => {
+          if (k[0] !== this.props.mfd.side || this.props.mfd.hasOpenList()) {
+            return;
+          }
+
+          if (k[1] === 'UP') {
+            this.displayFplnFromLineIndex.set(this.displayFplnFromLineIndex.get() - 1);
+          } else if (k[1] === 'DOWN') {
+            this.displayFplnFromLineIndex.set(Math.min(this.displayFplnFromLineIndex.get() + 1, this.lineData.length));
+          }
+        }, true)
+        .resume(),
     );
 
     this.subs.push(
@@ -1044,6 +1052,7 @@ export class MfdFmsFpln extends FmsFlightPlanPage<MfdFmsFplnProps> {
             </div>
             <div ref={this.spdAltEfobWindRef} class="mfd-fms-fpln-header-speed-alt">
               <Button
+                hEventConsumer={this.props.mfd.hEventConsumer}
                 label={
                   <div class="mfd-fms-fpln-button-speed-alt">
                     {this.displayEfobAndWind.map((v) =>
@@ -1219,6 +1228,7 @@ export class MfdFmsFpln extends FmsFlightPlanPage<MfdFmsFplnProps> {
               }
             />
             <Button
+              hEventConsumer={this.props.mfd.hEventConsumer}
               disabled={false}
               label="F-PLN INFO"
               onClick={() => {}}

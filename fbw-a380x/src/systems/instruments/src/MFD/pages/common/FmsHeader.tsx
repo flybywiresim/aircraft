@@ -43,6 +43,7 @@ export class FmsHeader extends AbstractHeader {
         {super.render()}
         <div class="mfd-header-page-select-row">
           <PageSelectorDropdownMenu
+            hEventConsumer={this.props.mfd.hEventConsumer}
             isActive={this.activeIsSelected}
             label="ACTIVE"
             menuItems={[
@@ -56,6 +57,7 @@ export class FmsHeader extends AbstractHeader {
             containerStyle="flex: 1"
           />
           <PageSelectorDropdownMenu
+            hEventConsumer={this.props.mfd.hEventConsumer}
             isActive={this.positionIsSelected}
             label="POSITION"
             menuItems={[
@@ -73,6 +75,7 @@ export class FmsHeader extends AbstractHeader {
             containerStyle="flex: 1"
           />
           <PageSelectorDropdownMenu
+            hEventConsumer={this.props.mfd.hEventConsumer}
             isActive={this.secIndexIsSelected}
             label="SEC INDEX"
             menuItems={[
@@ -84,6 +87,7 @@ export class FmsHeader extends AbstractHeader {
             containerStyle="flex: 1"
           />
           <PageSelectorDropdownMenu
+            hEventConsumer={this.props.mfd.hEventConsumer}
             isActive={this.dataIsSelected}
             label="DATA"
             menuItems={[

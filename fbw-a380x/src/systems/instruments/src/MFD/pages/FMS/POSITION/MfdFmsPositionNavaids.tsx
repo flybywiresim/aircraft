@@ -485,6 +485,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                 <div class="mfd-label br">
                   <div class={{ invisible: this.navaidDetailsButtonInvisible[0] }}>
                     <Button
+                      hEventConsumer={this.props.mfd.hEventConsumer}
                       label={this.selectedNavaids[0].ident}
                       onClick={() => {}}
                       showArrow
@@ -500,6 +501,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                 <div class="mfd-label br">
                   <div class={{ invisible: this.navaidDetailsButtonInvisible[1] }}>
                     <Button
+                      hEventConsumer={this.props.mfd.hEventConsumer}
                       label={this.selectedNavaids[1].ident}
                       onClick={() => {}}
                       showArrow
@@ -515,6 +517,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
                 <div class="mfd-label br">
                   <div class={{ invisible: this.navaidDetailsButtonInvisible[2] }}>
                     <Button
+                      hEventConsumer={this.props.mfd.hEventConsumer}
                       label={this.selectedNavaids[2].ident}
                       onClick={() => {}}
                       showArrow

@@ -195,7 +195,8 @@
   padding: 5px 16px;
 }
 
-.mfd-dropdown-menu-element:hover {
+.mfd-dropdown-menu-element:hover,
+.mfd-dropdown-menu-element.highlighted {
   border: 3px solid $display-cyan;
 }
 
@@ -207,7 +208,8 @@
   border-bottom: 3px solid $display-light-grey;
 }
 
-.mfd-dropdown-menu-element.separator:hover {
+.mfd-dropdown-menu-element.separator:hover,
+.mfd-dropdown-menu-element.separator.highlighted {
   border: 3px solid $display-cyan;
 }
 

@@ -43,6 +43,8 @@ export interface InputFieldProps<T, U = T, S = T extends U ? true : false> exten
   onModified?: (newValue: U | null) => void | Promise<unknown>;
   /** Called for every character that is being typed */
   onInput?: (newValue: string) => void;
+  /** Offered each KCCU or keyboard key before the field, focused or not. Returns true if it used the key. */
+  onKey?: (key: string) => boolean;
   /**
    * Function which modifies data within flight plan. Called during validation phase, after data entry format has been checked
    * @param newValue to be validated
@@ -374,10 +376,12 @@ export class InputField<
         } else {
           await this.validateAndUpdate(this.modifiedFieldValue.get() ?? '');
         }
+      } else {
+        this.modifiedFieldValue.set(null);
+      }
 
-        if (this.isOverFlow) {
-          this.overflow(false);
-        }
+      if (this.isOverFlow) {
+        this.overflow(false);
       }
 
       // Restore mandatory class for correct coloring of dot (e.g. non-placeholders)
@@ -568,7 +572,7 @@ export class InputField<
     }
 
     this.props.hEventConsumer.handle((key) => {
-      if (!this.isFocused.get() || this.props.fixedValuesDropDown) {
+      if (this.props.onKey?.(key[1]) || !this.isFocused.get() || this.props.fixedValuesDropDown) {
         return;
       }
 

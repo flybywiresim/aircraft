@@ -3,6 +3,7 @@
 
 import {
   ComponentProps,
+  Consumer,
   DisplayComponent,
   FSComponent,
   MappedSubject,
@@ -16,12 +17,14 @@ import {
 import { FmcInterface } from '../../FMC/FmcInterface';
 import { Button, ButtonMenuItem } from '../../../MsfsAvionicsCommon/UiWidgets/Button';
 import { FmgcFlightPhase } from '@shared/flightphase';
+import { EfisSide } from '@flybywiresim/fbw-sdk';
 
 export interface CpnyWindRequestButtonProps extends ComponentProps {
   fmc: FmcInterface;
   flightPlanIndex: Subscribable<number>;
   tmpyExists: Subscribable<boolean>;
   isActiveOrCopiedFromActive: Subscribable<boolean>;
+  hEventConsumer: Consumer<[EfisSide, string]>;
 }
 
 export class CpnyWindRequestButton extends DisplayComponent<CpnyWindRequestButtonProps> {
@@ -129,6 +132,7 @@ export class CpnyWindRequestButton extends DisplayComponent<CpnyWindRequestButto
   public render(): VNode {
     return (
       <Button
+        hEventConsumer={this.props.hEventConsumer}
         disabled={this.disabled}
         label={this.label}
         onClick={() => {

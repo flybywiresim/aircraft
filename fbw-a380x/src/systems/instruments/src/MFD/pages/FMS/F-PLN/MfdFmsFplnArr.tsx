@@ -564,6 +564,7 @@ export class MfdFmsFplnArr extends FmsFlightPlanPage<MfdFmsFplnArrProps> {
         </div>
         <div class="fr" style="justify-content: space-between;">
           <Button
+            hEventConsumer={this.props.mfd.hEventConsumer}
             label="RWY"
             onClick={() => {}}
             buttonStyle="width: 190px;"
@@ -571,6 +572,7 @@ export class MfdFmsFplnArr extends FmsFlightPlanPage<MfdFmsFplnArrProps> {
             menuItems={this.rwyOptions}
           />
           <Button
+            hEventConsumer={this.props.mfd.hEventConsumer}
             label="APPR"
             onClick={() => {}}
             disabled={this.apprDisabled}
@@ -580,6 +582,7 @@ export class MfdFmsFplnArr extends FmsFlightPlanPage<MfdFmsFplnArrProps> {
             scrollToMenuItem={this.apprButtonScrollTo}
           />
           <Button
+            hEventConsumer={this.props.mfd.hEventConsumer}
             label="VIA"
             onClick={() => {}}
             disabled={this.viaDisabled}
@@ -588,6 +591,7 @@ export class MfdFmsFplnArr extends FmsFlightPlanPage<MfdFmsFplnArrProps> {
             menuItems={this.viaOptions}
           />
           <Button
+            hEventConsumer={this.props.mfd.hEventConsumer}
             label="STAR"
             onClick={() => {}}
             disabled={this.starDisabled}
@@ -596,6 +600,7 @@ export class MfdFmsFplnArr extends FmsFlightPlanPage<MfdFmsFplnArrProps> {
             menuItems={this.starOptions}
           />
           <Button
+            hEventConsumer={this.props.mfd.hEventConsumer}
             label="TRANS"
             onClick={() => {}}
             disabled={this.transDisabled}

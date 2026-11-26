@@ -1479,6 +1479,7 @@ export class MfdFmsWindPage extends FmsFlightPlanPage<MfdFmsWindProps> {
             </div>
             <div class="mfd-fms-wind-cpny-button-container">
               <CpnyWindRequestButton
+                hEventConsumer={this.props.mfd.hEventConsumer}
                 fmc={this.props.fmcService.master}
                 flightPlanIndex={this.loadedFlightPlanIndex}
                 tmpyExists={this.tmpyActive}

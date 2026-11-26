@@ -1,8 +1,9 @@
-//  Copyright (c) 2024-2025 FlyByWire Simulations
+//  Copyright (c) 2024-2026 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
 import {
   ComponentProps,
+  Consumer,
   DisplayComponent,
   FSComponent,
   Subject,
@@ -10,6 +11,8 @@ import {
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
+import { EfisSide } from '@flybywiresim/fbw-sdk';
+import { DropdownListNavigation } from './DropdownListNavigation';
 import { TriangleDown } from './shapes';
 
 type PageSelectorMenuItem = {
@@ -27,6 +30,8 @@ interface PageSelectorDropdownMenuProps extends ComponentProps {
   containerStyle?: string;
   labelStyle?: string;
   dropdownMenuStyle?: string;
+  /** Lets the KCCU or OIT keyboard move through the open menu. Not needed with a single menu item. */
+  hEventConsumer?: Consumer<[EfisSide, string]>;
 }
 export class PageSelectorDropdownMenu extends DisplayComponent<PageSelectorDropdownMenuProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
@@ -42,20 +47,14 @@ export class PageSelectorDropdownMenu extends DisplayComponent<PageSelectorDropd
 
   private readonly dropdownIsOpened = Subject.create(false);
 
+  private listNavigation?: DropdownListNavigation;
+
   private onMenuItemClick(val: PageSelectorMenuItem) {
     if (!val.disabled) {
       val.action();
       this.dropdownIsOpened.set(false);
     }
   }
-
-  private onClickedOutside = (e: MouseEvent) => {
-    if (!this.topRef.getOrDefault()?.contains(e.target as Node) && this.dropdownIsOpened.get()) {
-      this.dropdownIsOpened.set(false);
-    }
-  };
-
-  private readonly onClickedOutsideHandler = this.onClickedOutside.bind(this);
 
   private onOpenCloseDropdown() {
     if (this.props.menuItems.length > 1) {
@@ -70,15 +69,6 @@ export class PageSelectorDropdownMenu extends DisplayComponent<PageSelectorDropd
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
-    this.props.menuItems.forEach((val, i) => {
-      document
-        .getElementById(`${this.props.idPrefix}_${i}`)
-        ?.addEventListener('click', this.onMenuItemClick.bind(this, val));
-    });
-
-    // Close dropdown menu if clicked outside
-    document.getElementById('MFD_CONTENT')?.addEventListener('click', this.onClickedOutsideHandler);
-
     this.dropdownSelectorRef.instance.addEventListener('click', this.onOpenCloseDropdownHandler);
 
     this.subs.push(
@@ -91,18 +81,21 @@ export class PageSelectorDropdownMenu extends DisplayComponent<PageSelectorDropd
     this.subs.push(
       this.props.isActive.sub((val) => this.dropdownSelectorLabelRef.instance.classList.toggle('active', val), true),
     );
+
+    this.listNavigation = new DropdownListNavigation(
+      this.dropdownIsOpened,
+      this.topRef.instance,
+      this.dropdownMenuRef.instance,
+      (index) => this.onMenuItemClick(this.props.menuItems[index]),
+      { keys: this.props.hEventConsumer },
+    );
   }
 
   public destroy(): void {
     // Destroy all subscriptions to remove all references to this instance.
     this.subs.forEach((x) => x.destroy());
+    this.listNavigation?.destroy();
 
-    this.props.menuItems.forEach((val, i) => {
-      document
-        .getElementById(`${this.props.idPrefix}_${i}`)
-        ?.removeEventListener('click', this.onMenuItemClick.bind(this, val));
-    });
-    document.getElementById('MFD_CONTENT')?.removeEventListener('click', this.onClickedOutsideHandler);
     this.dropdownSelectorRef.getOrDefault()?.removeEventListener('click', this.onOpenCloseDropdownHandler);
 
     super.destroy();

@@ -421,6 +421,7 @@ export class MfdFmsSecIndexTab extends DestroyableComponent<MfdFmsSecIndexTabPro
           </div>
           <div class="mfd-sec-index-table-right">
             <Button
+              hEventConsumer={this.props.mfd.hEventConsumer}
               label={'IMPORT'}
               onClick={() => {}}
               buttonStyle="width: 175px;"
@@ -459,6 +460,7 @@ export class MfdFmsSecIndexTab extends DestroyableComponent<MfdFmsSecIndexTabPro
               showArrow={true}
             />
             <Button
+              hEventConsumer={this.props.mfd.hEventConsumer}
               label={this.cpnyFplnButtonLabel}
               disabled={this.cpnyFplnButtonDisabled}
               onClick={() => this.props.fmcService.master.cpnyFplnRequest(this.props.flightPlanIndex)}

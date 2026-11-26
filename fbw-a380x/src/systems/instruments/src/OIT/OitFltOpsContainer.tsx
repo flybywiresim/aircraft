@@ -1,4 +1,4 @@
-//  Copyright (c) 2025 FlyByWire Simulations
+//  Copyright (c) 2025-2026 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
 import {
@@ -168,7 +168,11 @@ export abstract class OitFltOpsContainer extends DisplayComponent<OitFltOpsConta
       <>
         <div ref={this.topRef} class={{ 'oit-main': true, hidden: this.hideContainer }}>
           <div class={{ 'oit-page-container': true, hidden: this.hideContent }}>
-            <OitFltOpsHeader uiService={this.uiService} avncsOrFltOps={this.props.avncsOrFltOps} />
+            <OitFltOpsHeader
+              uiService={this.uiService}
+              avncsOrFltOps={this.props.avncsOrFltOps}
+              hEventConsumer={this.hEventConsumer}
+            />
             <div ref={this.activePageRef} class="mfd-navigator-container" />
             <OitFltOpsFooter uiService={this.uiService} avncsOrFltOps={this.props.avncsOrFltOps} />
           </div>

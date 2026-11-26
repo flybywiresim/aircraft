@@ -3,6 +3,7 @@
 
 import {
   ComponentProps,
+  Consumer,
   DisplayComponent,
   FSComponent,
   Subject,
@@ -12,6 +13,8 @@ import {
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
+import { EfisSide } from '@flybywiresim/fbw-sdk';
+import { DropdownListNavigation } from './DropdownListNavigation';
 import { TriangleDown, TriangleUp } from './shapes';
 
 export type ButtonMenuItem = {
@@ -24,7 +27,7 @@ export type ButtonMenuItem = {
 export interface ButtonProps extends ComponentProps {
   readonly label: string | VNode | Subscribable<string>;
   // FIXME should be SubscribableArray<ButtonMenuItem>... ButtonMenu should really be a separate component...
-  readonly menuItems?: Subscribable<ButtonMenuItem[]>; // When defining menu items, idPrefix has to be set FIXME express that in the types
+  readonly menuItems?: Subscribable<ButtonMenuItem[]>;
   /** Whether to show an arrow after the label for buttons with menu items. Defaults to true. */
   readonly showArrow?: boolean;
   idPrefix?: string;
@@ -37,6 +40,8 @@ export interface ButtonProps extends ComponentProps {
   onClick: () => void;
   scrollToMenuItem?: Subscribable<number>;
   dropdownMenuRightAligned?: boolean;
+  /** Lets the KCCU or OIT keyboard move through the menu while it's open. Only needed with menuItems. */
+  hEventConsumer?: Consumer<[EfisSide, string]>;
 }
 
 /*
@@ -56,7 +61,7 @@ export class Button extends DisplayComponent<ButtonProps> {
 
   private readonly menuOpensUpwards = Subject.create(false);
 
-  private renderedMenuItems: ButtonMenuItem[] = [];
+  private listNavigation?: DropdownListNavigation;
 
   private readonly disabled: Subscribable<boolean> = SubscribableUtils.toSubscribable(
     this.props.disabled ?? false,
@@ -89,8 +94,6 @@ export class Button extends DisplayComponent<ButtonProps> {
     }
   }
 
-  private onDropdownMenuElementClickHandler = this.onDropdownMenuElementClick.bind(this);
-
   private scrollMenuTo(elementIndex: number) {
     // Assume 36px height for each menu item div
     this.dropdownMenuRef.instance.scrollTo({ behavior: 'instant', left: 0, top: elementIndex * 36 });
@@ -107,9 +110,6 @@ export class Button extends DisplayComponent<ButtonProps> {
     }
     if (this.props.highlighted === undefined) {
       this.props.highlighted = Subject.create(false);
-    }
-    if (this.props.menuItems && !this.props.idPrefix) {
-      console.error('Button: menuItems set without idPrefix.');
     }
     if (this.props.idPrefix === undefined) {
       this.props.idPrefix = '';
@@ -144,19 +144,10 @@ export class Button extends DisplayComponent<ButtonProps> {
     if (this.props.menuItems !== undefined) {
       this.subs.push(
         this.props.menuItems.sub((items) => {
-          // Delete click handler, delete dropdownMenuRef children, render dropdownMenuRef children,
-          this.renderedMenuItems?.forEach((val, i) => {
-            document
-              .getElementById(`${this.props.idPrefix}_${i}`)
-              ?.removeEventListener('click', this.onDropdownMenuElementClickHandler.bind(this, val));
-          });
-
           // Delete dropdownMenuRef's children
           while (this.dropdownMenuRef.instance.firstChild) {
             this.dropdownMenuRef.instance.removeChild(this.dropdownMenuRef.instance.firstChild);
           }
-
-          this.renderedMenuItems = items;
 
           // Render dropdownMenuRef's children
           const itemNodes: VNode = (
@@ -179,18 +170,6 @@ export class Button extends DisplayComponent<ButtonProps> {
           );
           FSComponent.render(itemNodes, this.dropdownMenuRef.instance);
 
-          // Add click event listener
-          for (const val of items) {
-            if (typeof val.disabled === 'boolean' && val.disabled === true) {
-              continue;
-            }
-
-            const i = items.indexOf(val);
-            document
-              .getElementById(`${this.props.idPrefix}_${i}`)
-              ?.addEventListener('click', this.onDropdownMenuElementClickHandler.bind(this, val));
-          }
-
           // Check if menu would overflow vertically (i.e. leave screen at the bottom). If so, open menu upwards
           // Open menu for a split second to measure size
           this.dropdownMenuRef.instance.style.display = 'block';
@@ -205,15 +184,21 @@ export class Button extends DisplayComponent<ButtonProps> {
             this.dropdownMenuRef.instance.style.top = `${Math.round(-boundingRect.height)}px`;
           }
 
-          // Close again
-          this.dropdownMenuRef.instance.style.display = 'none';
-          this.buttonRef.instance.classList.remove('opened');
+          // Put back the open state, as the items can change while the menu is open
+          this.dropdownMenuRef.instance.style.display = this.dropdownIsOpened.get() ? 'block' : 'none';
+          this.buttonRef.instance.classList.toggle('opened', this.dropdownIsOpened.get());
         }, true),
       );
-    }
 
-    // Close dropdown menu if clicked outside
-    document.getElementById('MFD_CONTENT')?.addEventListener('click', this.onCloseDropdownHandler);
+      const menuItems = this.props.menuItems;
+      this.listNavigation = new DropdownListNavigation(
+        this.dropdownIsOpened,
+        this.topRef.instance,
+        this.dropdownMenuRef.instance,
+        (index) => this.onDropdownMenuElementClick(menuItems.get()[index]),
+        { keys: this.props.hEventConsumer },
+      );
+    }
 
     this.buttonRef.instance.addEventListener('click', this.onButtonClickHandler);
 
@@ -246,14 +231,6 @@ export class Button extends DisplayComponent<ButtonProps> {
     }
   }
 
-  private onCloseDropdown(e: MouseEvent) {
-    if (!this.topRef.getOrDefault()?.contains(e.target as Node) && this.dropdownIsOpened.get()) {
-      this.dropdownIsOpened.set(false);
-    }
-  }
-
-  private onCloseDropdownHandler = this.onCloseDropdown.bind(this);
-
   private onButtonClick() {
     if (this.props.menuItems && this.props.menuItems.get().length > 0 && !this.disabled.get()) {
       this.dropdownIsOpened.set(!this.dropdownIsOpened.get());
@@ -265,16 +242,10 @@ export class Button extends DisplayComponent<ButtonProps> {
   public destroy(): void {
     // Destroy all subscriptions to remove all references to this instance.
     this.subs.forEach((x) => x.destroy());
+    this.listNavigation?.destroy();
 
     this.buttonRef.instance.removeEventListener('click', this.onClickHandler);
-    document.getElementById('MFD_CONTENT')?.removeEventListener('click', this.onCloseDropdownHandler);
     this.buttonRef.instance.removeEventListener('click', this.onButtonClickHandler);
-
-    this.renderedMenuItems?.forEach((val, i) => {
-      document
-        .getElementById(`${this.props.idPrefix}_${i}`)
-        ?.removeEventListener('click', this.onDropdownMenuElementClickHandler.bind(this, val));
-    });
 
     super.destroy();
   }

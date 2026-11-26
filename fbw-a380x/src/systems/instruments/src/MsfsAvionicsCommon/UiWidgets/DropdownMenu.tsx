@@ -16,6 +16,7 @@ import {
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
+import { DropdownListNavigation } from './DropdownListNavigation';
 import { InputField, InteractionMode } from './InputField';
 import { DropdownFieldFormat } from '../../MFD/pages/common/DataEntryFormats';
 import { EfisSide } from '@flybywiresim/fbw-sdk';
@@ -55,6 +56,8 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
   // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
   private readonly subs = [] as Subscription[];
 
+  private listNavigation?: DropdownListNavigation;
+
   private readonly topRef = FSComponent.createRef<HTMLDivElement>();
 
   private readonly dropdownSelectorRef = FSComponent.createRef<HTMLDivElement>();
@@ -83,8 +86,6 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
 
   private readonly dropdownArrowFill = this.disabled.map((isDisabled) => (isDisabled ? 'gray' : 'white'));
 
-  private freeTextEntered = false;
-
   private readonly renderedDropdownOptions = ArraySubject.create<string>();
 
   private renderedDropdownOptionsIndices: number[] = [];
@@ -98,14 +99,12 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
 
   private onClick(i: number) {
     if (!this.inactive.get() && !this.disabled.get()) {
-      this.freeTextEntered = false;
       if (this.props.onModified) {
         this.props.onModified(this.renderedDropdownOptionsIndices[i], '');
       } else if (SubscribableUtils.isMutableSubscribable(this.props.selectedIndex)) {
         this.props.selectedIndex.set(this.renderedDropdownOptionsIndices[i]);
       }
       this.dropdownIsOpened.set(false);
-      this.filterList('');
     }
   }
 
@@ -129,11 +128,8 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
         }
       }
 
-      this.freeTextEntered = true;
       this.inputFieldValue.set(error ? this.props.values.get(this.props.selectedIndex.get() ?? 0) : text);
       this.dropdownIsOpened.set(false);
-      this.freeTextEntered = false;
-      this.filterList('');
     }
   }
 
@@ -141,13 +137,6 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
     const arr = this.props.values.getArray();
     this.renderedDropdownOptionsIndices = arr.map((_, idx) => idx).filter((_, idx) => arr[idx].startsWith(text));
     this.renderedDropdownOptions.set(arr.filter((val) => val.startsWith(text)));
-  }
-
-  private onFieldChanged(text: string) {
-    this.freeTextEntered = true;
-
-    // Filter dropdown options based on input
-    this.filterList(text);
   }
 
   public forceLabel(label: string) {
@@ -159,15 +148,6 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
 
     this.subs.push(
       this.renderedDropdownOptions.sub((_, __, ___, array) => {
-        // Remove click handlers
-        array.forEach((_, i) => {
-          if (document.getElementById(`${this.props.idPrefix}_${i}`)) {
-            document
-              .getElementById(`${this.props.idPrefix}_${i}`)
-              ?.removeEventListener('click', this.onClick.bind(this, i));
-          }
-        });
-
         // Re-draw all options
         while (this.dropdownMenuRef.instance.firstChild) {
           this.dropdownMenuRef.instance.removeChild(this.dropdownMenuRef.instance.firstChild);
@@ -184,11 +164,6 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
           );
           FSComponent.render(n, this.dropdownMenuRef.instance);
         }, this);
-
-        // Add click handlers
-        array.forEach((_, i) => {
-          document.getElementById(`${this.props.idPrefix}_${i}`)?.addEventListener('click', this.onClick.bind(this, i));
-        });
       }),
     );
 
@@ -211,42 +186,54 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
       }),
     );
 
-    this.dropdownSelectorRef.instance.addEventListener('click', this.onOpenCloseClickHandler);
+    const textInput = this.inputFieldRef.instance.textInputRef.instance;
+    textInput.addEventListener('focus', this.openHandler);
+    textInput.addEventListener('blur', this.closeKeepingEntryHandler);
 
-    // Close dropdown menu if clicked outside
-    document.getElementById('MFD_CONTENT')?.addEventListener('click', this.onClickedOutsideHandler);
+    this.dropdownSelectorRef.instance.addEventListener('click', this.onOpenCloseClickHandler);
 
     this.subs.push(
       this.dropdownIsOpened.sub((opened) => {
         this.onDropdownOpenedCallback?.();
         this.onDropdownOpenedCallback = undefined;
 
-        if (!this.freeTextEntered) {
-          if (opened) {
-            this.inputFieldRef.instance.textInputRef.instance.focus();
-            this.inputFieldRef.instance.onFocus();
-          } else {
-            this.inputFieldRef.instance.textInputRef.instance.blur();
-            this.inputFieldRef.instance.onBlur(false);
+        if (opened) {
+          this.inputFieldRef.instance.textInputRef.instance.focus();
+          this.inputFieldRef.instance.onFocus();
+        } else {
+          this.inputFieldRef.instance.textInputRef.instance.blur();
+          this.inputFieldRef.instance.onBlur(false);
+          if (this.renderedDropdownOptions.length !== this.props.values.length) {
+            this.filterList('');
           }
         }
       }),
     );
 
     this.subs.push(this.dropdownArrowFill, this.disabledWhenActive);
-    // TODO add KCCU events
+
+    this.listNavigation = new DropdownListNavigation(
+      this.dropdownIsOpened,
+      this.topRef.instance,
+      this.dropdownMenuRef.instance,
+      (index) => this.onClick(index),
+      {
+        close: () => this.closeKeepingEntry(),
+        highlightOnOpen: () => this.renderedDropdownOptionsIndices.indexOf(this.props.selectedIndex.get() ?? -1),
+      },
+    );
   }
 
-  private onOpenCloseClick() {
+  private open() {
     if (!this.inactive.get() && !this.disabled.get()) {
-      this.dropdownIsOpened.set(!this.dropdownIsOpened.get());
+      this.dropdownIsOpened.set(true);
     }
   }
 
-  private onOpenCloseClickHandler = this.onOpenCloseClick.bind(this);
+  private openHandler = this.open.bind(this);
 
-  private onClickedOutside(e: MouseEvent) {
-    if (!this.topRef.getOrDefault()?.contains(e.target as Node) && this.dropdownIsOpened.get()) {
+  private closeKeepingEntry() {
+    if (this.dropdownIsOpened.get()) {
       if (this.inputFieldValue.get() === '') {
         this.inputFieldValue.set(null);
       }
@@ -255,7 +242,17 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
     }
   }
 
-  private onClickedOutsideHandler = this.onClickedOutside.bind(this);
+  private closeKeepingEntryHandler = this.closeKeepingEntry.bind(this);
+
+  private onOpenCloseClick() {
+    if (this.dropdownIsOpened.get()) {
+      this.closeKeepingEntry();
+    } else {
+      this.open();
+    }
+  }
+
+  private onOpenCloseClickHandler = this.onOpenCloseClick.bind(this);
 
   /**
    * Scrolls the dropdown list to the given index
@@ -274,10 +271,15 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
 
   public destroy(): void {
     // Destroy all subscriptions to remove all references to this instance.
+    this.listNavigation?.destroy();
+    this.listNavigation = undefined;
     this.subs.forEach((x) => x.destroy());
 
+    const textInput = this.inputFieldRef.getOrDefault()?.textInputRef.getOrDefault();
+    textInput?.removeEventListener('focus', this.openHandler);
+    textInput?.removeEventListener('blur', this.closeKeepingEntryHandler);
+
     this.dropdownSelectorRef.getOrDefault()?.removeEventListener('click', this.onOpenCloseClickHandler);
-    document.getElementById('MFD_CONTENT')?.removeEventListener('click', this.onClickedOutsideHandler);
 
     this.renderedDropdownOptions.clear();
 
@@ -311,7 +313,8 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
               alignText={this.props.alignLabels}
               freeText={this.props.freeTextAllowed}
               onModified={(text) => this.onFieldSubmit(text ?? '')}
-              onInput={(text) => this.onFieldChanged(text)}
+              onInput={(text) => this.filterList(text)}
+              onKey={(key) => this.listNavigation?.handleKey(key) ?? false}
               inactive={this.inactive}
               disabled={this.disabled}
               handleFocusBlurExternally

@@ -1,7 +1,8 @@
-//  Copyright (c) 2025 FlyByWire Simulations
+//  Copyright (c) 2025-2026 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
 import {
+  Consumer,
   DisplayComponent,
   FSComponent,
   Subject,
@@ -10,6 +11,7 @@ import {
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
+import { EfisSide } from '@flybywiresim/fbw-sdk';
 import { PageSelectorDropdownMenu } from '../../../MsfsAvionicsCommon/UiWidgets/PageSelectorDropdownMenu';
 import { Button } from '../../../MsfsAvionicsCommon/UiWidgets/Button';
 import { IconButton } from '../../../MsfsAvionicsCommon/UiWidgets/IconButton';
@@ -19,6 +21,7 @@ import { OisDomain } from '../../OIT';
 interface OitFltOpsHeaderProps {
   readonly uiService: OitUiService;
   readonly avncsOrFltOps: Subscribable<OisDomain>;
+  readonly hEventConsumer: Consumer<[EfisSide, string]>;
 }
 
 /*
@@ -49,6 +52,7 @@ export abstract class OitFltOpsHeader extends DisplayComponent<OitFltOpsHeaderPr
     return (
       <div class="oit-header-row">
         <PageSelectorDropdownMenu
+          hEventConsumer={this.props.hEventConsumer}
           isActive={SubscribableUtils.toSubscribable(false, true)}
           label="MENU"
           menuItems={[
@@ -104,6 +108,7 @@ export abstract class OitFltOpsHeader extends DisplayComponent<OitFltOpsHeaderPr
         <div class="oit-heading">{this.oitHeading}</div>
         <div style="flex-grow: 1" />
         <PageSelectorDropdownMenu
+          hEventConsumer={this.props.hEventConsumer}
           isActive={SubscribableUtils.toSubscribable(false, true)}
           label="FUNCTIONS"
           menuItems={[

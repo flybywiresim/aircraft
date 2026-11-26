@@ -363,6 +363,7 @@ export class MfdFmsFplnDep extends FmsFlightPlanPage<MfdFmsFplnDepProps> {
         </div>
         <div class="fr" style="margin-left: 50px;">
           <Button
+            hEventConsumer={this.props.mfd.hEventConsumer}
             label="RWY"
             onClick={() => {}}
             buttonStyle="width: 250px;"
@@ -371,6 +372,7 @@ export class MfdFmsFplnDep extends FmsFlightPlanPage<MfdFmsFplnDepProps> {
           />
           <div style="width: 100px;" />
           <Button
+            hEventConsumer={this.props.mfd.hEventConsumer}
             label="SID"
             onClick={() => {}}
             disabled={this.sidDisabled}
@@ -380,6 +382,7 @@ export class MfdFmsFplnDep extends FmsFlightPlanPage<MfdFmsFplnDepProps> {
           />
           <div style="width: 50px;" />
           <Button
+            hEventConsumer={this.props.mfd.hEventConsumer}
             label="TRANS"
             onClick={() => {}}
             disabled={this.transDisabled}
