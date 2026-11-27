@@ -158,6 +158,9 @@ struct FcdcDiscreteInputs {
   bool autoBrakeActive;
   int autoBrakeMode;
   int btvState;
+
+  bool bcmEnergized;
+  bool bcmActive;
 };
 
 struct FcdcBusInputs {

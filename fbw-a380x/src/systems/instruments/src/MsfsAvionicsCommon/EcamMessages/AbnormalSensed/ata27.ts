@@ -86,12 +86,12 @@ export const EcamAbnormalSensedAta27: { [n: number]: AbnormalProcedure } = {
         sensed: false,
       },
       {
-        name: 'AFS CTL PNL KNOB AVAIL FOR BUG SETTING',
+        name: 'F/CTL BKUP CTL ACTIVE',
         style: ChecklistLineStyle.Green,
         sensed: false,
       },
       {
-        name: 'F/CTL BKUP CTL ACTIVE',
+        name: 'AFS CTL PNL KNOB AVAIL FOR BUG SETTING',
         style: ChecklistLineStyle.Green,
         sensed: false,
       },

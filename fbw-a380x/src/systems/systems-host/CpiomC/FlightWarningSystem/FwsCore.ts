@@ -993,6 +993,7 @@ export class FwsCore {
   public readonly altn1ALawCondition = Subject.create(false);
   public altn2LawConfirm = false;
   public readonly directLawCondition = Subject.create(false);
+  public readonly bcmActive = Subject.create(false);
 
   public readonly fcdc1FaultCondition = Subject.create(false);
   public readonly fcdc12FaultCondition = Subject.create(false);
@@ -4740,6 +4741,9 @@ export class FwsCore {
       this.fcdc1DiscreteWord1.get().bitValueOr(18, false) ||
       this.fcdc2DiscreteWord1.get().bitValueOr(18, false);
     this.directLawCondition.set(SPBUL && !flightPhase112);
+    this.bcmActive.set(
+      this.fcdc1DiscreteWord1.get().bitValueOr(19, false) || this.fcdc2DiscreteWord1.get().bitValueOr(19, false),
+    );
 
     // L+R ELEV FAULT computation
     const lhElevBlueFail =

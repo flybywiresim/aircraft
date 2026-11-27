@@ -11,6 +11,7 @@
 #include "RateLimiter.h"
 #include "SpoilersHandler.h"
 #include "ThrottleAxisMapping.h"
+#include "bcm/Bcm.h"
 #include "failures/FailuresConsumer.h"
 #include "fcdc/Fcdc.h"
 #include "fcu/Fcu.h"
@@ -138,6 +139,8 @@ class FlyByWireInterface {
   base_sec_discrete_outputs secsDiscreteOutputs[3] = {};
   base_sec_analog_outputs secsAnalogOutputs[3] = {};
   base_sec_out_bus secsBusOutputs[3] = {};
+
+  Bcm bcm = Bcm();
 
   Fcdc fcdcs[2] = {Fcdc(true), Fcdc(false)};
   FcdcDiscreteOutputs fcdcsDiscreteOutputs[2] = {};
@@ -768,6 +771,8 @@ class FlyByWireInterface {
 
   bool updateSec(double sampleTime, int secIndex);
 
+  bool updateBcm(double sampleTime);
+
   bool updateFcdc(double sampleTime, int fcdcIndex);
 
   bool updateFcu(double sampleTime, int fcuIndex);
@@ -778,7 +783,7 @@ class FlyByWireInterface {
 
   bool updateFcuShim();
 
-  bool updateServoSolenoidStatus();
+  bool updateServoSolenoidStatus(double sampleTime);
 
   bool updateSpoilers(double sampleTime);
 

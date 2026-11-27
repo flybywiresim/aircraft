@@ -101,6 +101,8 @@ clang++ \
   "${DIR}/src/prim/Prim.cpp" \
   -I "${DIR}/src/sec" \
   "${DIR}/src/sec/Sec.cpp" \
+  -I "${DIR}/src/bcm" \
+  "${DIR}/src/bcm/Bcm.cpp" \
   -I "${DIR}/src/failures" \
   "${DIR}/src/failures/FailuresConsumer.cpp" \
   -I "${DIR}/src/fcdc" \

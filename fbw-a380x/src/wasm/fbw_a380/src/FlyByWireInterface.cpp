@@ -138,6 +138,8 @@ bool FlyByWireInterface::update(double sampleTime) {
     result &= updateSec(calculatedSampleTime, i);
   }
 
+  result &= updateBcm(calculatedSampleTime);
+
   for (int i = 0; i < 2; i++) {
     result &= updateFcdc(calculatedSampleTime, i);
   }
@@ -146,7 +148,7 @@ bool FlyByWireInterface::update(double sampleTime) {
     result &= updateFadec(calculatedSampleTime, i);
   }
 
-  result &= updateServoSolenoidStatus();
+  result &= updateServoSolenoidStatus(calculatedSampleTime);
 
   // update recording data
   result &= updateBaseData(calculatedSampleTime);
@@ -2257,6 +2259,40 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
   return true;
 }
 
+bool FlyByWireInterface::updateBcm(double sampleTime) {
+  // do not further process when active pause is on
+  if (simConnectInterface.isSimInActivePause()) {
+    return true;
+  }
+
+  SimInput simInput = simConnectInterface.getSimInput();
+  SimInputPitchTrim pitchTrimInput = simConnectInterface.getSimInputPitchTrim();
+
+  // TODO PRIM and SEC inhibit signals could be different from healthy (can no longer perform basic law and servoloops?)
+  bcm.discreteInputs.prim1Inhibit = primsDiscreteOutputs[0].prim_healthy;
+  bcm.discreteInputs.sec1Inhibit = secsDiscreteOutputs[0].sec_healthy;
+  bcm.discreteInputs.prim3Inhibit = primsDiscreteOutputs[2].prim_healthy;
+  bcm.discreteInputs.sec3Inhibit = secsDiscreteOutputs[2].sec_healthy;
+  bcm.discreteInputs.pitchTrimUpPressed = pitchTrimInput.pitchTrimSwitchUp;
+  bcm.discreteInputs.pitchTrimDownPressed = pitchTrimInput.pitchTrimSwitchDown;
+
+  bcm.analogInputs.captPitchStickPos = -simInput.inputs[0];
+  bcm.analogInputs.foPitchStickPos = 0;
+  bcm.analogInputs.captRollStickPos = -simInput.inputs[1];
+  bcm.analogInputs.foRollStickPos = 0;
+  bcm.analogInputs.rudderPedalPos = -(simInput.inputs[2] + idRudderTrimActualPosition->get() / 30);
+  bcm.analogInputs.pitchRate = 0;
+  bcm.analogInputs.yawRate = 0;
+
+  // TODO PRIM and SEC inhibit signals could be different from healthy (can no longer perform basic law and servoloops?)
+  auto greenBpsEnergized = idHydGreenPressurised->get() && !secsDiscreteOutputs[1].sec_healthy && !primsDiscreteOutputs[1].prim_healthy;
+  auto yellowBpsEnergized = idHydYellowPressurised->get() && !secsDiscreteOutputs[1].sec_healthy && !primsDiscreteOutputs[1].prim_healthy;
+
+  bcm.update(sampleTime, false, yellowBpsEnergized, greenBpsEnergized);
+
+  return true;
+}
+
 bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
   // do not further process when active pause is on
   if (simConnectInterface.isSimInActivePause()) {
@@ -2304,6 +2340,9 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
     fcdcs[fcdcIndex].discreteInputs.autoBrakeMode = idAutobrakeArmedMode->get();
     fcdcs[fcdcIndex].discreteInputs.btvState = idBtvState->get();
   }
+
+  fcdcs[fcdcIndex].discreteInputs.bcmEnergized = bcm.getDiscreteOutputs().bcmEnergized;
+  fcdcs[fcdcIndex].discreteInputs.bcmActive = bcm.getDiscreteOutputs().bcmActive;
 
   bool primSecReachable[3] = {fcdcIndex == 0 ? (idAfdx1_3Reachable->get() == 1 || idAfdx11_13Reachable->get() == 1)
                                              : (idAfdx1_4Reachable->get() == 1 || idAfdx11_14Reachable->get() == 1),
@@ -2813,19 +2852,22 @@ bool FlyByWireInterface::updateFcuShim() {
   return true;
 }
 
-bool FlyByWireInterface::updateServoSolenoidStatus() {
+bool FlyByWireInterface::updateServoSolenoidStatus(double sampleTime) {
+  auto bcmAnalogOutputs = bcm.getAnalogOutputs();
+  auto bcmActive = bcm.getDiscreteOutputs().bcmActive;
+
   idLeftInboardAileronSolenoidEnergized[0]->set(primsDiscreteOutputs[0].left_aileron_1_active_mode ||
-                                                secsDiscreteOutputs[0].left_aileron_1_active_mode);
+                                                secsDiscreteOutputs[0].left_aileron_1_active_mode || bcmActive);
   idLeftInboardAileronCommandedPosition[0]->set(primsAnalogOutputs[0].left_aileron_1_pos_order_deg +
-                                                secsAnalogOutputs[0].left_aileron_1_pos_order_deg);
+                                                secsAnalogOutputs[0].left_aileron_1_pos_order_deg + bcmAnalogOutputs.leftAilCmd);
   idLeftInboardAileronSolenoidEnergized[1]->set(primsDiscreteOutputs[1].left_aileron_2_active_mode ||
                                                 secsDiscreteOutputs[1].left_aileron_2_active_mode);
   idLeftInboardAileronCommandedPosition[1]->set(primsAnalogOutputs[1].left_aileron_2_pos_order_deg +
                                                 secsAnalogOutputs[1].left_aileron_2_pos_order_deg);
   idRightInboardAileronSolenoidEnergized[0]->set(primsDiscreteOutputs[0].right_aileron_1_active_mode ||
-                                                 secsDiscreteOutputs[0].right_aileron_1_active_mode);
+                                                 secsDiscreteOutputs[0].right_aileron_1_active_mode || bcmActive);
   idRightInboardAileronCommandedPosition[0]->set(primsAnalogOutputs[0].right_aileron_1_pos_order_deg +
-                                                 secsAnalogOutputs[0].right_aileron_1_pos_order_deg);
+                                                 secsAnalogOutputs[0].right_aileron_1_pos_order_deg + bcmAnalogOutputs.rightAilCmd);
   idRightInboardAileronSolenoidEnergized[1]->set(primsDiscreteOutputs[1].right_aileron_2_active_mode ||
                                                  secsDiscreteOutputs[1].right_aileron_2_active_mode);
   idRightInboardAileronCommandedPosition[1]->set(primsAnalogOutputs[1].right_aileron_2_pos_order_deg +
@@ -2894,32 +2936,38 @@ bool FlyByWireInterface::updateServoSolenoidStatus() {
                                                   secsAnalogOutputs[1].elevator_3_pos_order_deg);
 
   idLeftOutboardElevatorSolenoidEnergized[0]->set(primsDiscreteOutputs[0].elevator_1_active_mode ||
-                                                  secsDiscreteOutputs[0].elevator_1_active_mode);
+                                                  secsDiscreteOutputs[0].elevator_1_active_mode || bcmActive);
   idLeftOutboardElevatorCommandedPosition[0]->set(primsAnalogOutputs[0].elevator_1_pos_order_deg +
-                                                  secsAnalogOutputs[0].elevator_1_pos_order_deg);
+                                                  secsAnalogOutputs[0].elevator_1_pos_order_deg + bcmAnalogOutputs.leftElevCmd);
   idLeftOutboardElevatorSolenoidEnergized[1]->set(primsDiscreteOutputs[1].elevator_2_active_mode ||
                                                   secsDiscreteOutputs[1].elevator_2_active_mode);
   idLeftOutboardElevatorCommandedPosition[1]->set(primsAnalogOutputs[1].elevator_2_pos_order_deg +
                                                   secsAnalogOutputs[1].elevator_2_pos_order_deg);
   idRightOutboardElevatorSolenoidEnergized[0]->set(primsDiscreteOutputs[1].elevator_1_active_mode ||
-                                                   secsDiscreteOutputs[1].elevator_1_active_mode);
+                                                   secsDiscreteOutputs[1].elevator_1_active_mode || bcmActive);
   idRightOutboardElevatorCommandedPosition[0]->set(primsAnalogOutputs[1].elevator_1_pos_order_deg +
-                                                   secsAnalogOutputs[1].elevator_1_pos_order_deg);
+                                                   secsAnalogOutputs[1].elevator_1_pos_order_deg + bcmAnalogOutputs.rightElevCmd);
   idRightOutboardElevatorSolenoidEnergized[1]->set(primsDiscreteOutputs[0].elevator_3_active_mode ||
                                                    secsDiscreteOutputs[0].elevator_3_active_mode);
   idRightOutboardElevatorCommandedPosition[1]->set(primsAnalogOutputs[0].elevator_3_pos_order_deg +
                                                    secsAnalogOutputs[0].elevator_3_pos_order_deg);
 
+  // This hack is necessary because the hydraulics expects position commands, while the computers only output servovalve commands,
+  // which are rate commands, and the BCM doesn't know about the THS position.
+  SimData simData = simConnectInterface.getSimData();
+  const auto bcmThsCommand = bcmActive ? (-simData.eta_trim_deg + bcmAnalogOutputs.thsRateCmd * sampleTime) : 0;
+
   idTHSSolenoidEnergized[0]->set(primsDiscreteOutputs[2].ths_active_mode || secsDiscreteOutputs[2].ths_active_mode);
   idTHSCommandedPosition[0]->set(primsAnalogOutputs[2].ths_pos_order_deg + secsAnalogOutputs[2].ths_pos_order_deg);
-  idTHSSolenoidEnergized[1]->set(primsDiscreteOutputs[0].ths_active_mode || secsDiscreteOutputs[0].ths_active_mode);
-  idTHSCommandedPosition[1]->set(primsAnalogOutputs[0].ths_pos_order_deg + secsAnalogOutputs[0].ths_pos_order_deg);
+  idTHSSolenoidEnergized[1]->set(primsDiscreteOutputs[0].ths_active_mode || secsDiscreteOutputs[0].ths_active_mode || bcmActive);
+  idTHSCommandedPosition[1]->set(primsAnalogOutputs[0].ths_pos_order_deg + secsAnalogOutputs[0].ths_pos_order_deg + bcmThsCommand);
 
   idUpperRudderHydraulicModeSolenoidEnergized[0]->set(primsDiscreteOutputs[0].rudder_1_hydraulic_active_mode ||
-                                                      secsDiscreteOutputs[0].rudder_1_hydraulic_active_mode);
+                                                      secsDiscreteOutputs[0].rudder_1_hydraulic_active_mode || bcmActive);
   idUpperRudderElectricModeSolenoidEnergized[0]->set(primsDiscreteOutputs[0].rudder_1_electric_active_mode ||
                                                      secsDiscreteOutputs[0].rudder_1_electric_active_mode);
-  idUpperRudderCommandedPosition[0]->set(primsAnalogOutputs[0].rudder_1_pos_order_deg + secsAnalogOutputs[0].rudder_1_pos_order_deg);
+  idUpperRudderCommandedPosition[0]->set(primsAnalogOutputs[0].rudder_1_pos_order_deg + secsAnalogOutputs[0].rudder_1_pos_order_deg +
+                                         bcmAnalogOutputs.upperRudCmd);
   idUpperRudderHydraulicModeSolenoidEnergized[1]->set(primsDiscreteOutputs[1].rudder_1_hydraulic_active_mode ||
                                                       secsDiscreteOutputs[1].rudder_1_hydraulic_active_mode);
   idUpperRudderElectricModeSolenoidEnergized[1]->set(primsDiscreteOutputs[1].rudder_1_electric_active_mode ||
@@ -2927,10 +2975,11 @@ bool FlyByWireInterface::updateServoSolenoidStatus() {
   idUpperRudderCommandedPosition[1]->set(primsAnalogOutputs[1].rudder_1_pos_order_deg + secsAnalogOutputs[1].rudder_1_pos_order_deg);
 
   idLowerRudderHydraulicModeSolenoidEnergized[0]->set(primsDiscreteOutputs[0].rudder_2_hydraulic_active_mode ||
-                                                      secsDiscreteOutputs[0].rudder_2_hydraulic_active_mode);
+                                                      secsDiscreteOutputs[0].rudder_2_hydraulic_active_mode || bcmActive);
   idLowerRudderElectricModeSolenoidEnergized[0]->set(primsDiscreteOutputs[0].rudder_2_electric_active_mode ||
                                                      secsDiscreteOutputs[0].rudder_2_electric_active_mode);
-  idLowerRudderCommandedPosition[0]->set(primsAnalogOutputs[0].rudder_2_pos_order_deg + secsAnalogOutputs[0].rudder_2_pos_order_deg);
+  idLowerRudderCommandedPosition[0]->set(primsAnalogOutputs[0].rudder_2_pos_order_deg + secsAnalogOutputs[0].rudder_2_pos_order_deg +
+                                         bcmAnalogOutputs.lowerRudCmd);
   idLowerRudderHydraulicModeSolenoidEnergized[1]->set(primsDiscreteOutputs[2].rudder_1_hydraulic_active_mode ||
                                                       secsDiscreteOutputs[2].rudder_1_hydraulic_active_mode);
   idLowerRudderElectricModeSolenoidEnergized[1]->set(primsDiscreteOutputs[2].rudder_1_electric_active_mode ||
