@@ -2015,6 +2015,7 @@ void A380FgOuterLoops::init(void)
   A380FgOuterLoops_Chart_p_Init(&rtb_out_m);
   A380FgOuterLoops_B.u = A380FgOuterLoops_rtP.Y_Y0;
   A380FgOuterLoops_DWork.k = 5.0;
+  A380FgOuterLoops_DWork.dH_offset = 40.0;
   A380FgOuterLoops_DWork.maxH_dot = 1500.0;
   A380FgOuterLoops_DWork.Tau = 1.0;
 }
@@ -2062,9 +2063,8 @@ void A380FgOuterLoops::reset(void)
   A380FgOuterLoops_RateLimiter_i_Reset(&A380FgOuterLoops_DWork.sf_RateLimiter_g);
   A380FgOuterLoops_WashoutFilter_Reset(&A380FgOuterLoops_DWork.sf_WashoutFilter_hj);
   A380FgOuterLoops_LagFilter_Reset(&A380FgOuterLoops_DWork.sf_LagFilter_o);
-  A380FgOuterLoops_DWork.wasActive_not_empty_h = false;
-  A380FgOuterLoops_DWork.dH_offset = 0.0;
   A380FgOuterLoops_DWork.k = 5.0;
+  A380FgOuterLoops_DWork.dH_offset = 40.0;
   A380FgOuterLoops_DWork.maxH_dot = 1500.0;
   A380FgOuterLoops_WashoutFilter_Reset(&A380FgOuterLoops_DWork.sf_WashoutFilter);
   A380FgOuterLoops_LeadLagFilter_Reset(&A380FgOuterLoops_DWork.sf_LeadLagFilter);
@@ -2760,12 +2760,6 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
   }
 
   rtb_Mod2_d = A380FgOuterLoops_rtP.Gain_Gain_gp * std::asin(rtb_Sum_d);
-  rtb_Delay_l = (rtb_ManualSwitch == A380FgOuterLoops_rtP.CompareToConstant1_const_a);
-  if (!A380FgOuterLoops_DWork.wasActive_not_empty_h) {
-    A380FgOuterLoops_DWork.wasActive_a = rtb_Delay_l;
-    A380FgOuterLoops_DWork.wasActive_not_empty_h = true;
-  }
-
   rtb_Divide_mx = rtu_in->input.H_c_ft - rtu_in->data.H_ind_ft;
   if (rtb_Divide_mx < 0.0) {
     i = -1;
@@ -2773,23 +2767,14 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
     i = (rtb_Divide_mx > 0.0);
   }
 
-  rtb_Divide_mx += static_cast<real_T>(i) * A380FgOuterLoops_DWork.dH_offset;
-  if (rtb_Divide_mx < 0.0) {
-    i = -1;
-  } else {
-    i = (rtb_Divide_mx > 0.0);
-  }
-
   H_dot = static_cast<real_T>(i) * std::fmax(std::abs(rtu_in->data.H_dot_ft_min), 20.0);
-  if ((!A380FgOuterLoops_DWork.wasActive_a) && rtb_Delay_l) {
-    A380FgOuterLoops_DWork.k = H_dot / rtb_Divide_mx;
-    A380FgOuterLoops_DWork.dH_offset = std::abs(500.0 / std::abs(A380FgOuterLoops_DWork.k) - 100.0);
-    rtb_Divide_mx += static_cast<real_T>(i) * A380FgOuterLoops_DWork.dH_offset;
-    A380FgOuterLoops_DWork.k = H_dot / rtb_Divide_mx;
+  if (rtb_ManualSwitch != A380FgOuterLoops_rtP.CompareToConstant1_const_a) {
+    A380FgOuterLoops_DWork.dH_offset = std::abs(std::fmax(rtb_Divide_mx / H_dot, 0.1) * 500.0 - 100.0);
+    A380FgOuterLoops_DWork.k = H_dot / (static_cast<real_T>(i) * A380FgOuterLoops_DWork.dH_offset + rtb_Divide_mx);
     A380FgOuterLoops_DWork.maxH_dot = std::abs(rtu_in->data.H_dot_ft_min);
   }
 
-  rtb_Divide_mx *= A380FgOuterLoops_DWork.k;
+  rtb_Divide_mx = (static_cast<real_T>(i) * A380FgOuterLoops_DWork.dH_offset + rtb_Divide_mx) * A380FgOuterLoops_DWork.k;
   if (std::abs(rtb_Divide_mx) > A380FgOuterLoops_DWork.maxH_dot) {
     if (rtb_Divide_mx < 0.0) {
       i = -1;
@@ -2800,7 +2785,6 @@ void A380FgOuterLoops::step(const ap_laws_input *rtu_in, ap_raw_output *rty_out)
     rtb_Divide_mx = static_cast<real_T>(i) * A380FgOuterLoops_DWork.maxH_dot;
   }
 
-  A380FgOuterLoops_DWork.wasActive_a = rtb_Delay_l;
   rtb_Sum_d = A380FgOuterLoops_rtP.kntoms_Gain_d * rtu_in->data.V_tas_kn;
   if (rtb_Sum_d > A380FgOuterLoops_rtP.Saturation_UpperSat_km) {
     rtb_Sum_d = A380FgOuterLoops_rtP.Saturation_UpperSat_km;

@@ -81,19 +81,6 @@ struct base_arinc_429
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_ils_bus_
-#define DEFINED_TYPEDEF_FOR_base_ils_bus_
-
-struct base_ils_bus
-{
-  base_arinc_429 runway_heading_deg;
-  base_arinc_429 ils_frequency_mhz;
-  base_arinc_429 localizer_deviation_deg;
-  base_arinc_429 glideslope_deviation_deg;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_base_fmgc_discrete_inputs_
 #define DEFINED_TYPEDEF_FOR_base_fmgc_discrete_inputs_
 
@@ -161,6 +148,19 @@ struct base_fmgc_b_bus
   base_arinc_429 delta_q_cmd_deg;
   base_arinc_429 n1_left_percent;
   base_arinc_429 n1_right_percent;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_ils_bus_
+#define DEFINED_TYPEDEF_FOR_base_ils_bus_
+
+struct base_ils_bus
+{
+  base_arinc_429 runway_heading_deg;
+  base_arinc_429 ils_frequency_mhz;
+  base_arinc_429 localizer_deviation_deg;
+  base_arinc_429 glideslope_deviation_deg;
 };
 
 #endif
@@ -269,8 +269,7 @@ struct base_fms_inputs
   real_T preset_spd_kts;
   real_T preset_mach;
   boolean_T preset_spd_mach_activate;
-  boolean_T fms_spd_mode_activate;
-  boolean_T fms_mach_mode_activate;
+  boolean_T fms_mach_mode_active;
   real_T flex_temp_deg_c;
   real_T acceleration_alt_ft;
   real_T thrust_reduction_alt_ft;

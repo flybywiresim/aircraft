@@ -379,19 +379,6 @@ struct base_sec_out_bus
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_prim_sim_input_
-#define DEFINED_TYPEDEF_FOR_base_prim_sim_input_
-
-struct base_prim_sim_input
-{
-  real32_T spd_mach;
-  real32_T hdg_trk;
-  real32_T alt;
-  real32_T vs_fpa;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_base_lgciu_bus_
 #define DEFINED_TYPEDEF_FOR_base_lgciu_bus_
 
@@ -401,6 +388,19 @@ struct base_lgciu_bus
   base_arinc_429 discrete_word_2;
   base_arinc_429 discrete_word_3;
   base_arinc_429 discrete_word_4;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_prim_sim_input_
+#define DEFINED_TYPEDEF_FOR_base_prim_sim_input_
+
+struct base_prim_sim_input
+{
+  real32_T spd_mach;
+  real32_T hdg_trk;
+  real32_T alt;
+  real32_T vs_fpa;
 };
 
 #endif
@@ -704,8 +704,7 @@ struct base_fms_inputs
   real_T preset_spd_kts;
   real_T preset_mach;
   boolean_T preset_spd_mach_activate;
-  boolean_T fms_spd_mode_activate;
-  boolean_T fms_mach_mode_activate;
+  boolean_T fms_mach_mode_active;
   real_T flex_temp_deg_c;
   real_T acceleration_alt_ft;
   real_T thrust_reduction_alt_ft;

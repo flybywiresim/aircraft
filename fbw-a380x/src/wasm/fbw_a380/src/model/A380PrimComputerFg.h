@@ -225,6 +225,8 @@ class A380PrimComputerFg final
     rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_h5;
     rtDW_Subsystem_A380PrimComputerFg_T Subsystem_c;
     rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_kmp;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_fw;
+    rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_if;
     rtDW_Subsystem_A380PrimComputerFg_T Subsystem3;
     rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_du;
     rtDW_MATLABFunction_A380PrimComputerFg_k_T sf_MATLABFunction_g4;
@@ -1197,6 +1199,10 @@ class A380PrimComputerFg final
     char_T pad_PulseNode2_isRisingEdge_k[7];
     boolean_T PulseNode4_isRisingEdge;
     char_T pad_PulseNode4_isRisingEdge[7];
+    boolean_T PulseNode1_isRisingEdge_k;
+    char_T pad_PulseNode1_isRisingEdge_k[7];
+    boolean_T PulseNode2_isRisingEdge_p;
+    char_T pad_PulseNode2_isRisingEdge_p[7];
     boolean_T PulseNode_isRisingEdge_j;
     char_T pad_PulseNode_isRisingEdge_j[7];
     boolean_T PulseNode1_isRisingEdge_o;
@@ -1293,8 +1299,8 @@ class A380PrimComputerFg final
     char_T pad_PulseNode4_isRisingEdge_g[7];
     boolean_T PulseNode2_isRisingEdge_i;
     char_T pad_PulseNode2_isRisingEdge_i[7];
-    boolean_T PulseNode1_isRisingEdge_k;
-    char_T pad_PulseNode1_isRisingEdge_k[7];
+    boolean_T PulseNode1_isRisingEdge_ki;
+    char_T pad_PulseNode1_isRisingEdge_ki[7];
     boolean_T PulseNode6_isRisingEdge;
     char_T pad_PulseNode6_isRisingEdge[7];
     boolean_T PulseNode5_isRisingEdge_g;
@@ -1460,7 +1466,7 @@ class A380PrimComputerFg final
     uint8_T CompareToConstant4_const_b;
     char_T pad_CompareToConstant4_const_b[7];
     prim_outputs out_Y0;
-    char_T pad_out_Y0[1];
+    char_T pad_out_Y0[2];
     base_prim_out_bus Constant_Value;
     base_prim_fg_laws_outputs Delay2_InitialCondition;
     char_T pad_Delay2_InitialCondition[6];

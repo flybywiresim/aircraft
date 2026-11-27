@@ -474,6 +474,14 @@
     - Arinc429<Knots>
     - The headwind component calculated by the fms based on the inserted approach wind and runway. Negative value indicates a tailwind component.
 
+- A32NX_SPEEDS_MANAGED_PFD
+    - Number
+    - The managed speed target requested by the FMS in knots. 0 if invalid
+
+- A32NX_FM_MACH_MODE_REQUESTED
+    - Boolean
+    - If mach mode is requested by the FMS. If false, speed mode is requested.
+
 ### Flight Guidance and Flight Envelope (FG/FE)
 
 #### Flight Control Data Concentrators (FCDCs)

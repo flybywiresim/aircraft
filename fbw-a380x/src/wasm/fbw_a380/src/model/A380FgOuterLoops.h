@@ -77,8 +77,8 @@ class A380FgOuterLoops final
     real_T prevTarget_h;
     real_T Tau;
     real_T H_bias;
-    real_T dH_offset;
     real_T k;
+    real_T dH_offset;
     real_T maxH_dot;
     real_T pY;
     real_T pY_b;
@@ -96,8 +96,6 @@ class A380FgOuterLoops final
     boolean_T islevelOffActive_o;
     boolean_T wasActive;
     boolean_T wasActive_not_empty;
-    boolean_T wasActive_a;
-    boolean_T wasActive_not_empty_h;
     boolean_T pY_not_empty;
     boolean_T pY_not_empty_c;
     boolean_T storage_not_empty;

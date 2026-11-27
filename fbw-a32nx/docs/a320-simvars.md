@@ -323,10 +323,6 @@
     - Number (Knots)
     - The VAPP pilot entry if it exists or the VAPP calculated by the FMS.
 
-- A32NX_SPEEDS_MANAGED_PFD
-    - Number
-    - The managed speed target requested by the FMS in knots. 0 if invalid
-
 - A32NX_APU_EGT_CAUTION
     - `Arinc429Word<Celsius>`
     - The APU's exhaust gas temperature caution level, to be indicated in amber in the cockpit
@@ -2090,6 +2086,14 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Number
     - Indicates the preselect mach value, -1 if no value is preselected
     - Internal to FM/FG communication, other avionics should use the FG bus var
+
+- A32NX_SPEEDS_MANAGED_PFD
+    - Number
+    - The managed speed target requested by the FMS in knots. 0 if invalid
+
+- A32NX_FM_MACH_MODE_REQUESTED
+    - Boolean
+    - If mach mode is requested by the FMS. If false, speed mode is requested.
 
 ## Autothrust System
 
