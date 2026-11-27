@@ -39,8 +39,7 @@ export class FwsInformation {
       simVarIsActive: MappedSubject.create(
         SubscribableMapFunctions.and(),
         this.fws.directLawCondition,
-        this.fws.allPrimFailed,
-        this.fws.allSecFaultCondition,
+        this.fws.bcmActive,
       ),
     },
     270200004: {

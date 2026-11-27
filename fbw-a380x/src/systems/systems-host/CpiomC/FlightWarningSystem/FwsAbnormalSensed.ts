@@ -2594,7 +2594,7 @@ export class FwsAbnormalSensed {
       flightPhaseInhib: [4, 5, 6, 7, 9, 10],
       simVarIsActive: this.fws.directLawCondition,
       notActiveWhenItemActive: [],
-      whichItemsToShow: () => [true, true, this.fws.allPrimFailed.get(), this.fws.allPrimAndSecFailed.get()],
+      whichItemsToShow: () => [true, true, this.fws.bcmActive.get(), this.fws.allPrimFailed.get()],
       whichItemsChecked: () => [false, false, false, false],
       failure: 2,
       sysPage: SdPages.None,
