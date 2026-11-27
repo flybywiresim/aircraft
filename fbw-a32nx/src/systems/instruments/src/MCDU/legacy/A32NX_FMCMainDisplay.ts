@@ -122,9 +122,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
     SimVarValueType.Enum,
   );
 
-  private static readonly fmsMachModeRequestedRegisteredSimVar = RegisteredSimVar.create(
+  private static readonly fmsMachModeRequestedRegisteredSimVar = RegisteredSimVar.createBoolean(
     'L:A32NX_FM_MACH_MODE_REQUESTED',
-    SimVarValueType.Enum,
   );
 
   protected readonly sub = this.bus.getSubscriber<ClockEvents & EngineOutEvents & A32NXFcuBusEvents>();
@@ -599,8 +598,8 @@ export abstract class FMCMainDisplay implements FmsDataInterface, FmsDisplayInte
         FMCMainDisplay.speedsManagedPfdVar.set(v ?? 0);
       }, true),
       this.managedSpeedIsMach.sub((v) => {
-        FMCMainDisplay.fmsMachModeRequestedRegisteredSimVar.set(Number(v));
-      }),
+        FMCMainDisplay.fmsMachModeRequestedRegisteredSimVar.set(v);
+      }, true),
       this.fcuSelectedAltitude.sub((v) => {
         if (v.isNormalOperation()) {
           this.handleFcuAltKnobTurn();

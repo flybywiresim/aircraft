@@ -60,9 +60,8 @@ export class FmcAircraftInterface {
     'L:A380X_FM_APPROACH_HEADWIND_COMPONENT',
     SimVarValueType.String,
   );
-  private static readonly fmsMachModeRequestedRegisteredSimVar = RegisteredSimVar.create(
+  private static readonly fmsMachModeRequestedRegisteredSimVar = RegisteredSimVar.createBoolean(
     'L:A32NX_FM_MACH_MODE_REQUESTED',
-    SimVarValueType.Enum,
   );
   private readonly subs = [] as Subscription[];
   private gameState = GameStateProvider.get();
@@ -424,6 +423,9 @@ export class FmcAircraftInterface {
         }),
     );
     this.subs.push(this.speedsManagedPfd.sub((v) => this.speedsManagedPfdVar.set(v ?? 0), true));
+    this.subs.push(
+      this.managedSpeedTargetIsMach.sub((v) => FmcAircraftInterface.fmsMachModeRequestedRegisteredSimVar.set(v), true),
+    );
     this.subs.push(
       this.arincHeadWindComponentRaw.sub((v) => {
         FmcAircraftInterface.fmApproachHeadWindRegisterdSimVar.set(v.toString());
@@ -1000,7 +1002,7 @@ export class FmcAircraftInterface {
 
   /** in knots or mach */
 
-  private managedSpeedTargetIsMach = false;
+  private readonly managedSpeedTargetIsMach = Subject.create(false);
 
   private holdDecelReached = false;
 
@@ -1096,11 +1098,7 @@ export class FmcAircraftInterface {
     }
     this.speedsManagedPfd.set(vPfd);
 
-    // Automatically change fcu mach/speed mode
-    if (this.managedSpeedTargetIsMach !== isMach) {
-      FmcAircraftInterface.fmsMachModeRequestedRegisteredSimVar.set(Number(isMach));
-      this.managedSpeedTargetIsMach = isMach;
-    }
+    this.managedSpeedTargetIsMach.set(isMach);
   }
 
   public invalidateManagedSpeed() {
